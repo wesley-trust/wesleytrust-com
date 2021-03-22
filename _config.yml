@@ -103,6 +103,8 @@ defaults:
       share: true
       related: true
       classes: wide
+      sidebar:
+        nav: "side-links"
   # _pages
   - scope:
       path: "_pages"

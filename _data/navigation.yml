@@ -7,3 +7,18 @@ main:
     url: /tags/
   - title: "About"
     url: /about/
+side-links:
+  - title: LinkedIn
+    children:
+      - title: "Profile"
+        url: https://www.linkedin.com/in/wesleytrust/
+  - title: Pinned Repos
+    children:
+      - title: "GraphAPI"
+        url: https://github.com/wesley-trust/GraphAPI
+      - title: "GraphAPIConfig"
+        url: https://github.com/wesley-trust/GraphAPIConfig
+      - title: "ToolKit"
+        url: https://github.com/wesley-trust/ToolKit
+      - title: "Scripts"
+        url: https://github.com/wesley-trust/Scripts
