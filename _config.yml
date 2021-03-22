@@ -30,7 +30,6 @@ url: "https://www.wesleytrust.com" # the base hostname & protocol for your site,
 #twitter_username: jekyllrb
 github_username:  wesley-trust
 search: true
-excerpt_separator: <!--more-->
 
 # Build settings
 theme: minimal-mistakes-jekyll
