@@ -18,7 +18,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Wesley Trust
+title: Undercover hero
 email: info@wesleytrust.com
 description: >- # this means to ignore newlines until "baseurl:"
   Senior Cloud Architect, Focused on Infrastructure as Code, DevOps, Scripting and Automation.
@@ -72,34 +72,20 @@ plugins:
   - jekyll-include-cache
 
 author:
-  name   : "First Lastname"
-  avatar : "/assets/images/bio-photo.jpg"
-  bio    : "My awesome biography constrained to a sentence or two goes here."
+  name   : "Wesley Trust"
+  avatar : "/assets/images/bio-photo.jfif"
+  bio    : "Senior Cloud Architect, Focused on Infrastructure as Code, DevOps, Scripting and Automation."
+  location: London, United Kingdom
   links:
-    - label: "Website"
-      icon: "fas fa-fw fa-link"
-      url: "https://"
-    - label: "Twitter"
-      icon: "fab fa-fw fa-twitter-square"
-      url: "https://twitter.com/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
-      url: "https://github.com/"
-    - label: "Instagram"
-      icon: "fab fa-fw fa-instagram"
-      url: "https://instagram.com/"
+      url: "https://github.com/wesley-trust"
 
 footer:
   links:
-    - label: "Twitter"
-      icon: "fab fa-fw fa-twitter-square"
-      url: "https://twitter.com/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
-      url: "https://github.com/"
-    - label: "Instagram"
-      icon: "fab fa-fw fa-instagram"
-      url: "https://instagram.com/"
+      url: "https://github.com/wesley-trust"
 
 defaults:
   # _posts
@@ -113,6 +99,7 @@ defaults:
       comments: true
       share: true
       related: true
+      classes: wide
   # _pages
   - scope:
       path: "_pages"
@@ -120,6 +107,7 @@ defaults:
     values:
       layout: single
       author_profile: true
+      classes: wide
 
 category_archive:
   type: liquid
