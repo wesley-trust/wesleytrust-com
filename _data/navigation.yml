@@ -12,7 +12,7 @@ side-links:
     children:
       - title: "Profile"
         url: https://www.linkedin.com/in/wesleytrust/
-  - title: Pinned Repos
+  - title: GitHub Repos
     children:
       - title: "GraphAPI"
         url: https://github.com/wesley-trust/GraphAPI
@@ -22,3 +22,7 @@ side-links:
         url: https://github.com/wesley-trust/ToolKit
       - title: "Scripts"
         url: https://github.com/wesley-trust/Scripts
+  - title: Azure DevOps
+    children:
+      - title: "GraphAPI"
+        url: https://dev.azure.com/wesleytrust/GraphAPI
