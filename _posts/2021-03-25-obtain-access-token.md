@@ -53,9 +53,9 @@ git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI
 . .\GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1
 
 # Define Variables
-ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
-ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
-TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
+$ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
+$ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
+$TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
 
 # Create hashtable
 $ServicePrincipal = @{
@@ -65,7 +65,7 @@ $ServicePrincipal = @{
 }
 
 # Pipe the hashtable to the function, and return access token to variable
-$AccessToken = $ServicePrincipal | Get-WTGraphAccessToken
+$AccessToken = [PSCustomObject]$ServicePrincipal | Get-WTGraphAccessToken
 
 # Or splat the hashtable of parameters
 $AccessToken = Get-WTGraphAccessToken @ServicePrincipal
