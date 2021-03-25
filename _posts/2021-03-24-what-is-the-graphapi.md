@@ -14,17 +14,16 @@ The great thing, is that this API allows for you to treat many of Microsoft's se
 
 [More reference information on the API][graphapi-reference]
 
-## How can it be used?
+### How can it be used?
 Services such as Azure AD Conditional Access policies can be defined in JSON files, and then using the correct Graph API method, it can Create, modify, or remove these policies in Azure AD. You can also do the same with Groups, Users, Named Locations, and lots more.
 
 This opens big opportunities where you can have templated or baseline JSON files, managed in version control, and then combining this with a CI/CD pipeline, deploy these out, or update, or remove. Where you can treat the config files as your "desired state", and then have the pipeline maintain this state.
 
-## How do you use it?
+### How do you use it?
 
 I've been a big fan of PowerShell, and over the years have written many scripts and functions, so it made logical sense to use this as my scripting language. So I've wrapped the Graph API calls in PowerShell functions, and then building on this, I used PowerShell to write the Pipeline logic, to determine what to create, update or remove.
 
-In essence, there are 5 main components,
-
+In essence, there are 5 main components:
 - CI/CD Pipeline
 - PowerShell DSC logic to be executed in the pipeline
 - PowerShell functions targeting each specific resource/service
