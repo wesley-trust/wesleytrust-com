@@ -1,10 +1,10 @@
 ---
-title: "Obtain an Access Token for the Microsoft Graph API"
+title: "Using PowerShell to get an access token for the Microsoft Graph API"
 categories:
   - blog
 tags:
   - graphapi
-excerpt: "As I'm an infrastructure guy, rather than a developer, I'm using PowerShell as my scripting language to obtain a Graph API access token..."
+excerpt: "First we need to create a service principal, then grant permissions to the graph API, then create some PowerShell to get an access token..."
 ---
 
 ## Open sesame
@@ -78,7 +78,7 @@ $AccessToken = Get-WTGraphAccessToken -ClientID $ClientID -ClientSecret $ClientS
 
 This invokes a REST method against the Microsoft Authentication service, for the Graph API resource, using the service principal parameters supplied for the Azure AD tenant. When executed, it returns an access token we can use to make requests against the Graph API (which must be periodically renewed).
 
-The complete function as at this date, is below, but please make sure you get the latest version from GitHub:
+The complete function as at this date, is below, but please make sure you get the latest version from [GitHub][getaccesstoken]:
 
 ```
 function Get-WTGraphAccessToken {
