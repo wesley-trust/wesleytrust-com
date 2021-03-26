@@ -1,5 +1,5 @@
 ---
-title: "Tag, you're it, using PowerShell to evaluate whether a defined tag exists in an object property"
+title: "Tag-You're it; using PowerShell to evaluate defined tags in an object property"
 categories:
   - blog
 tags:
