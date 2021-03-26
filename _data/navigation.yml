@@ -10,7 +10,7 @@ main:
 side-links:
   - title: LinkedIn
     children:
-      - title: "Profile"
+      - title: "View my Profile or contact me"
         url: https://www.linkedin.com/in/wesleytrust/
   - title: GitHub Repos
     children:
