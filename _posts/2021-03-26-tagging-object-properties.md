@@ -14,7 +14,7 @@ If you're an infrastructure guy like me, you'll appreciate, and perhaps even lov
 
 You can also do some clever things like use an Azure Function that checks the tags to determine whether to stop or start a VM on a schedule (important to realise the benefits the cloud provides), or even use them to define an Azure Update Management schedule (super handy to make sure certain VM nodes only patch on certain days).
 
-In the context of my Conditional Access policies, I already had pseudo tags that I'd put in the display name of the policies, so I could match up what I'd deployed, to the design in my Confluence docs. However, quickly after starting work on the Graph API, I realised I needed a way to evaluate these tags on responses returned from the API, so I could use them programmatically.
+In the context of my Conditional Access policies, I already had pseudo tags that I'd put in the display name of the policies, so I could match up what I deployed, to the design in my Confluence docs. However, quickly after starting work on the Graph API, I realised I needed a way to evaluate these tags on responses returned from the API, so I could use them programmatically.
 
 However there's no native way to tag these responses. They do have an id, as a unique identifier, but these ids don't exist until after you create something, and are randomly generated. I needed something that I was able to control, and crucially, know before the object was created in Azure AD.
 
@@ -24,7 +24,8 @@ Each of my Conditional Access policies has a defined reference number, as well a
 As well as this being handy visual indicators, this reference number I need to use to match to the inclusion and exclusion groups that I'll be creating for each policy. As you can imagine, this is very important to get right. It also gives me the flexibility to have more use cases in the future.
 
 ## Obtaining a tagged object
-To get a tagged object, we use the [Invoke-WTPropertyTagging][function-link] function I wrote which is on my GitHub, examples below:
+To get a tagged object, we use the [Invoke-WTPropertyTagging][function-link] function I wrote which is on my GitHub.
+Examples below:
 
 ```
 # Clone repo that contains the ToolKit functions
@@ -55,7 +56,7 @@ $InputObject = [PSCustomObject]@{
 # Pipe the input object to the function, splat the hashtable of parameters and return the tagged input object
 $TaggedInputObject = $InputObject | Invoke-WTPropertyTagging @Parameters
 
-# Or specify the inputobject as a parameter, splat the hashtable of the rest of the parameters
+# Or specify the input object as a parameter, splat the hashtable of the rest of the parameters
 $TaggedInputObject = Invoke-WTPropertyTagging -InputObject $InputObject @Parameters
 
 # Or specify each parameter individually
