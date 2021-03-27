@@ -24,6 +24,7 @@ group :jekyll_plugins do
   gem "jekyll-gist"
   gem "jemoji"
   gem "jekyll-algolia"
+  gem 'jekyll-commonmark-ghpages'
 end
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
