@@ -46,7 +46,7 @@ Now that we have a service principal with the correct permissions, we need to ob
 
 This uses the [Get-WTGraphAccessToken][getaccesstoken], which you can access from my GitHub, this is a refactored version of one [Daniel][dan-blog] created. I always build pipeline support in my functions, to you can pipe in the parameters too. Examples below:
 
-```
+```powershell
 # Clone repo that contains the Graph API functions
 git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
 
@@ -73,15 +73,15 @@ $AccessToken = Get-WTGraphAccessToken @ServicePrincipal
 
 # Or specify each parameter individually
 $AccessToken = Get-WTGraphAccessToken -ClientID $ClientID -ClientSecret $ClientSecret -TenantDomain $TenantDomain
-
 ```
+
 ### What does this do?
 
 This invokes a REST method against the Microsoft Authentication service, for the Graph API resource, using the service principal parameters supplied for the Azure AD tenant. When executed, it returns an access token we can use to make requests against the Graph API (which must be periodically renewed).
 
 The complete function as at this date, is below, but please make sure you get the latest version from [GitHub][getaccesstoken]:
 
-```
+```powershell
 function Get-WTGraphAccessToken {
     [cmdletbinding()]
     param (
@@ -164,6 +164,7 @@ function Get-WTGraphAccessToken {
     }
 }
 ```
+
 [gui-service-principal]: https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
 [ps-service-principal]: https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-authenticate-service-principal-powershell
 [ca-get]: https://docs.microsoft.com/en-us/graph/api/conditionalaccesspolicy-get?view=graph-rest-1.0&tabs=http

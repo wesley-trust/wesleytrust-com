@@ -86,7 +86,8 @@ This takes an array of tags, as well as a single property to tag, and the input 
 - I then add the rest of the properties to the hashtable, convert to an object, and return the new tagged object
 
 The complete function as at this date, is below, but please make sure you get the latest version from [GitHub][function-link]:
-```
+
+```powershell
 function Invoke-WTPropertyTagging {
     [cmdletbinding()]
     param (
@@ -185,4 +186,5 @@ function Invoke-WTPropertyTagging {
     }
 }
 ```
+
 [function-link]: https://github.com/wesley-trust/ToolKit/blob/main/Public/Invoke-WTPropertyTagging.ps1
