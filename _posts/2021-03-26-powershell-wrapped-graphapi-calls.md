@@ -39,7 +39,7 @@ The [Invoke-WTGraphGet][function-get] function, which you can access from my Git
 <details>
   <summary>View code block</summary>
 
-```
+```powershell
 function Invoke-WTGraphGet {
     [cmdletbinding()]
     param (
