@@ -4,12 +4,13 @@ categories:
   - blog
 tags:
   - graphapi
+  - powershell
 excerpt: "For calling the Graph API, I wrote a series of private PowerShell functions, that public PowerShell functions will call to do the work..."
 ---
 ## Calling the Graph API
 Calling an API at first can seem a bit daunting for an infrastructure guy, who may be thinking that APIs are just for developers, but using an object-orientated scripting language like PowerShell, can make it far less so. You can apply all the knowledge built up over the years within your comfort zone, and interact with APIs without having to learn another programming language.
 
-For me, to simplify things I broke down the API calls into small specific functions, that would be in turn called by approved PowerShell verbs, with each corresponding to the method of the API call:
+For me, to simplify things I broke down the API calls into small specific private functions, that would be in turn be called by public PowerShell functions, with the PowerShell approved verbs, matching each corresponding method of the API call:
 
 | API Method | PowerShell verb | Feature | Description                                |
 |------------|-----------------|---------|--------------------------------------------|

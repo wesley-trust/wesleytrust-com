@@ -4,6 +4,7 @@ categories:
   - blog
 tags:
   - graphapi
+  - powershell
 excerpt: "First we need to create a service principal, then grant permissions to the graph API, then create some PowerShell to get an access token..."
 ---
 
