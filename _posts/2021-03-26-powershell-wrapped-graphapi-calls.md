@@ -25,21 +25,178 @@ These functions then call a generalised Microsoft Graph API Query function, so w
 
 Let's break these down.
 
-### Private Functions
+## Private Functions
 Private functions are not intended to be directly called, so I'll be covering more of a top level overview of what each do, rather than providing example usage.
 
-#### Invoke-WTGraphQuery
+### Invoke-WTGraphQuery
 The first function is [Invoke-WTGraphQuery][function-query], which you can access from my GitHub, this is a refactored version of one [Daniel][dan-blog] created.
 
-This sets out the format in which the other private APIs will issue their calls.
+This allows you to specific the REST method and the Uri (uniform resource identifier), which executes against the Graph API. This also sets up the required parameters, such as the headers and providing the Access Token in the request. The private functions below provide the method to this function, and the public functions provide the Uri (such as 'groups' for Azure AD groups).
 
-#### Invoke-WTGraphGet
+### Invoke-WTGraphGet
+The [Invoke-WTGraphGet][function-get] function, which you can access from my GitHub, passes the "Get" method to 
 
-#### Invoke-WTGraphPatch
+<details>
+  <summary>View code block</summary>
 
-#### Invoke-WTGraphPost
+```
+function Invoke-WTGraphGet {
+    [cmdletbinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will then be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            ValueFromPipeLine = $true,
+            HelpMessage = "The specific record ids to be returned"
+        )]
+        [Alias("id")]
+        [string[]]$IDs,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The uniform resource indicator"
+        )]
+        [string]$Uri,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The optional tags that could be evaluated in the response"
+        )]
+        [string[]]$Tags,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The activity being performed"
+        )]
+        [string]$Activity
+    )
+    Begin {
+        try {
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Private\Invoke-WTGraphQuery.ps1"
+                "Toolkit\Public\Invoke-WTPropertyTagging.ps1"
+            )
 
-#### Invoke-WTGraphDelete
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+
+            # Variables
+            $Method = "Get"
+            $Counter = 1
+            $PropertyToTag = "DisplayName"
+            
+            # Output current activity
+            Write-Host $Activity
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+            if ($AccessToken) {
+
+                # Build parameters
+                $Parameters = @{
+                    Method = $Method
+                }
+
+                # Change the API version if features in preview are to be excluded
+                if ($ExcludePreviewFeatures) {
+                    $Parameters.Add("ExcludePreviewFeatures", $true)
+                }
+                
+                # If specific policies are specified, get each, otherwise, get all policies
+                if ($IDs) {
+                    $QueryResponse = foreach ($ID in $IDs) {
+                        
+                        # Output progress
+                        if ($IDs.count -gt 1) {
+                            Write-Host "Processing Query $Counter of $($IDs.count) with ID: $ID"
+                                                
+                            # Create progress bar
+                            $PercentComplete = (($counter / $IDs.count) * 100)
+                            Write-Progress -Activity $Activity `
+                                -PercentComplete $PercentComplete `
+                                -CurrentOperation $ID
+                        }
+                        else {
+                            Write-Host "Processing Query with ID: $ID"
+                        }
+
+                        # Increment counter
+                        $counter++
+
+                        # Get Query
+                        $AccessToken | Invoke-WTGraphQuery `
+                            @Parameters `
+                            -Uri $Uri/$ID
+                    }
+                }
+                else {
+                    $QueryResponse = $AccessToken | Invoke-WTGraphQuery `
+                        @Parameters `
+                        -Uri $Uri
+                }
+
+                # If there is a response, and tags are defined, evaluate the query response for tags, else return without tagging
+                if ($QueryResponse) {
+                    if ($Tags) {
+                        Invoke-WTPropertyTagging -Tags $Tags -QueryResponse $QueryResponse -PropertyToTag $PropertyToTag
+                    }
+                    else {
+                        $QueryResponse
+                    }
+                }
+            }
+            else {
+                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                Write-Error $ErrorMessage
+                throw $ErrorMessage
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+            
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
+
+### Invoke-WTGraphPatch
+
+
+
+### Invoke-WTGraphPost
+
+### Invoke-WTGraphDelete
 
 
 [dan-blog]: https://danielchronlund.com/2020/11/26/azure-ad-conditional-access-policy-design-baseline-with-automatic-deployment-support/
