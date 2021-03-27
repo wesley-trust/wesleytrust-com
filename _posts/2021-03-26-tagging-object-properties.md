@@ -26,6 +26,7 @@ As well as this being handy visual indicators, this reference number I need to u
 
 ## Obtaining a tagged object
 To get a tagged object, we use the [Invoke-WTPropertyTagging][function-link] function I wrote which is on my GitHub.
+
 Examples below:
 
 ```powershell

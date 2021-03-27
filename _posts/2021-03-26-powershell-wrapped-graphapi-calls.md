@@ -37,7 +37,7 @@ The first function is [Invoke-WTGraphQuery][function-query], which you can acces
 - The private functions below provide the method to this query function, and the public functions provide the Uri (such as 'groups' for Azure AD groups)
 
 <details>
-  <summary>Expand code block (always grab the latest version from GitHub)</summary>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
 ```powershell
 function Invoke-WTGraphQuery {
@@ -187,7 +187,7 @@ The [Invoke-WTGraphGet][function-get] function, which you can access from my Git
 
 
 <details>
-  <summary>Expand code block (always grab the latest version from GitHub)</summary>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
 ```powershell
 function Invoke-WTGraphGet {
