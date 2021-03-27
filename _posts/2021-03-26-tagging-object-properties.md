@@ -28,7 +28,7 @@ As well as this being handy visual indicators, this reference number I need to u
 To get a tagged object, we use the [Invoke-WTPropertyTagging][function-link] function I wrote which is on my GitHub.
 Examples below:
 
-```
+```powershell
 # Clone repo that contains the ToolKit functions
 git clone --branch main --single-branch https://github.com/wesley-trust/ToolKit.git
 
@@ -74,6 +74,7 @@ $TaggedInputObject = Get-WTGraphAccessToken -InputObject $InputObject -PropertyT
   sessionControls : 
   state           : 
 ```
+
 ### What does this do?
 This takes an array of tags, as well as a single property to tag, and the input object that will be evaluated for the tags.
 - The inputobject can be a collection of objects, and the function contains a foreach loop to support that
