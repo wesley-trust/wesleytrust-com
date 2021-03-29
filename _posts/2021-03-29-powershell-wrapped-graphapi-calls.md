@@ -825,8 +825,6 @@ function Invoke-WTGraphDelete {
 
 </details>
 
-The next series of posts will cover the public functions that actually use these to get/create/update/remove resources in the API.
-
 [dan-blog]: https://danielchronlund.com/2020/11/26/azure-ad-conditional-access-policy-design-baseline-with-automatic-deployment-support/
 [function-get]: https://github.com/wesley-trust/GraphAPI/blob/main/Private/Invoke-WTGraphGet.ps1
 [function-patch]: https://github.com/wesley-trust/GraphAPI/blob/main/Private/Invoke-WTGraphPatch.ps1
