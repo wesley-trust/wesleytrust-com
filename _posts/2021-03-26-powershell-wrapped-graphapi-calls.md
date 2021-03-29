@@ -33,7 +33,7 @@ The first function is [Invoke-WTGraphQuery][function-query], which you can acces
 
 #### What does this do?
 - This allows you to specify the REST method and the Uri (uniform resource identifier), which executes against the Graph API
-- This also sets up the required parameters, such as the headers and provides the Access Token in the request
+- This also sets up the required parameters, such as the headers and provides the Access Token in the request (provided by a public function)
 - The private functions below provide the method to this query function, and the public functions provide the Uri (such as 'groups' for Azure AD groups)
 
 <details>
@@ -180,11 +180,13 @@ function Invoke-WTGraphQuery {
 </details>
 
 ### Invoke-WTGraphGet
-The [Invoke-WTGraphGet][function-get] function, which you can access from my GitHub, passes the "Get" method to the query.
+You can access the [Invoke-WTGraphGet][function-get] function, on my GitHub.
 
 #### What does this do?
--
-
+- This passes the required variables of "Get" and the Access Token to the query function
+- If there are specific IDs to get (rather than just performing a list) the call is altered as appropriate
+- For interactive runs, a progress status bar is displayed
+- The responses are tagged, if tags are provided, using the [Invoke-WTPropertyTagging][function-tag] function
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
@@ -339,13 +341,491 @@ function Invoke-WTGraphGet {
 </details>
 
 ### Invoke-WTGraphPatch
+You can access the [Invoke-WTGraphPatch][function-patch] function, on my GitHub.
 
+#### What does this do?
+- This passes the required variables of "Patch" and the Access Token to the query function, which corresponds to an update or 'Edit'
+- The input object could contain properties such as dates that are readonly, as well as tags, so these are removed to prevent errors
+- For interactive runs, a progress status bar is displayed
 
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+function Invoke-WTGraphPatch {
+    [cmdletbinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $true,
+            ValueFromPipeLineByPropertyName = $true,
+            ValueFromPipeLine = $true,
+            HelpMessage = "The objects to be patched"
+        )]
+        [pscustomobject]$InputObject,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The uniform resource indicator"
+        )]
+        [string]$Uri,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The activity being performed"
+        )]
+        [string]$Activity,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Properties that may exist that need to be removed prior to creation"
+        )]
+        [string[]]$CleanUpProperties
+    )
+    Begin {
+        try {
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Private\Invoke-WTGraphQuery.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+
+            # Variables
+            $Method = "Patch"
+            $Counter = 1
+
+            # Output current activity
+            Write-Host $Activity
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+
+            if ($AccessToken) {
+
+                # Build parameters
+                $Parameters = @{
+                    Method = $Method
+                }
+                if ($ExcludePreviewFeatures) {
+                    $Parameters.Add("ExcludePreviewFeatures", $true)
+                }
+
+                # If there are objects to update, foreach query with a query id
+                if ($InputObject) {
+                    
+                    foreach ($Object in $InputObject) {
+                        
+                        # Update query ID, and if exists continue
+                        $ObjectID = $Object.id
+                        $ObjectDisplayName = $Object.displayName
+                        if ($ObjectID) {
+
+                            # Remove properties that are not valid for when updating objects
+                            if ($CleanUpProperties) {
+                                foreach ($Property in $CleanUpProperties) {
+                                    $Object.PSObject.Properties.Remove("$Property")
+                                }
+                            }
+                            
+                            # Convert query object to JSON
+                            $Object = $Object | ConvertTo-Json -Depth 10
+                            
+                            # Output progress
+                            if ($InputObject.count -gt 1) {
+                                Write-Host "Processing Query $Counter of $($InputObject.count) with ID: $ObjectID"
+
+                                # Create progress bar
+                                $PercentComplete = (($counter / $InputObject.count) * 100)
+                                Write-Progress -Activity $Activity `
+                                    -PercentComplete $PercentComplete `
+                                    -CurrentOperation $ObjectDisplayName
+                            }
+                            else {
+                                Write-Host "Processing Query with ID: $ObjectID"
+                            }
+
+                            # Increment counter
+                            $counter++
+                            
+                            # Create query, with one second intervals to prevent throttling
+                            Start-Sleep -Seconds 1
+                            $AccessToken | Invoke-WTGraphQuery `
+                                @Parameters `
+                                -Uri $Uri/$ObjectID `
+                                -Body $Object `
+                            | Out-Null
+                        }
+                        else {
+                            $ErrorMessage = "The Conditional Access query does not contain an id, so cannot be updated"
+                            Write-Error $ErrorMessage
+                        }
+                    }
+                }
+            }
+            else {
+                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                Write-Error $ErrorMessage
+                throw $ErrorMessage
+            }
+        }
+        catch {
+            $ErrorMessage = "An exception has occurred, common reasons include patching properties that are not valid"
+            Write-Error $ErrorMessage
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+            
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
 
 ### Invoke-WTGraphPost
+You can access the [Invoke-WTGraphPost][function-post] function, on my GitHub.
+
+#### What does this do?
+- This passes the required variables of "Post" and the Access Token to the query function, which corresponds to a create or 'New'
+- The input object could contain properties, such as dates that are readonly, as well as custom tags, so these are removed
+- For interactive runs, a progress status bar is displayed
+
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+function Invoke-WTGraphPost {
+    [cmdletbinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            ValueFromPipeLine = $true,
+            HelpMessage = "The objects to be created"
+        )]
+        [pscustomobject]$InputObject,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The uniform resource indicator"
+        )]
+        [string]$Uri,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The activity being performed"
+        )]
+        [string]$Activity,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Properties that may exist that need to be removed prior to creation"
+        )]
+        [string[]]$CleanUpProperties
+    )
+    Begin {
+        try {
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Private\Invoke-WTGraphQuery.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+
+            # Variables
+            $Method = "Post"
+            $Counter = 1
+            
+            # Output current activity
+            Write-Host $Activity
+
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+            if ($AccessToken) {
+
+                # Build parameters
+                $Parameters = @{
+                    Method = $Method
+                    Uri    = $Uri
+                }
+                if ($ExcludePreviewFeatures) {
+                    $Parameters.Add("ExcludePreviewFeatures", $true)
+                }
+
+                # If there are policies to deploy, for each
+                if ($InputObject) {
+                    
+                    foreach ($Object in $InputObject) {
+
+                        # Remove properties that are not valid for when creating new objects
+                        if ($CleanUpProperties) {
+                            foreach ($Property in $CleanUpProperties) {
+                                $Object.PSObject.Properties.Remove("$Property")
+                            }
+                        }
+                        
+                        # Update displayname variable prior to object conversion to JSON
+                        $ObjectDisplayName = $Object.displayName
+
+                        # Convert Query object to JSON
+                        $Object = $Object | ConvertTo-Json -Depth 10
+
+                        # Output progress
+                        if ($InputObject.count -gt 1) {
+                            if ($ObjectDisplayName) {
+                                Write-Host "Processing Query $Counter of $($InputObject.count) with Display Name: $ObjectDisplayName"
+                            }
+                            else {
+                                Write-Host "Processing Query $Counter of $($InputObject.count)"
+                            }
+
+                            # Create progress bar
+                            $PercentComplete = (($counter / $InputObject.count) * 100)
+                            Write-Progress -Activity $Activity `
+                                -PercentComplete $PercentComplete `
+                                -CurrentOperation $ObjectDisplayName
+                        }
+                        else {
+                            if ($ObjectDisplayName) {
+                                Write-Host "Processing Query with Display Name: $ObjectDisplayName"
+                            }
+                            else {
+                                Write-Host "Processing Query"
+                            }
+                        }
+                        
+                        # Increment counter
+                        $counter++
+
+                        # Create record, with one second intervals to prevent throttling
+                        Start-Sleep -Seconds 1
+                        $AccessToken | Invoke-WTGraphQuery `
+                            @Parameters `
+                            -Body $Object
+                    }
+                }
+                else {
+                    $ErrorMessage = "There are no records to be created"
+                    Write-Error $ErrorMessage
+                }
+            }
+            else {
+                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                Write-Error $ErrorMessage
+                throw $ErrorMessage
+            }
+        }
+        catch {
+            $ErrorMessage = "An exception has occurred, common reasons include posting properties that are not valid"
+            Write-Error $ErrorMessage
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+            
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
 
 ### Invoke-WTGraphDelete
+You can access the [Invoke-WTGraphDelete][function-delete] function, on my GitHub.
 
+#### What does this do?
+- This passes the required variables of "Delete" and the Access Token to the query function, which corresponds to a 'Remove'
+- To remove objects, the IDs of the objects must be provided
+- For interactive runs, a progress status bar is displayed
+
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+function Invoke-WTGraphDelete {
+    [cmdletbinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $true,
+            ValueFromPipeLineByPropertyName = $true,
+            ValueFromPipeLine = $true,
+            HelpMessage = "The specific record ids to be returned"
+        )]
+        [Alias("id")]
+        [string[]]$IDs,
+        [parameter(
+            Mandatory = $true,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The uniform resource indicator"
+        )]
+        [string]$Uri,
+        [parameter(
+            Mandatory = $true,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The activity being performed"
+        )]
+        [string]$Activity
+    )
+    Begin {
+        try {
+
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Private\Invoke-WTGraphQuery.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+
+            # Variables
+            $Method = "Delete"
+            $Counter = 1
+
+            # Output current activity
+            Write-Host $Activity
+
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+            if ($AccessToken) {
+
+                # Build parameters
+                $Parameters = @{
+                    Method = $Method
+                }
+                if ($ExcludePreviewFeatures) {
+                    $Parameters.Add("ExcludePreviewFeatures", $true)
+                }
+
+                # If there are policies to be removed, 
+                if ($IDs) {
+                    foreach ($ID in $IDs) {
+
+                        # Output progress
+                        if ($IDs.count -gt 1) {
+                            Write-Host "Processing Query $Counter of $($IDs.count) with ID: $ID"
+
+                            # Create progress bar
+                            $PercentComplete = (($counter / $IDs.count) * 100)
+                            Write-Progress -Activity $Activity `
+                                -PercentComplete $PercentComplete `
+                                -CurrentOperation $ID
+                        }
+                        else {
+                            Write-Host "Processing Query with ID: $ID"
+                        }
+                        
+                        # Increment counter
+                        $counter++
+
+                        # Remove record, one second apart to prevent throttling
+                        Start-Sleep -Seconds 1
+                        $AccessToken | Invoke-WTGraphQuery `
+                            @Parameters `
+                            -Uri $Uri/$ID `
+                        | Out-Null
+                    }
+                }
+            }
+            else {
+                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                Write-Error $ErrorMessage
+                throw $ErrorMessage
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+            
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
+
+The next series of posts will cover the public functions that actually use these to get/create/update/remove resources in the API.
 
 [dan-blog]: https://danielchronlund.com/2020/11/26/azure-ad-conditional-access-policy-design-baseline-with-automatic-deployment-support/
 [function-get]: https://github.com/wesley-trust/GraphAPI/blob/main/Private/Invoke-WTGraphGet.ps1
@@ -353,3 +833,4 @@ function Invoke-WTGraphGet {
 [function-post]: https://github.com/wesley-trust/GraphAPI/blob/main/Private/Invoke-WTGraphPost.ps1
 [function-delete]: https://github.com/wesley-trust/GraphAPI/blob/main/Private/Invoke-WTGraphDelete.ps1
 [function-query]: https://github.com/wesley-trust/GraphAPI/blob/main/Private/Invoke-WTGraphQuery.ps1
+[function-tag]: https://github.com/wesley-trust/ToolKit/blob/main/Public/Invoke-WTPropertyTagging.ps1
