@@ -6,6 +6,7 @@ tags:
   - graphapi
   - tagging
   - toolkit
+  - powershell
 excerpt: "Using tags in Azure or AWS is a native experience, but to tag a response from the Graph API, required that I create a PowerShell function..."
 ---
 
@@ -25,9 +26,10 @@ As well as this being handy visual indicators, this reference number I need to u
 
 ## Obtaining a tagged object
 To get a tagged object, we use the [Invoke-WTPropertyTagging][function-link] function I wrote which is on my GitHub.
+
 Examples below:
 
-```
+```powershell
 # Clone repo that contains the ToolKit functions
 git clone --branch main --single-branch https://github.com/wesley-trust/ToolKit.git
 
@@ -73,6 +75,7 @@ $TaggedInputObject = Get-WTGraphAccessToken -InputObject $InputObject -PropertyT
   sessionControls : 
   state           : 
 ```
+
 ### What does this do?
 This takes an array of tags, as well as a single property to tag, and the input object that will be evaluated for the tags.
 - The inputobject can be a collection of objects, and the function contains a foreach loop to support that
@@ -85,7 +88,8 @@ This takes an array of tags, as well as a single property to tag, and the input 
 - I then add the rest of the properties to the hashtable, convert to an object, and return the new tagged object
 
 The complete function as at this date, is below, but please make sure you get the latest version from [GitHub][function-link]:
-```
+
+```powershell
 function Invoke-WTPropertyTagging {
     [cmdletbinding()]
     param (
@@ -130,34 +134,42 @@ function Invoke-WTPropertyTagging {
                 # Get Object properties
                 $ObjectProperties = ($Object | Get-Member -MemberType NoteProperty).name 
                 
-                # Split out Object information by defined delimiter(s) and tag(s)
-                $ObjectPropertySplit = ($Object.$PropertyToTag.split($MajorDelimiter)).Split($MinorDelimiter)
+                # Check if the property exists in the list of the object's properties
+                if ($PropertyToTag -in $ObjectProperties) {
+                    
+                    # Split out Object information by defined delimiter(s) and tag(s)
+                    $ObjectPropertySplit = ($Object.$PropertyToTag.split($MajorDelimiter)).Split($MinorDelimiter)
 
-                $TaggedInputObject = [ordered]@{}
-                foreach ($Tag in $Tags) {
+                    $TaggedInputObject = [ordered]@{}
+                    foreach ($Tag in $Tags) {
 
-                    # If the tag exists in the display name, 
-                    if ($ObjectPropertySplit -contains $Tag) {
+                        # If the tag exists in the display name, 
+                        if ($ObjectPropertySplit -contains $Tag) {
 
-                        # Get the object index, increment by one to obtain the tag's value index
-                        $TagIndex = $ObjectPropertySplit.IndexOf($Tag)
-                        $TagValueIndex = $TagIndex + 1
-                        $TagValue = $ObjectPropertySplit[$TagValueIndex]
+                            # Get the object index, increment by one to obtain the tag's value index
+                            $TagIndex = $ObjectPropertySplit.IndexOf($Tag)
+                            $TagValueIndex = $TagIndex + 1
+                            $TagValue = $ObjectPropertySplit[$TagValueIndex]
                         
-                        # Add tag to hashtable
-                        $TaggedInputObject.Add($Tag, $TagValue)
+                            # Add tag to hashtable
+                            $TaggedInputObject.Add($Tag, $TagValue)
+                        }
+                        else {
+                            $TaggedInputObject.Add($Tag, $null)
+                        }
                     }
-                    else {
-                        $TaggedInputObject.Add($Tag, $null)
+
+                    # Append all properties and return object
+                    foreach ($Property in $ObjectProperties) {
+                        $TaggedInputObject.Add("$Property", $Object.$Property)
                     }
-                }
 
-                # Append all properties and return object
-                foreach ($Property in $ObjectProperties) {
-                    $TaggedInputObject.Add("$Property", $Object.$Property)
+                    [pscustomobject]$TaggedInputObject
                 }
-
-                [pscustomobject]$TaggedInputObject
+                else {
+                    $ErrorMessage = "The property to tag '$PropertyToTag', does not exist for the input object"
+                    Write-Error $ErrorMessage
+                }
             }
         }
         catch {
@@ -176,4 +188,5 @@ function Invoke-WTPropertyTagging {
     }
 }
 ```
+
 [function-link]: https://github.com/wesley-trust/ToolKit/blob/main/Public/Invoke-WTPropertyTagging.ps1
