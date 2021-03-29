@@ -514,7 +514,7 @@ You can access the [Invoke-WTGraphPost][function-post] function, on my GitHub.
 
 #### What does this do?
 - This passes the required variables of "Post" and the Access Token to the query function, which corresponds to a create or 'New'
-- The input object could contain properties, such as dates that are readonly, as well as custom tags, so these are removed
+- The input object could contain properties such as dates that are readonly, as well as tags, so these are removed to prevent errors
 - For interactive runs, a progress status bar is displayed
 
 <details>
