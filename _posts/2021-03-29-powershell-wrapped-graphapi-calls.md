@@ -29,7 +29,7 @@ Let's break these down.
 Private functions are not intended to be directly called, so I'll be covering more of a top level overview of what each do, rather than providing example usage.
 
 ### Invoke-WTGraphQuery
-The first function is [Invoke-WTGraphQuery][function-query], which you can access from my GitHub, this is a refactored version of one [Daniel][dan-blog] created.
+The first function is [Invoke-WTGraphQuery][function-query], which you can access from my GitHub, this is a refactored version of one [Daniel][dan-blog] created. It's important to note, that using preview features, such as in Conditional Access, requires that the 'beta' API be used, this is selected by default.
 
 #### What does this do?
 - This allows you to specify the REST method and the Uri (uniform resource identifier), which executes against the Graph API
