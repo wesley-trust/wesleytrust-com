@@ -8,7 +8,7 @@ tags:
   - password-generator
   - toolkit
   - powershell
-excerpt: "Using tags in Azure or AWS is a native experience, but to tag a response from the Graph API, required that I create a PowerShell function..."
+excerpt: "There are many situations where you may encounter the need for a random string, a password, a unique identifier, here I use it for Azure AD groups..."
 ---
 
 This is an oldie, but a goodie, it's one of the first functions I wrote about four years ago which has come in super handy since. I originally wrote this to generate a random string that I could make use of as a password.
@@ -54,6 +54,8 @@ New-WTRandomString -CharacterLength $CharacterLength -Alphanumeric
 - The character sets are built up as individual objects, for each character, I randomise the character set by combining "Sort-Object" with "Get-Random"
   - Selecting the first character returned, and adding this to the object collection (which I then randomise again for good measure)
 - I then join all the objects together into a single string and return this
+
+The complete function as at this date, is below, but please make sure you get the latest version from [GitHub][function-link]:
 
 ```powershell
 function New-WTRandomString {
