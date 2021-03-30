@@ -93,7 +93,6 @@ function Invoke-WTGraphQuery {
     }
     Process {
         try {
-
             if ($AccessToken) {
 
                 # Change the API version if features in preview are to be excluded
@@ -419,7 +418,6 @@ function Invoke-WTGraphPatch {
     }
     Process {
         try {
-
             if ($AccessToken) {
 
                 # Build parameters
@@ -476,10 +474,15 @@ function Invoke-WTGraphPatch {
                             | Out-Null
                         }
                         else {
-                            $ErrorMessage = "The Conditional Access query does not contain an id, so cannot be updated"
+                            $ErrorMessage = "No IDs are specified, to update an object, an ID is required"
                             Write-Error $ErrorMessage
                         }
                     }
+                }
+                else {
+                    $ErrorMessage = "There are no objects to be updated, to update an object, one must be supplied"
+                    Write-Error $ErrorMessage
+                    throw $ErrorMessage
                 }
             }
             else {
@@ -653,8 +656,9 @@ function Invoke-WTGraphPost {
                     }
                 }
                 else {
-                    $ErrorMessage = "There are no records to be created"
+                    $ErrorMessage = "There are no objects to be created, to create an object, one must be supplied"
                     Write-Error $ErrorMessage
+                    throw $ErrorMessage
                 }
             }
             else {
@@ -770,7 +774,7 @@ function Invoke-WTGraphDelete {
                     $Parameters.Add("ExcludePreviewFeatures", $true)
                 }
 
-                # If there are policies to be removed, 
+                # If there are objects to be removed, 
                 if ($IDs) {
                     foreach ($ID in $IDs) {
 
@@ -798,6 +802,11 @@ function Invoke-WTGraphDelete {
                             -Uri $Uri/$ID `
                         | Out-Null
                     }
+                }
+                else {
+                    $ErrorMessage = "No IDs are specified, to remove an object, an ID is required"
+                    Write-Error $ErrorMessage
+                    throw $ErrorMessage
                 }
             }
             else {
