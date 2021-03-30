@@ -13,9 +13,9 @@ excerpt: "Using tags in Azure or AWS is a native experience, but to tag a respon
 
 This is an oldie, but a goodie, it's one of the first functions I wrote about four years ago which has come in super handy since. I originally wrote this to generate a random string that I could make use of as a password.
 
-The original version only allowed for each character from the character set to appear once in the final string, which was a fairly big limitation... _I try to keep the mantra that "perfect is the enemy of good", but I've since refactored this so that each character is randomised each time from the character set (which is slower but more random). What a difference a few years makes._
+The original version only allowed for each character from the character set to appear once in the final string, which was a fairly big limitation... _I try to keep the mantra that “perfect is the enemy of good”, but I’ve since refactored this so that each character is randomised each time from the character set (which is slower but more random)._
 
-The use case I'm going to talk about today, is using this for Azure AD groups. When creating an Azure AD group, there are certain required fields, one of which is mailNickName, which must be a unique string in the Azure AD tenant. Annoyingly, even for security groups, you must also specify this parameter.
+The use case for the Graph API, is using this for Azure AD groups. When creating an Azure AD group, there are certain required fields, one of which is mailNickName, which must be a unique string in the Azure AD tenant. _Annoyingly, even for security groups, you must also specify this parameter._
 
 ## Obtaining a random string
 To get a random string, we use the [New-WTRandomString][function-link] function I wrote which is on my GitHub.
@@ -49,9 +49,7 @@ New-WTRandomString -CharacterLength $CharacterLength -Alphanumeric
 ```
 
 ### What does this do?
-So, to start at the beginning, within PowerShell, it's super easy to get a random number. You just need to call "Get-Random", but if you want to get a random set of characters, or specify which characters to use, you need a little bit more PowerShell.
-
-- First we set the variables, these are the specific character sets for lowercase, uppercase, numbers and special characters
+- First the variables are set, these are the specific character sets for lowercase, uppercase, numbers and special characters
 - By default, all character sets are used with a length of 12, but you can also specify "Simplified" for letters only, as well as "Alphanumeric"
 - The character sets are built up as individual objects, for each character, I randomise the character set by combining "Sort-Object" with "Get-Random"
   - Selecting the first character returned, and adding this to the object collection (which I then randomise again for good measure)
