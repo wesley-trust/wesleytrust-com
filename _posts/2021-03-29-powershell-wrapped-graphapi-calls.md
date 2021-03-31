@@ -28,10 +28,10 @@ Let's break these down.
 ## Private Functions
 Private functions are not intended to be directly called, so I'll be covering more of a top level overview of what each do, rather than providing example usage.
 
-### Invoke-WTGraphQuery
+## Invoke-WTGraphQuery
 The first function is [Invoke-WTGraphQuery][function-query], which you can access from my GitHub, this is a refactored version of one [Daniel][dan-blog] created. It's important to note, that using preview features, such as in Conditional Access, requires that the 'beta' API be used, this is selected by default.
 
-#### What does this do?
+### What does this do?
 - This allows you to specify the REST method and the Uri (uniform resource identifier), which executes against the Graph API
 - This also sets up the required parameters, such as the headers and provides the Access Token in the request (provided by a public function)
 - The private functions below provide the method to this query function, and the public functions provide the Uri (such as 'groups' for Azure AD groups)
@@ -178,10 +178,10 @@ function Invoke-WTGraphQuery {
 
 </details>
 
-### Invoke-WTGraphGet
+## Invoke-WTGraphGet
 You can access the [Invoke-WTGraphGet][function-get] function, on my GitHub.
 
-#### What does this do?
+### What does this do?
 - This passes the required variables of "Get" and the Access Token to the query function
 - If there are specific IDs to get (rather than just performing a list) the call is altered as appropriate
 - For interactive runs, a progress status bar is displayed
@@ -339,10 +339,10 @@ function Invoke-WTGraphGet {
 
 </details>
 
-### Invoke-WTGraphPatch
+## Invoke-WTGraphPatch
 You can access the [Invoke-WTGraphPatch][function-patch] function, on my GitHub.
 
-#### What does this do?
+### What does this do?
 - This passes the required variables of "Patch" and the Access Token to the query function, which corresponds to an update or 'Edit'
 - The input object could contain properties such as dates that are readonly, as well as tags, so these are removed to prevent errors
 - For interactive runs, a progress status bar is displayed
@@ -512,10 +512,10 @@ function Invoke-WTGraphPatch {
 
 </details>
 
-### Invoke-WTGraphPost
+## Invoke-WTGraphPost
 You can access the [Invoke-WTGraphPost][function-post] function, on my GitHub.
 
-#### What does this do?
+### What does this do?
 - This passes the required variables of "Post" and the Access Token to the query function, which corresponds to a create or 'New'
 - The input object could contain properties such as dates that are readonly, as well as tags, so these are removed to prevent errors
 - For interactive runs, a progress status bar is displayed
@@ -688,10 +688,10 @@ function Invoke-WTGraphPost {
 
 </details>
 
-### Invoke-WTGraphDelete
+## Invoke-WTGraphDelete
 You can access the [Invoke-WTGraphDelete][function-delete] function, on my GitHub.
 
-#### What does this do?
+### What does this do?
 - This passes the required variables of "Delete" and the Access Token to the query function, which corresponds to a 'Remove'
 - To remove objects, the IDs of the objects must be provided
 - For interactive runs, a progress status bar is displayed
