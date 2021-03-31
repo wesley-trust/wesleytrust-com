@@ -33,8 +33,9 @@ Examples below:
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```powershell
-# Clone repo that contains the Graph API functions
+# Clone repo that contains the Graph API and ToolKit functions
 git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
+git clone --branch main --single-branch https://github.com/wesley-trust/ToolKit.git
 
 # Dot source function into memory
 . .\GraphAPI\Public\AzureAD\Groups\Get-WTAzureADGroup.ps1
@@ -435,8 +436,9 @@ Examples below:
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```powershell
-# Clone repo that contains the Graph API functions
+# Clone repo that contains the Graph API and ToolKit functions
 git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
+git clone --branch main --single-branch https://github.com/wesley-trust/ToolKit.git
 
 # Dot source function into memory
 . .\GraphAPI\Public\AzureAD\Groups\New-WTAzureADGroup.ps1
@@ -467,6 +469,7 @@ New-WTAzureADGroup -AccessToken $AccessToken -AzureADGroup $AzureADGroup
   - _The properties are cleaned up within the private patch function_
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - A mailNickName is a required unique parameter, if one is not specified in the Azure AD group, one is generated
+  - This uses the New-WTRandomString function
 - The private function is then called
 
 <details>
@@ -798,8 +801,9 @@ Examples below:
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```powershell
-# Clone repo that contains the Graph API functions
+# Clone repo that contains the Graph API and ToolKit functions
 git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
+git clone --branch main --single-branch https://github.com/wesley-trust/ToolKit.git
 
 # Dot source function into memory
 . .\GraphAPI\Public\AzureAD\Groups\Export-WTAzureADGroup.ps1
@@ -1088,3 +1092,4 @@ function Export-WTAzureADGroup {
 [function-new]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/New-WTAzureADGroup.ps1
 [function-remove]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Remove-WTAzureADGroup.ps1
 [function-export]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Export-WTAzureADGroup.ps1
+[blog-tagging]
