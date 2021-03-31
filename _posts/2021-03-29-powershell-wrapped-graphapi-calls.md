@@ -7,7 +7,6 @@ tags:
   - powershell
 excerpt: "For calling the Graph API, I wrote a series of private PowerShell functions, that public PowerShell functions will call to do the work..."
 ---
-## Calling the Graph API
 Calling an API at first can seem a bit daunting for an infrastructure guy, who may be thinking that APIs are just for developers, but using an object-orientated scripting language like PowerShell, can make it far less so. You can apply all the knowledge built up over the years within your comfort zone, and interact with APIs without having to learn another programming language.
 
 For me, to simplify things I broke down the API calls into small specific private functions, that would be in turn be called by public PowerShell functions, with the PowerShell approved verbs, matching each corresponding method of the API call:
@@ -25,8 +24,18 @@ These functions then call a generalised Microsoft Graph API Query function, so w
 
 Let's break these down.
 
-## Private Functions
+### Private Functions
 Private functions are not intended to be directly called, so I'll be covering more of a top level overview of what each do, rather than providing example usage.
+- [Invoke-WTGraphQuery](#invoke-wtgraphquery)
+  - [What does this do?](#what-does-this-do)
+- [Invoke-WTGraphGet](#invoke-wtgraphget)
+  - [What does this do?](#what-does-this-do-1)
+- [Invoke-WTGraphPatch](#invoke-wtgraphpatch)
+  - [What does this do?](#what-does-this-do-2)
+- [Invoke-WTGraphPost](#invoke-wtgraphpost)
+  - [What does this do?](#what-does-this-do-3)
+- [Invoke-WTGraphDelete](#invoke-wtgraphdelete)
+  - [What does this do?](#what-does-this-do-4)
 
 ## Invoke-WTGraphQuery
 The first function is [Invoke-WTGraphQuery][function-query], which you can access from my GitHub, this is a refactored version of one [Daniel][dan-blog] created. It's important to note, that using preview features, such as in Conditional Access, requires that the 'beta' API be used, this is selected by default.
