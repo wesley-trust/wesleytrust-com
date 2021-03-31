@@ -1,5 +1,5 @@
 ---
-title: "Manage Azure AD groups Using the Graph API with PowerShell"
+title: "Manage Azure AD groups using the Graph API with PowerShell"
 categories:
   - blog
 tags:
@@ -14,16 +14,18 @@ Managing Azure AD groups is a dependency for the Conditional Access policies, as
 This creates a complete solution that can be deployed in an Azure Pipeline.
 
 ### Managing Azure AD groups
-- Get-WTAzureADGroup
-- Edit-WTAzureADGroup
-- New-WTAzureADGroup
-- Remove-WTAzureADGroup
-- Export-WTAzureADGroup
+- [Get-WTAzureADGroup][function-get]
+- [Edit-WTAzureADGroup][function-edit]
+- [New-WTAzureADGroup][function-new]
+- [Remove-WTAzureADGroup][function-remove]
+- [Export-WTAzureADGroup][function-export]
 
 ## Managing Azure AD groups
 
 ### Get-WTAzureADGroup
-The first function is [Get-WTAzureADGroup][function-get], which you can access from my GitHub. This gets the Azure AD groups, including all, specific IDs and specific group properties. This is needed in order to compare what's in Azure AD, to what may need to be updated or removed within the pipeline.
+The first function is [Get-WTAzureADGroup][function-get], which you can access from my GitHub.
+
+This gets the Azure AD groups, including all, specific IDs and specific group properties. This is needed in order to compare what's in Azure AD, to what may need to be updated or removed within the pipeline.
 
 Examples below:
 
@@ -243,7 +245,9 @@ function Get-WTAzureADGroup {
 </details>
 
 ### Edit-WTAzureADGroup
-The next function is [Edit-WTAzureADGroup][function-edit], which you can access from my GitHub. This performs an edit (update) to the Azure AD groups. This allows changes such as the displayName to be altered for the group within the pipeline, if the config files have been updated with a new name.
+The next function is [Edit-WTAzureADGroup][function-edit], which you can access from my GitHub.
+
+This performs an edit (update) to the Azure AD groups. This allows changes such as the displayName to be altered for the group within the pipeline, if the config files have been updated with a new name.
 
 Examples below:
 
@@ -421,7 +425,9 @@ function Edit-WTAzureADGroup {
 </details>
 
 ### New-WTAzureADGroup
-The next function is [New-WTAzureADGroup][function-new], which you can access from my GitHub. This creates new Azure AD groups, which will typically be imported from config files, or defined by another function, such as a Conditional Access inclusion/exclusion group in the pipeline.
+The next function is [New-WTAzureADGroup][function-new], which you can access from my GitHub.
+
+This creates new Azure AD groups, which will typically be imported from config files, or defined by another function, such as a Conditional Access inclusion/exclusion group in the pipeline.
 
 Examples below:
 
@@ -620,7 +626,9 @@ function New-WTAzureADGroup {
 </details>
 
 ### Remove-WTAzureADGroup
-The next function is [Remove-WTAzureADGroup][function-remove], which you can access from my GitHub. This removes Azure AD groups by Id, and can be used in the pipeline for example, to remove Conditional Access inclusion/exclusion groups when a Conditional Access policy is deleted.
+The next function is [Remove-WTAzureADGroup][function-remove], which you can access from my GitHub.
+
+This removes Azure AD groups by Id, and can be used in the pipeline for example, to remove Conditional Access inclusion/exclusion groups when a Conditional Access policy is deleted.
 
 Examples below:
 
@@ -780,7 +788,9 @@ function Remove-WTAzureADGroup {
 </details>
 
 ### Export-WTAzureADGroup
-The last function is [Export-WTAzureADGroup][function-export], which you can access from my GitHub. This exports the group config information from Azure AD to a JSON file. Within the pipeline this allows newly created or updated groups to have the updated config committed back to the repo for version control.
+The last function is [Export-WTAzureADGroup][function-export], which you can access from my GitHub.
+
+This exports the group config information from Azure AD to a JSON file. Within the pipeline this allows newly created or updated groups to have the updated config committed back to the repo for version control.
 
 Examples below:
 
