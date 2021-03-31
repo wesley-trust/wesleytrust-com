@@ -20,9 +20,7 @@ This creates a complete solution that can be deployed in an Azure Pipeline.
 - [Remove-WTAzureADGroup][function-remove]
 - [Export-WTAzureADGroup][function-export]
 
-## Managing Azure AD groups
-
-### Get-WTAzureADGroup
+## Get-WTAzureADGroup
 The first function is [Get-WTAzureADGroup][function-get], which you can access from my GitHub.
 
 This gets the Azure AD groups, including all, specific IDs and specific group properties. This is needed in order to compare what's in Azure AD, to what may need to be updated or removed within the pipeline.
@@ -66,7 +64,7 @@ Get-WTAzureADGroup -AccessToken $AccessToken -IDs $IDs
 
 </details>
 
-#### What does this do?
+### What does this do?
 - This sets specific variables, including the activity, the tags to be evaluated against the groups, and the Graph Uri
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - A set of group properties are returned by default, but a select query to return just specific properties is included
@@ -245,7 +243,7 @@ function Get-WTAzureADGroup {
 
 </details>
 
-### Edit-WTAzureADGroup
+## Edit-WTAzureADGroup
 The next function is [Edit-WTAzureADGroup][function-edit], which you can access from my GitHub.
 
 This performs an edit (update) to the Azure AD groups. This allows changes such as the displayName to be altered for the group within the pipeline, if the config files have been updated with a new name.
@@ -282,7 +280,7 @@ Edit-WTAzureADGroup -AccessToken $AccessToken -AzureADGroup $AzureADGroup
 
 </details>
 
-#### What does this do?
+### What does this do?
 - This sets specific variables, including the activity and the Graph Uri
   - As well as properties to remove from the input that would cause errors as they are readonly (or not recognised)
   - _The properties are cleaned up within the private patch function_
@@ -425,7 +423,7 @@ function Edit-WTAzureADGroup {
 
 </details>
 
-### New-WTAzureADGroup
+## New-WTAzureADGroup
 The next function is [New-WTAzureADGroup][function-new], which you can access from my GitHub.
 
 This creates new Azure AD groups, which will typically be imported from config files, or defined by another function, such as a Conditional Access inclusion/exclusion group in the pipeline.
@@ -463,7 +461,7 @@ New-WTAzureADGroup -AccessToken $AccessToken -AzureADGroup $AzureADGroup
 
 </details>
 
-#### What does this do?
+### What does this do?
 - This sets specific variables, including the activity and the Graph Uri
   - As well as properties to remove from the input that would cause errors as they are readonly (or not recognised)
   - _The properties are cleaned up within the private patch function_
@@ -628,7 +626,7 @@ function New-WTAzureADGroup {
 
 </details>
 
-### Remove-WTAzureADGroup
+## Remove-WTAzureADGroup
 The next function is [Remove-WTAzureADGroup][function-remove], which you can access from my GitHub.
 
 This removes Azure AD groups by Id, and can be used in the pipeline for example, to remove Conditional Access inclusion/exclusion groups when a Conditional Access policy is deleted.
@@ -658,7 +656,7 @@ Remove-WTAzureADGroup -AccessToken $AccessToken -IDs $IDs
 
 </details>
 
-#### What does this do?
+### What does this do?
 - This sets specific variables, including the activity and the Graph Uri
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - The private function is then called
@@ -790,7 +788,7 @@ function Remove-WTAzureADGroup {
 
 </details>
 
-### Export-WTAzureADGroup
+## Export-WTAzureADGroup
 The last function is [Export-WTAzureADGroup][function-export], which you can access from my GitHub.
 
 This exports the group config information from Azure AD to a JSON file. Within the pipeline this allows newly created or updated groups to have the updated config committed back to the repo for version control.
@@ -825,7 +823,7 @@ Export-WTAzureADGroup -AccessToken $AccessToken -Path $Path -IDs $IDs
 
 </details>
 
-#### What does this do?
+### What does this do?
 - This sets specific variables, including optional properties to cleanup from the config prior to export
   - As well as the RegEx for unsupported characters for Windows, which are replaced with underscores
   - Plus the tags to be evaluated for the groups, as well as the property 'displayName' to tag
