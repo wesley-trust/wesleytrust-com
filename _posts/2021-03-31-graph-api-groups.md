@@ -9,16 +9,21 @@ tags:
   - azuread
 excerpt: "The first of the public functions is managing Azure AD groups, this is a dependency for the Conditional Access policies, so seems a good place to start..."
 ---
-Managing Azure AD groups is a dependency for the Conditional Access policies, as for (almost) every policy we'll be creating both an inclusion and exclusion group. I'll also be creating nested groups, such as dynamic ones including "All Users" and "All Guests".
+Managing Azure AD groups is a dependency for the Conditional Access policies, as for (almost) every policy we'll be creating both an inclusion and exclusion group. I'll also be creating nested groups, such as dynamic groups such as "All Users" and "All Guests".
 
 This creates a complete solution that can be deployed in an Azure Pipeline.
 
 ### Managing Azure AD groups
-- [Get-WTAzureADGroup][function-get]
-- [Edit-WTAzureADGroup][function-edit]
-- [New-WTAzureADGroup][function-new]
-- [Remove-WTAzureADGroup][function-remove]
-- [Export-WTAzureADGroup][function-export]
+- [Get-WTAzureADGroup](#get-wtazureadgroup)
+  - [What does this do?](#what-does-this-do)
+- [Edit-WTAzureADGroup](#edit-wtazureadgroup)
+  - [What does this do?](#what-does-this-do-1)
+- [New-WTAzureADGroup](#new-wtazureadgroup)
+  - [What does this do?](#what-does-this-do-2)
+- [Remove-WTAzureADGroup](#remove-wtazureadgroup)
+  - [What does this do?](#what-does-this-do-3)
+- [Export-WTAzureADGroup](#export-wtazureadgroup)
+  - [What does this do?](#what-does-this-do-4)
 
 ## Get-WTAzureADGroup
 The first function is [Get-WTAzureADGroup][function-get], which you can access from my GitHub.
