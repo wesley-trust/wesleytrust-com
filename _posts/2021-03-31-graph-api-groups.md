@@ -469,7 +469,7 @@ New-WTAzureADGroup -AccessToken $AccessToken -AzureADGroup $AzureADGroup
   - _The properties are cleaned up within the private patch function_
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - A mailNickName is a required unique parameter, if one is not specified in the Azure AD group, one is generated
-  - This uses the New-WTRandomString function
+  - This uses the [New-WTRandomString][blog-tagging] function to generate a string, which is concatenated with the Service variable
 - The private function is then called
 
 <details>
@@ -1092,4 +1092,4 @@ function Export-WTAzureADGroup {
 [function-new]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/New-WTAzureADGroup.ps1
 [function-remove]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Remove-WTAzureADGroup.ps1
 [function-export]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Export-WTAzureADGroup.ps1
-[blog-tagging]
+[blog-tagging]: /blog/generating-random-string
