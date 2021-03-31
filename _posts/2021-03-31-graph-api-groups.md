@@ -39,7 +39,7 @@ Examples below:
 git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
 
 # Dot source function into memory
-. .\GraphAPI\Public\Authentication\Get-WTAzureADGroup.ps1
+. .\GraphAPI\Public\AzureAD\Groups\Get-WTAzureADGroup.ps1
 
 # Define Variables
 $ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
@@ -246,4 +246,183 @@ function Get-WTAzureADGroup {
 
 </details>
 
+### Edit-WTAzureADGroup
+The next function is [Edit-WTAzureADGroup][function-edit], which you can access from my GitHub. This performs an edit (update) to the Azure AD groups. This allows changes such as the displayName to be altered for the group within the pipeline, if the config files have been updated with a new name.
+
+Examples below:
+
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+# Clone repo that contains the Graph API functions
+git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
+
+# Dot source function into memory
+. .\GraphAPI\Public\AzureAD\Groups\Edit-WTAzureADGroup.ps1
+
+# Define Variables
+$AccessToken = "HWYLAqz6PipzzdtPwRnSN0Socozs2lZ7nsFky90UlDGTmaZY1foVojTUqFgm1vw0iBslogoP"
+$Id = "gve33497-hb48-983s-5fg36-dsf234kafs24"
+$DisplayName = "SVC-CA; Updated displayName"
+
+# Create input object
+$AzureADGroup = [pscusomobject@{
+  id          = $Id
+  displayName = $DisplayName
+}
+
+# Pipe the AzureAD group to the function, specify an access token previously obtained
+$AzureADGroup | Edit-WTAzureADGroup -AccessToken $AccessToken
+
+# Or specify each parameter individually, including an access token previously obtained
+Edit-WTAzureADGroup -AccessToken $AccessToken -AzureADGroup $AzureADGroup
+```
+
+</details>
+
+#### What does this do?
+- This sets specific variables, including the activity and the Graph Uri
+  - As well as properties to remove from the input that would cause errors as they are readonly (or not recognised)
+  - _The properties are cleaned up within the private patch function_
+- An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
+- An id is required in order to update a group, but this check is done within the private patch function
+- The private function is then called
+
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+function Edit-WTAzureADGroup {
+    [cmdletbinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client ID for the Azure AD service principal with Azure AD Graph permissions"
+        )]
+        [string]$ClientID,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client secret for the Azure AD service principal with Azure AD Graph permissions"
+        )]
+        [string]$ClientSecret,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The initial domain (onmicrosoft.com) of the tenant"
+        )]
+        [string]$TenantDomain,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            ValueFromPipeLine = $true,
+            HelpMessage = "The Azure AD groups to remove, a group must have a valid id"
+        )]
+        [Alias('AzureADGroup', 'GroupDefinition')]
+        [pscustomobject]$AzureADGroups
+    )
+    Begin {
+        try {
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
+                "GraphAPI\Private\Invoke-WTGraphPatch.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+
+            # Variables
+            $Activity = "Updating Azure AD Groups"
+            $Uri = "groups"
+            $CleanUpProperties = (
+                "createdDateTime",
+                "modifiedDateTime",
+                "SideIndicator"
+            )
+
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+
+            # If there is no access token, obtain one
+            if (!$AccessToken) {
+                $AccessToken = Get-WTGraphAccessToken `
+                    -ClientID $ClientID `
+                    -ClientSecret $ClientSecret `
+                    -TenantDomain $TenantDomain
+            }
+            if ($AccessToken) {
+
+                # Build Parameters
+                $Parameters = @{
+                    AccessToken       = $AccessToken
+                    Uri               = $Uri
+                    CleanUpProperties = $CleanUpProperties
+                    Activity          = $Activity
+                }
+                if ($ExcludePreviewFeatures) {
+                    $Parameters.Add("ExcludePreviewFeatures", $true)
+                }
+
+                # If there are groups to update, foreach group with a group id
+                if ($AzureADGroups) {
+                    
+                    # Update groups
+                    Invoke-WTGraphPatch `
+                        @Parameters `
+                        -InputObject $AzureADGroups
+                }
+                else {
+                    $ErrorMessage = "There are no Azure AD groups to be updated"
+                    Write-Error $ErrorMessage
+                }
+            }
+            else {
+                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                Write-Error $ErrorMessage
+                throw $ErrorMessage
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+            
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
+
 [function-get]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Get-WTAzureADGroup.ps1
+[function-edit]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Edit-WTAzureADGroup.ps1
