@@ -101,6 +101,8 @@ footer:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/wesley-trust"
+    - label: "Terms and Privacy Policy"
+      url: "/terms"
 
 defaults:
   # _posts
