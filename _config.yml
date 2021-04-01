@@ -46,12 +46,15 @@ permalink: /:categories/:title/
 paginate: 4 # amount of posts to show
 paginate_path: /page:num/
 timezone: Europe/London # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+JEKYLL_ENV=production
 
+# Analytics
 analytics:
   provider: "google-gtag"
   google:
     tracking_id: "G-0ZZWEBK1P5"
     anonymize_ip: false # default
+
 
 include:
   - _pages
