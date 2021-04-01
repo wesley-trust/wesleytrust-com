@@ -16,7 +16,7 @@ Managing Azure AD group members is a dependency for the Conditional Access polic
 
 This creates a complete solution that can be deployed in an Azure Pipeline.
 
-### Managing Azure AD group relationships
+### Updating Azure AD group relationships
 - [Get-WTAzureADGroupRelationship](#get-wtazureadgrouprelationship)
   - [What does this do?](#what-does-this-do)
 - [New-WTAzureADGroupRelationship](#new-wtazureadgrouprelationship)
