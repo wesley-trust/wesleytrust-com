@@ -20,6 +20,7 @@
 
 title: "Undercover hero | A tech blog by Wesley Trust"
 masthead_title: "Undercover hero"
+title_separator: "|"
 name: "Wesley Trust"
 email: info@wesleytrust.com
 locale : "en-GB"
