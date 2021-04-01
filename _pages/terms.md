@@ -30,7 +30,7 @@ For more information about cookies, including instructions should you wish to di
 
 #### CloudFlare
 
-CloudFlare provides services to this site to maximise network resources, manage traffic and protect from malicious traffic.
+CloudFlare provide services to this site to maximise network resources, manage traffic and protect from malicious traffic.
 
 [More information about the cookies set by CloudFlare is available here](https://support.cloudflare.com/hc/en-us/articles/200170156-Understanding-the-Cloudflare-Cookies).
 
