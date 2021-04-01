@@ -1,5 +1,5 @@
 ---
-title: "Update Azure AD group relationships using the Graph API with PowerShell"
+title: "Update Azure AD group relationships via the Graph API & PowerShell"
 categories:
   - blog
 tags:
@@ -25,7 +25,7 @@ This creates a complete solution that can be deployed in an Azure Pipeline.
 ## Get-WTAzureADGroupRelationship
 The first function is [Get-WTAzureADGroupRelationship][function-get], which you can access from my GitHub.
 
-This gets the Azure AD group owners, memberOf or members, for the specific group ids specified.
+This gets the Azure AD group owners, memberOf or members, for the specific group IDs specified.
 
 Examples below:
 
@@ -43,7 +43,7 @@ git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI
 $ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
 $ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
 $TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
-$IDs = @("gkg23497-43gf-983s-5fg36-dsf234kafs24","hsw23497-hg5d-t59b-fd35k-dsf234kafs24")
+$GroupIDs = @("gkg23497-43gf-983s-5fg36-dsf234kafs24","hsw23497-hg5d-t59b-fd35k-dsf234kafs24")
 $AccessToken = "HWYLAqz6PipzzdtPwRnSN0Socozs2lZ7nsFky90UlDGTmaZY1foVojTUqFgm1vw0iBslogoP"
 $Relationship = "members"
 
@@ -52,24 +52,24 @@ $Parameters = @{
   ClientID     = $ClientID
   ClientSecret = $ClientSecret
   TenantDomain = $TenantDomain
-  IDs          = $IDs
+  GroupIDs     = $GroupIDs
   Relationship = $Relationship
 }
 
-# Get the members for the specific group ids, splat the parameters (including the service principal to obtain an access token)
+# Get the members for the specific group, splat the parameters (including the service principal to obtain an access token)
 Get-WTAzureADGroupRelationship @Parameters
 
 # Or pipe specific group IDs to get the members, including an access token previously obtained
-$IDs | Get-WTAzureADGroupRelationship -AccessToken $AccessToken -Relationship $Relationship
+$GroupIDs | Get-WTAzureADGroupRelationship -AccessToken $AccessToken -Relationship $Relationship
 
 # Or specify each parameter individually, including an access token previously obtained
-Get-WTAzureADGroupRelationship -AccessToken $AccessToken -IDs $IDs -Relationship $Relationship
+Get-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupIDs $GroupIDs -Relationship $Relationship
 ```
 
 </details>
 
 ### What does this do?
-- This sets specific variables, including the activity, the tags to be evaluated against the relationships, and the Graph Uri
+- This sets specific variables, including the activity, the tags to be evaluated in the relationships, and the Graph Uri
   - A group relationship could consist of owners, memberOf or members which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - The private function is then called, with the query altered as appropriate depending on the parameters
@@ -223,7 +223,7 @@ function Get-WTAzureADGroupRelationship {
 ## New-WTAzureADGroupRelationship
 The next function is [New-WTAzureADGroupRelationship][function-new], which you can access from my GitHub.
 
-This creates new Azure AD group relationships, which can be either owners, memberOf or members this is used within the pipeline to add members to the Conditional Access inclusion/exclusion groups created in the pipeline.
+This creates new Azure AD group relationships, which can be either owners, memberOf or members, this is used within the pipeline to add members to the Conditional Access inclusion/exclusion groups created in the pipeline.
 
 Examples below:
 
@@ -256,7 +256,7 @@ $Parameters = @{
   Relationship      = $Relationship
 }
 
-# Create new relationships with the specified group, splat the parameters (including the service principal to obtain an access token)
+# Add new relationships to the specified group, splat the parameters (including the service principal to obtain an access token)
 New-WTAzureADGroupRelationship @Parameters
 
 # Or pipe specific relationship IDs to create the association with the group, including an access token previously obtained
@@ -272,8 +272,8 @@ New-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -Rela
 - This sets specific variables, including the activity and the Graph Uri
   - A group relationship could consist of owners, memberOf or members which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
-- A group id is required to add a relationship, this forms part of the Uri, the request must in a specific format
-- To add a relationship, an object must be created in a specific format, this is done for each relationship id
+- A group ID is required to add a relationship, this forms part of the Uri, the request must in a specific format
+- To add a relationship, an object must be created in a specific format, this is done for each relationship ID
 - The private function is then called with the collection of object relationships to be added to the group
 
 <details>

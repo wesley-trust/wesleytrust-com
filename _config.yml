@@ -101,6 +101,8 @@ footer:
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
       url: "https://github.com/wesley-trust"
+    - icon: "https://github.com/wesley-trust/wesleytrust-com/actions/workflows/azure-static-web-apps-jolly-mushroom-0f7868c03.yml/badge.svg"
+      url: "https://github.com/wesley-trust/wesleytrust-com"
     - label: "Terms and Privacy Policy"
       url: "/terms"
 
