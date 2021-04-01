@@ -3,6 +3,8 @@ permalink: /terms/
 title: "Terms and Privacy Policy"
 layout: single
 toc: false
+sidebar:
+    nav: "side-links"
 ---
 
 ## Privacy Policy

@@ -18,13 +18,15 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Undercover hero
+title: "Undercover hero | A tech blog by Wesley Trust"
+masthead_title: "Undercover hero"
+title_separator: "|"
 name: "Wesley Trust"
 email: info@wesleytrust.com
 locale : "en-GB"
 logo: "/assets/images/88x88.png"
 description: >- # this means to ignore newlines until "baseurl:"
-  Senior Cloud Architect, Focused on Infrastructure as Code, DevOps, Scripting and Automation.
+  A blog by Wesley Trust, Senior Cloud Architect, Focused on Infrastructure as Code, DevOps, Scripting and Automation.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://www.wesleytrust.com" # the base hostname & protocol for your site, e.g. http://example.com
 #twitter_username: jekyllrb

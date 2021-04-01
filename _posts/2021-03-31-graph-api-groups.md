@@ -60,7 +60,7 @@ $ServicePrincipal = @{
 # Get all groups, splat the hashtable containing the service principal to obtain an access token
 Get-WTAzureADGroup @ServicePrincipal
 
-# Pipe specific IDs to get to the function, splat the hashtable containing the service principal
+# Or pipe specific IDs to get to the function, splat the hashtable containing the service principal
 $IDs | Get-WTAzureADGroup @ServicePrincipal
 
 # Or specify each parameter individually, including an access token previously obtained
@@ -819,7 +819,7 @@ $Path = "GraphAPIConfig\AzureAD\Groups"
 # Export all groups from Azure AD to the path specified, including an access token previously obtained
 Export-WTAzureADGroup -AccessToken $AccessToken -Path $Path
 
-# Pipe specific IDs to the function to export to the path specified, including an access token previously obtained
+# Or pipe specific IDs to the function to export to the path specified, including an access token previously obtained
 $IDs | Export-WTAzureADGroup -AccessToken $AccessToken -Path $Path
 
 # Or specify each parameter individually, including an access token previously obtained

@@ -1,15 +1,18 @@
 ---
-title: "Update Azure AD group relationships using the Graph API with PowerShell"
+title: "Update Azure AD group relationships via the Graph API & PowerShell"
 categories:
   - blog
 tags:
   - graphapi
   - powershell
   - groups
+  - group-relationships
+  - group-members
+  - group-owners
   - azuread
 excerpt: "For Azure AD groups, owners or members of the group are defined as group 'relationships' this is a series of PowerShell functions to manage these..."
 ---
-Managing Azure AD group members is a dependency for the Conditional Access policies, as for (almost) every policy we'll be adding members to groups. Such as the nested groups that will be added to the inclusion/exclusion groups that are created within the pipeline.
+Managing Azure AD group members is a dependency for the Conditional Access policies, as for (almost) every policy we'll be adding members to groups. Such as the nested groups that will be added to the inclusion/exclusion groups created within the pipeline.
 
 This creates a complete solution that can be deployed in an Azure Pipeline.
 
@@ -22,7 +25,7 @@ This creates a complete solution that can be deployed in an Azure Pipeline.
 ## Get-WTAzureADGroupRelationship
 The first function is [Get-WTAzureADGroupRelationship][function-get], which you can access from my GitHub.
 
-This gets the Azure AD group members, including all, specific IDs and specific group properties. This is needed in order to compare what's in Azure AD, to what may need to be updated or removed within the pipeline.
+This gets the Azure AD group owners, memberOf or members, for the specific group IDs specified.
 
 Examples below:
 
@@ -40,33 +43,35 @@ git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI
 $ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
 $ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
 $TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
-$IDs = @("gkg23497-43gf-983s-5fg36-dsf234kafs24","hsw23497-hg5d-t59b-fd35k-dsf234kafs24")
+$GroupIDs = @("gkg23497-43gf-983s-5fg36-dsf234kafs24","hsw23497-hg5d-t59b-fd35k-dsf234kafs24")
 $AccessToken = "HWYLAqz6PipzzdtPwRnSN0Socozs2lZ7nsFky90UlDGTmaZY1foVojTUqFgm1vw0iBslogoP"
+$Relationship = "members"
 
 # Create hashtable
-$ServicePrincipal = @{
+$Parameters = @{
   ClientID     = $ClientID
   ClientSecret = $ClientSecret
   TenantDomain = $TenantDomain
+  GroupIDs     = $GroupIDs
+  Relationship = $Relationship
 }
 
-# Get all groups, splat the hashtable containing the service principal to obtain an access token
-Get-WTAzureADGroupRelationship @ServicePrincipal
+# Get the members for the specific group, splat the parameters (including the service principal to obtain an access token)
+Get-WTAzureADGroupRelationship @Parameters
 
-# Pipe specific IDs to get to the function, splat the hashtable containing the service principal
-$IDs | Get-WTAzureADGroupRelationship @ServicePrincipal
+# Or pipe specific group IDs to get the members, including an access token previously obtained
+$GroupIDs | Get-WTAzureADGroupRelationship -AccessToken $AccessToken -Relationship $Relationship
 
 # Or specify each parameter individually, including an access token previously obtained
-Get-WTAzureADGroupRelationship -AccessToken $AccessToken -IDs $IDs
+Get-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupIDs $GroupIDs -Relationship $Relationship
 ```
 
 </details>
 
 ### What does this do?
-- This sets specific variables, including the activity, the tags to be evaluated against the groups, and the Graph Uri
+- This sets specific variables, including the activity, the tags to be evaluated in the relationships, and the Graph Uri
+  - A group relationship could consist of owners, memberOf or members which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
-- A set of group properties are returned by default, but a select query to return just specific properties is included
-  - I tidy this up removing spaces, as well as adding the requirement of id and displayName for tagging
 - The private function is then called, with the query altered as appropriate depending on the parameters
 
 <details>
@@ -186,7 +191,7 @@ function Get-WTAzureADGroupRelationship {
                     $QueryResponse
                 }
                 else {
-                    $WarningMessage = "No group relationship exists in Azure AD for any of the group IDs specified"
+                    $WarningMessage = "No group $Relationship exist in Azure AD for any of the group IDs specified"
                     Write-Warning $WarningMessage
                 }
             }
@@ -216,9 +221,9 @@ function Get-WTAzureADGroupRelationship {
 </details>
 
 ## New-WTAzureADGroupRelationship
-The next function is [New-WTAzureADGroup][function-new], which you can access from my GitHub.
+The next function is [New-WTAzureADGroupRelationship][function-new], which you can access from my GitHub.
 
-This performs an edit (update) to the Azure AD groups. This allows changes such as the displayName to be altered for the group within the pipeline, if the config files have been updated with a new name.
+This creates new Azure AD group relationships, which can be either owners, memberOf or members, this is used within the pipeline to add members to the Conditional Access inclusion/exclusion groups created in the pipeline.
 
 Examples below:
 
@@ -233,32 +238,43 @@ git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI
 . .\GraphAPI\Public\AzureAD\Groups\Relationships\New-WTAzureADGroupRelationship.ps1
 
 # Define Variables
+$ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
+$ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
+$TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
+$GroupID = "gb5d3497-78jb-983s-hb5s6-gbv334kafs24"
+$RelationshipIDs = @("gkg23497-43gf-983s-5fg36-dsf234kafs24","hsw23497-hg5d-t59b-fd35k-dsf234kafs24")
 $AccessToken = "HWYLAqz6PipzzdtPwRnSN0Socozs2lZ7nsFky90UlDGTmaZY1foVojTUqFgm1vw0iBslogoP"
-$Id = "gve33497-hb48-983s-5fg36-dsf234kafs24"
-$DisplayName = "SVC-CA; Updated displayName"
+$Relationship = "members"
 
-# Create input object
-$AzureADGroup = [PSCustomObject]@{
-  id          = $Id
-  displayName = $DisplayName
+# Create hashtable
+$Parameters = @{
+  ClientID          = $ClientID
+  ClientSecret      = $ClientSecret
+  TenantDomain      = $TenantDomain
+  GroupID           = $GroupID
+  RelationshipIDs   = $RelationshipIDs
+  Relationship      = $Relationship
 }
 
-# Pipe the Azure AD group to the function, specify an access token previously obtained
-$AzureADGroup | New-WTAzureADGroupRelationship -AccessToken $AccessToken
+# Add new relationships to the specified group, splat the parameters (including the service principal to obtain an access token)
+New-WTAzureADGroupRelationship @Parameters
+
+# Or pipe specific relationship IDs to create the association with the group, including an access token previously obtained
+$RelationshipIDs | New-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -Relationship $Relationship
 
 # Or specify each parameter individually, including an access token previously obtained
-New-WTAzureADGroupRelationship -AccessToken $AccessToken -AzureADGroup $AzureADGroup
+New-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -RelationshipIDs $RelationshipIDs -Relationship $Relationship
 ```
 
 </details>
 
 ### What does this do?
 - This sets specific variables, including the activity and the Graph Uri
-  - As well as properties to remove from the input that would cause errors as they are readonly (or not recognised)
-  - _The properties are cleaned up within the private patch function_
+  - A group relationship could consist of owners, memberOf or members which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
-- An id is required in order to update a group, but this check is done within the private patch function
-- The private function is then called
+- A group ID is required to add a relationship, this forms part of the Uri, the request must in a specific format
+- To add a relationship, an object must be created in a specific format, this is done for each relationship ID
+- The private function is then called with the collection of object relationships to be added to the group
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
@@ -336,12 +352,6 @@ function New-WTAzureADGroupRelationship {
             # Variables
             $Activity = "Adding Azure AD group $Relationship"
             $Uri = "groups"
-            $CleanUpProperties = (
-                "id",
-                "createdDateTime",
-                "modifiedDateTime"
-            )
-
         }
         catch {
             Write-Error -Message $_.Exception
@@ -413,7 +423,6 @@ function New-WTAzureADGroupRelationship {
 ```
 
 </details>
-
 
 [function-get]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Relationship/Get-WTAzureADGroupRelationship.ps1
 [function-new]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Relationship/New-WTAzureADGroupRelationship.ps1

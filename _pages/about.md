@@ -1,6 +1,8 @@
 ---
 permalink: /about/
 title: "About"
+sidebar:
+    nav: "side-links"
 ---
 
 I am inquisitive, creative, love problem solving and have a passion for technology, as well as interests in badminton, film and music. I am social, enjoy tech meet ups, tech conferences and drinks with friends.
