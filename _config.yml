@@ -107,6 +107,8 @@ footer:
     - label: "wesleytrust-com"
       image: "https://github.com/wesley-trust/wesleytrust-com/actions/workflows/azure-static-web-apps-jolly-mushroom-0f7868c03.yml/badge.svg"
       url: "https://github.com/wesley-trust/wesleytrust-com"
+    - image: "https://github.com/wesley-trust/wesleytrust-com/actions/workflows/azure-static-web-apps-jolly-mushroom-0f7868c03.yml/badge.svg"
+      url: "https://github.com/wesley-trust/wesleytrust-com"
     - label: "Terms and Privacy Policy"
       url: "/terms"
 
