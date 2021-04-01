@@ -105,7 +105,7 @@ footer:
       url: "https://github.com/wesley-trust"
     - label: "Terms and Privacy Policy"
       url: "/terms"
-]   - label: "Sitemap"
+    - label: "Sitemap"
       url: "/sitemap"
 
 defaults:
