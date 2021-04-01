@@ -462,10 +462,10 @@ $Parameters = @{
   Relationship      = $Relationship
 }
 
-# Add new relationships to the specified group, splat the parameters (including the service principal to obtain an access token)
+# Remove relationships from the specified group, splat the parameters (including the service principal to obtain an access token)
 Remove-WTAzureADGroupRelationship @Parameters
 
-# Or pipe specific relationship IDs to create the association with the group, including an access token previously obtained
+# Or pipe specific relationship IDs to remove the association with the group, including an access token previously obtained
 $RelationshipIDs | Remove-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -Relationship $Relationship
 
 # Or specify each parameter individually, including an access token previously obtained
@@ -478,7 +478,7 @@ Remove-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -R
 - This sets specific variables, including the activity and the Graph Uri
   - A group relationship could consist of owners, memberOf or members which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
-- A group ID is required to remove a relationship, the Relationship IDs are also specified as part of the Uri
+- A group ID is required to remove a relationship, the relationship IDs are also specified as part of the Uri
 - The private function is then called for each ID to be removed from the group
 
 <details>
@@ -529,14 +529,14 @@ function Remove-WTAzureADGroupRelationship {
         [parameter(
             Mandatory = $true,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The group relationship to add, such as group members or owners"
+            HelpMessage = "The group relationship to remove, such as group members or owners"
         )]
         [ValidateSet("members", "owners")]
         [string]$Relationship,
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The relationship ids of the objects to add to the group"
+            HelpMessage = "The relationship ids of the objects to remove from the group"
         )]
         [Alias('RelationshipID', 'GroupRelationshipID', 'GroupRelationshipIDs')]
         [string[]]$RelationshipIDs
