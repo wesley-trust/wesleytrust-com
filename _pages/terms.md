@@ -2,12 +2,12 @@
 permalink: /terms/
 title: "Terms and Privacy Policy"
 layout: single
-toc: true
+toc: false
 ---
 
 ## Privacy Policy
 
-This Privacy Policy outlines the types of personal information that is received and collected and how it is used.
+This Privacy Policy outlines the types of personal information that is received and collected as well as how it is used.
 
 ### Log Files
 
@@ -28,9 +28,9 @@ When you visit this site "convenience" cookies are stored by your web browser to
 
 For more information about cookies, including instructions should you wish to disable them, is [available here](https://www.cookiesandyou.com/).
 
-#### CloudFlare
+#### Cloudflare
 
-CloudFlare provide services to this site to maximise network resources, manage traffic and protect from malicious traffic.
+Cloudflare provide services to this site to maximise network resources, manage traffic and protect from malicious traffic.
 
 [More information about the cookies set by CloudFlare is available here](https://support.cloudflare.com/hc/en-us/articles/200170156-Understanding-the-Cloudflare-Cookies).
 
