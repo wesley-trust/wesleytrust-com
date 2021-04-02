@@ -21,6 +21,10 @@ For managing Azure AD groups in a pipeline, I'm taking a three stage approach co
 
 This post covers the YAML and PowerShell involved in the first stage of importing and validating the input. The PowerShell can also be called directly.
 
+| Current Validate Status |
+|-------------------------|
+|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
+
 ## Invoke-WTValidateAzureADGroup
 This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
 
