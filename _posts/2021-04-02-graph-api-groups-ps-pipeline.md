@@ -1,5 +1,5 @@
 ---
-title: "Using a CI/CD Pipeline to manage Azure AD groups, Stage 1: Import & Validate"
+title: "Azure AD groups in a CI/CD Pipeline, Stage 1: Import & Validate"
 categories:
   - blog
 tags:
@@ -26,7 +26,8 @@ This function is [Invoke-WTValidateAzureADGroup][function-validate], which you c
 
 This imports JSON definitions of groups, or imports objects via a parameter, and validates these against a set of criteria. Outputting a valid JSON file as a pipeline artifact for the next stage in the pipeline.
 
-Pipeline YAML example below (which is triggered on a change to the GraphAPIConfig repo):
+### Pipeline YAML example below
+_Triggered on a change to the GraphAPIConfig repo in GitHub_
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -86,7 +87,7 @@ stages:
 
 </details>
 
-PowerShell example below:
+### PowerShell example below:
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -138,6 +139,8 @@ $AzureADGroup | Invoke-WTValidateAzureADGroup
 - A validate object is then built for each group with failed checks
 - Information is then returned about whether the group passed validation, and if not, what each group failed
 - If successful, the validated group objects are returned
+
+The complete function as at this date, is below:
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
@@ -335,7 +338,6 @@ function Invoke-WTValidateAzureADGroup {
                         $ValidGroups
                     }
                 }
-                
             }
             else {
                 $ErrorMessage = "No Azure AD groups to be imported, import may have failed or none may exist"
