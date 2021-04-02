@@ -11,16 +11,18 @@ tags:
   - baseline
 excerpt: "For the Azure AD Conditional Access pipeline, we'll be using a series of dependent groups to be used in the inclusion/exclusion groups..."
 ---
-There are currently three Azure AD groups that will be used within the Conditional Access pipeline, as nested groups that are included in the inclusion/exclusion groups that will be created for (almost) every Conditional Access policy.
+Within GitHub, I've created a [baseline configuration template repo][GraphAPIConfig], that can be used as recommended definitions for the groups, policies and named locations that will be created as part of the Conditional Access pipeline. I'll be covering each in a series of posts, including the design of the policies.
+
+Initially, there are three Azure AD groups that will be used within the Conditional Access pipeline, as nested groups that are included in the inclusion/exclusion groups that will be created for (almost) every Conditional Access policy.
 
 The current groups are:
 - All Users
 - All Guests
 - SVC-CA; Exclude from all Conditional Access policies
 
-The definitions of these groups are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub. By defining these groups, rather than using the inbuilt "All Users" options within Conditional Access, greater customisation of each policy is possible.
+The definitions of these groups are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub. By defining these groups, rather than using the inbuilt "All Users" options within Conditional Access, allows for greater customisation of each policy.
 
-_For each group, a mailNickName is required, when this does not exist, when execute in the pipeline it will be generated._
+_For each group, a mailNickName is required, when this does not exist, when executed in the pipeline it will be generated._
 
 ## All Users
 This definition is available here: [All Users][group-users], which you can access from my GitHub.
