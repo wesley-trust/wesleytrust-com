@@ -12,7 +12,9 @@ tags:
   - import
 excerpt: "This post covers the first stage in the pipeline which will be used to automate creating, updating and removing Azure AD groups..."
 ---
-Pipelines are awesome for automating Infrastructure as Code, I'm making use of [Azure DevOps][devops-link] to execute my Pipeline, but the YAML should also be compatible with GitHub Actions, making it relatively easy to use on either platform. 
+Pipelines are awesome for automating Infrastructure as Code. I'm making use of [Azure DevOps][devops-link] to execute my Pipeline, but the YAML should also be compatible with GitHub Actions, making it relatively easy to use on either platform.
+
+_Both Azure Pipelines and GitHub Actions have free tiers for public projects, and free execution minutes for private projects._
 
 For managing Azure AD groups in a pipeline, I'm taking a three stage approach consisting of:
 - Import & Validate
@@ -21,7 +23,7 @@ For managing Azure AD groups in a pipeline, I'm taking a three stage approach co
 
 This post covers the YAML and PowerShell involved in the first stage of importing and validating the input. The PowerShell can also be called directly.
 
-|  Current Validate & Import Status  |
+|  Current Import & Validate Status  |
 |:----------------------------------:|
 |[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
 
@@ -30,8 +32,8 @@ This function is [Invoke-WTValidateAzureADGroup][function-validate], which you c
 
 This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria. Outputting a valid JSON file as a pipeline artifact for the next stage in the pipeline.
 
-### Pipeline YAML example below
-_Triggered on a change to the [GraphAPIConfig template repo in GitHub[github-repo]_
+### Pipeline YAML example below:
+_Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
