@@ -12,7 +12,7 @@ tags:
   - import
 excerpt: "This post covers the first stage in the pipeline which will be used to automate creating, updating and removing Azure AD groups..."
 ---
-Pipelines are awesome for automating Infrastructure as Code, I'm mostly making use of [Azure DevOps][devops-link] to execute my Pipeline, but the YAML is also compatible with GitHub Actions, making it easy to use on either platform.
+Pipelines are awesome for automating Infrastructure as Code, I'm making use of [Azure DevOps][devops-link] to execute my Pipeline, but the YAML should also be compatible with GitHub Actions, making it relatively easy to use on either platform. 
 
 For managing Azure AD groups in a pipeline, I'm taking a three stage approach consisting of:
 - Import & Validate
@@ -24,10 +24,10 @@ This post covers the YAML and PowerShell involved in the first stage of importin
 ## Invoke-WTValidateAzureADGroup
 This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
 
-This imports JSON definitions of groups, or imports objects via a parameter, and validates these against a set of criteria. Outputting a valid JSON file as a pipeline artifact for the next stage in the pipeline.
+This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria. Outputting a valid JSON file as a pipeline artifact for the next stage in the pipeline.
 
 ### Pipeline YAML example below
-_Triggered on a change to the GraphAPIConfig repo in GitHub_
+_Triggered on a change to the [GraphAPIConfig template repo in GitHub[github-repo]_
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -131,13 +131,14 @@ $AzureADGroup | Invoke-WTValidateAzureADGroup
 
 ### What does this do?
 - This sets specific variables, including the required properties that must be present in the input
-- A file path to specific files, a path from which all files will be imported, or a group passed in a parameter is required
+- To import, a file path to specific files or a directory path from which all files will be imported is required
+  - Alternatively, a group or collection of groups can also be passed in a parameter to validate
 - This then checks for the properties each group has
   - Each required property that is missing is added to a variable
 - A check is then performed as to whether the properties contain a value
   - This is again added to a variable if null
 - A validate object is then built for each group with failed checks
-- Information is then returned about whether the group passed validation, and if not, what each group failed
+- Information is then returned about whether the group passed validation, and if not, why each group failed
 - If successful, the validated group objects are returned
 
 The complete function as at this date, is below:
@@ -365,3 +366,4 @@ function Invoke-WTValidateAzureADGroup {
 
 [function-validate]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Pipeline/Invoke-WTValidateAzureADGroup.ps1
 [devops-link]: https://dev.azure.com/wesleytrust/GraphAPI
+[github-repo]: https://github.com/wesley-trust/GraphAPIConfig
