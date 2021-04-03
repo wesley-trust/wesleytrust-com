@@ -35,6 +35,8 @@ Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
 
+As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD, but do not exist in the config repo. 
+
 _Azure Pipelines automatically downloads artifacts created in the previous stage_
 
 <details>
@@ -123,7 +125,7 @@ _Azure Pipelines automatically downloads artifacts created in the previous stage
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```powershell
-# Clone repo that contains the Graph API functions and config definitions
+# Clone repo that contains the Graph API and ToolKit functions
 git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
 git clone --branch main --single-branch https://github.com/wesley-trust/ToolKit.git
 
