@@ -30,10 +30,13 @@ This post covers the YAML and PowerShell involved in the first stage of importin
 ## Invoke-WTValidateAzureADGroup
 This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
 
-This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria. Outputting a valid JSON file as a pipeline artifact for the next stage in the pipeline.
+This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria.
+
+Outputting a JSON validate file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
 
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
+
 _Azure Pipelines automatically clones this repo_
 
 <details>

@@ -28,10 +28,13 @@ This post covers the YAML and PowerShell involved in the second stage which crea
 ## Invoke-WTPlanAzureADGroup
 This function is [Invoke-WTPlanAzureADGroup][function-plan], which you can access from my GitHub.
 
-Within the pipeline, this imports the validated JSON artifact of groups (should they exist), which is passed to the function via a parameter. This then creates a plan of what should be created, updated or removed (as appropriate). Outputting a JSON plan file (if appropriate) as a pipeline artifact for the next stage in the pipeline.
+Within the pipeline, this imports the validated JSON artifact of groups (should they exist), which is passed to the function via a parameter. This then creates a plan of what should be created, updated or removed (as appropriate).
+
+Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
 
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
+
 _Azure Pipelines automatically downloads artifacts created in the previous stage_
 
 <details>
@@ -168,7 +171,7 @@ Invoke-WTPlanAzureADGroup -AzureADGroup $ValidateAzureADGroup -AccessToken $Acce
 - An object comparison is performed on the group IDs, determining:
   - What groups could be removed (as they exist, but don't have an ID in the import)
   - What groups could be created (as an ID might not exist, or might not match an existing ID in Azure AD)
-- A safety check is included, so if no groups are provided, the removal of all existing groups requires a "Force" switch
+- A safety check is performed, if no groups are provided, the removal of all existing groups requires a "Force" switch
 - If groups should not be removed, the variable for removing groups is cleared
 - If groups should be updated, and there are existing groups in Azure AD, only groups with valid IDs are included
 - An object comparison is then performed on specific object properties, to check for specific differences (only)
