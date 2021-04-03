@@ -30,10 +30,13 @@ This post covers the YAML and PowerShell involved in the first stage of importin
 ## Invoke-WTValidateAzureADGroup
 This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
 
-This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria. Outputting a valid JSON file as a pipeline artifact for the next stage in the pipeline.
+This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria.
+
+Outputting a JSON validate file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
 
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
+
 _Azure Pipelines automatically clones this repo_
 
 <details>
@@ -201,13 +204,7 @@ function Invoke-WTValidateAzureADGroup {
             if ($Path) {
                 $PathExists = Test-Path -Path $Path
                 if ($PathExists) {
-                    $FilePath = foreach ($Directory in $Path) {
-                        (Get-ChildItem -Path $Directory -Filter "*.json" -Recurse).FullName
-                    }
-                    if (!$FilePath) {
-                        $ErrorMessage = "No JSON files were found in the location specified $Path, please check the path is correct"
-                        throw $ErrorMessage
-                    }
+                    $FilePath = (Get-ChildItem -Path $Path -Filter "*.json" -Recurse).FullName
                 }
                 else {
                     $ErrorMessage = "The provided path does not exist $Path, please check the path is correct"
@@ -218,7 +215,6 @@ function Invoke-WTValidateAzureADGroup {
             # Import groups from JSON file, if the files exist
             if ($FilePath) {
                 $AzureADGroupImport = foreach ($File in $FilePath) {
-                    $FilePathExists = $null
                     $FilePathExists = Test-Path -Path $File
                     if ($FilePathExists) {
                         Get-Content -Raw -Path $File
