@@ -1,5 +1,5 @@
 ---
-title: "TBC: Azure AD groups in a CI/CD Pipeline, Stage 1: Import & Validate"
+title: "Azure AD groups in a CI/CD Pipeline, Stage 2: Plan & Evaluate"
 categories:
   - blog
 tags:
@@ -8,86 +8,107 @@ tags:
   - groups
   - azuread
   - pipeline
-  - validate
-  - import
-excerpt: "This post covers the first stage in the pipeline which will be used to automate creating, updating and removing Azure AD groups..."
+  - plan
+  - evaluate
+excerpt: "This post covers the second stage in the pipeline which will be used to automate creating, updating and removing Azure AD groups..."
 ---
-Pipelines are awesome for automating Infrastructure as Code. I'm making use of [Azure DevOps][devops-link] to execute my Pipeline, but the YAML should also be compatible with GitHub Actions, making it relatively easy to use on either platform.
+The PowerShell I'm writing, which in part mimics the stages that Terraform goes through when deploying Azure resources, adds some "smarts" to the Pipeline.
 
-_Both Azure Pipelines and GitHub Actions have free tiers for public projects, and free execution minutes for private projects._
-
-For managing Azure AD groups in a pipeline, I'm taking a three stage approach consisting of:
+This is the second stage, in the three stage pipeline for managing Azure AD groups:
 - Import & Validate
-- Evaluate & Plan
+- Plan & Evaluate
 - Apply & Deploy
 
-This post covers the YAML and PowerShell involved in the first stage of importing and validating the input. The PowerShell can also be called directly.
+This post covers the YAML and PowerShell involved in the second stage which creates a plan of actions (if any), after evaluating the validated group input against Azure AD. The PowerShell can also be called directly.
 
-|  Current Import & Validate Status  |
+|   Current Plan & Evaluate Status   |
 |:----------------------------------:|
-|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
+|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
 
-## Invoke-WTValidateAzureADGroup
-This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
+## Invoke-WTPlanAzureADGroup
+This function is [Invoke-WTPlanAzureADGroup][function-plan], which you can access from my GitHub.
 
-This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria. Outputting a valid JSON file as a pipeline artifact for the next stage in the pipeline.
+Within the pipeline, this imports the validated JSON artifact of groups (should they exist), which is passed to the function via a parameter. This then creates a plan of what should be created, updated or removed (as appropriate). Outputting a JSON plan file (if appropriate) as a pipeline artifact for the next stage in the pipeline.
 
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
+_Azure Pipelines automatically downloads artifacts created in the previous stage_
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```yaml
-stages:
-- stage: Validate
+- stage: Plan
   pool:
     vmImage: 'windows-latest'
+  dependsOn: Validate
+  condition: and(succeeded(), eq(dependencies.Validate.outputs['Import.InvokeWTValidateAzureADGroup.ShouldRun'], 'true'))
   jobs:
-  - job: Import
-    pool:
-      vmImage: 'windows-latest'
+  - job: Evaluate
     continueOnError: false
     steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        targetPath: '$(Pipeline.Workspace)'
     - task: CmdLine@2
       name: CloneGraphAPI
       displayName: Clone Graph API repo
       inputs:
-        script: 'git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git'
+        script: 'git clone --branch $(Branch) --single-branch https://github.com/wesley-trust/GraphAPI.git'
+        workingDirectory: '$(System.ArtifactsDirectory)'
+    - task: CmdLine@2
+      name: CloneToolKit
+      displayName: Clone Toolkit repo
+      inputs:
+        script: 'git clone --branch $(Branch) --single-branch https://github.com/wesley-trust/ToolKit.git'
         workingDirectory: '$(System.ArtifactsDirectory)'
     - task: PowerShell@2
-      name: InvokeWTValidateAzureADGroup
-      displayName: Invoke-WTValidateAzureADGroup
+      name: InvokeWTPlanAzureADGroup
+      displayName: Invoke-WTPlanAzureADGroup
       inputs:
         targetType: 'inline'
         script: |
 
+          # Import and convert Groups from JSON, should they exist
+          $TestPath = Test-Path $(Pipeline.Workspace)\Import\Validate.json -PathType Leaf
+          if ($TestPath){
+              $ValidateAzureADGroups = Get-Content -Raw -Path $(Pipeline.Workspace)\Import\Validate.json | ConvertFrom-Json -Depth 10
+          }
+
           # Dot source and execute function
-          . $(System.ArtifactsDirectory)\GraphAPI\Public\AzureAD\Groups\Pipeline\Invoke-WTValidateAzureADGroup.ps1
-          $ValidateAzureADGroups = Invoke-WTValidateAzureADGroup `
-            -Path $(Build.Repository.LocalPath)\AzureAD\Groups
-          
+          . $(System.ArtifactsDirectory)\GraphAPI\Public\AzureAD\Groups\Pipeline\Invoke-WTPlanAzureADGroup.ps1
+            $PlanAzureADGroups = Invoke-WTPlanAzureADGroup `
+              -TenantDomain $(TenantDomain) `
+              -ClientID ${env:CLIENTID} `
+              -ClientSecret ${env:CLIENTSECRET} `
+              -AzureADGroups $ValidateAzureADGroups `
+              -UpdateExistingGroups
+
           # Create directory for artifact, if it does not exist
           $TestPath = Test-Path $(Pipeline.Workspace)\Output -PathType Container
           if (!$TestPath){
-            New-Item -Path $(Pipeline.Workspace)\Output -ItemType Directory | Out-Null
+              New-Item -Path $(Pipeline.Workspace)\Output -ItemType Directory | Out-Null
           }
 
-          # If there are Groups (as if there are no groups to import, existing groups are not removed)
-          if ($ValidateAzureADGroups){
-            
-            # Set ShouldRun variable to true, for plan stage
+          # If there are Groups
+          if ($PlanAzureADGroups.RemoveGroups -or $PlanAzureADGroups.UpdateGroups -or $PlanAzureADGroups.CreateGroups){
+
+            # Set ShouldRun variable to true, for apply stage
             echo "##vso[task.setvariable variable=ShouldRun;isOutput=true]true"
-            
+
             # Convert to JSON and export
-            $ValidateAzureADGroups | ConvertTo-Json -Depth 10 | Out-File -Force -FilePath $(Pipeline.Workspace)\Output\Validate.json
+            $PlanAzureADGroups | ConvertTo-Json -Depth 10 | Out-File -Force -FilePath $(Pipeline.Workspace)\Output\Plan.json
           }
         pwsh: true
         workingDirectory: '$(System.ArtifactsDirectory)'
+      env:
+        CLIENTID: $(ClientID)
+        CLIENTSECRET: $(ClientSecret)
     - task: PublishPipelineArtifact@1
       inputs:
         targetPath: '$(Pipeline.Workspace)\Output'
-        artifact: 'Import'
+        artifact: 'Evaluate'
         publishLocation: 'pipeline'
 ```
 
@@ -101,51 +122,60 @@ stages:
 ```powershell
 # Clone repo that contains the Graph API functions and config definitions
 git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
-git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPIConfig.git
+git clone --branch main --single-branch https://github.com/wesley-trust/ToolKit.git
 
 # Dot source function into memory
-. .\GraphAPI\Public\AzureAD\Groups\Pipeline\Invoke-WTValidateAzureADGroup.ps1
+. .\GraphAPI\Public\AzureAD\Groups\Pipeline\Invoke-WTPlanAzureADGroup.ps1
 
 # Define Variables
-$Path = ".\GraphAPIConfig\AzureAD\Groups"
-$FilePath = ".\GraphAPIConfig\AzureAD\Groups\SVC-CA\SVC-CA; Exclude from all Conditional Access Policies.json"
+$ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
+$ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
+$TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
+$AccessToken = "HWYLAqz6PipzzdtPwRnSN0Socozs2lZ7nsFky90UlDGTmaZY1foVojTUqFgm1vw0iBslogoP"
 
 # Example valid group (mailNickName if missing, is auto-generated upon creation)
-$AzureADGroup = [PSCustomObject]@{
+$ValidateAzureADGroup = [PSCustomObject]@{
     displayName     = "SVC-CA; Exclude from all Conditional Access Policies"
     mailEnabled     = $false
     securityEnabled = $true
 }
-# Example invalid group (mailNickName if missing, is auto-generated upon creation)
-# Missing property (displayName), as well as null property value (securityEnabled)
-$AzureADGroup = [PSCustomObject]@{
-    mailEnabled     = $false
-    securityEnabled = $null
+
+# Create hashtable
+$Parameters = @{
+  ClientID             = $ClientID
+  ClientSecret         = $ClientSecret
+  TenantDomain         = $TenantDomain
+  UpdateExistingGroups = $true
+  AzureADGroup         = $ValidateAzureADGroup
 }
 
-# Import and validate all JSON files from the path specified
-Invoke-WTValidateAzureADGroup -Path $Path
+# Create a plan, splatting the hashtable of parameters
+Invoke-WTPlanAzureADGroup @Parameters
 
-# Or import and validate a specific JSON file from the filepath specified
-Invoke-WTValidateAzureADGroup -FilePath $FilePath
+# Or pipe specific object definitions to the plan function, with an access token previously obtained
+$ValidateAzureADGroup | Invoke-WTPlanAzureADGroup -AccessToken $AccessToken
 
-# Or pipe specific object definitions to the validate function
-$AzureADGroup | Invoke-WTValidateAzureADGroup
+# Or specify each parameter individually, with an access token previously obtained
+Invoke-WTPlanAzureADGroup -AzureADGroup $ValidateAzureADGroup -AccessToken $AccessToken -UpdateExistingGroups
 ```
 
 </details>
 
 ### What does this do?
-- This sets specific variables, including the required properties that must be present in the input
-- To import, a file path to specific files or a directory path from which all files will be imported is required
-  - Alternatively, a group or collection of groups can also be passed in a parameter to validate
-- This then checks for the properties each group has
-  - Each required property that is missing is added to a variable
-- A check is then performed as to whether the properties contain a value
-  - This is again added to a variable if null
-- A validate object is then built for each group with failed checks
-- Information is then returned about whether the group passed validation, and if not, why each group failed
-- If successful, the validated group objects are returned
+- An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
+- Checks are performed about whether to evaluate groups for updating or removal
+- Existing groups in Azure AD are obtained (as appropriate), in order to compare against the validated import
+- An object comparison is performed on the group IDs, determining:
+  - What groups could be removed (as they exist, but don't have an ID in the import)
+  - What groups could be created (as an ID might not exist, or might not match an existing ID in Azure AD)
+- A safety check is included, so if no groups are provided, the removal of all existing groups requires a "Force" switch
+- If groups should not be removed, the variable for removing groups is cleared
+- If groups should be updated, and there are existing groups in Azure AD, only groups with valid IDs are included
+- An object comparison is then performed on specific object properties, to check for specific differences (only)
+  - If there are differences, they're added to a variable
+- If no groups exist, any imported groups must all be created, so the variable is updated
+- An object is then built containing the groups to be removed, updated or created (as appropriate)
+- This object is then returned as a plan of action
 
 The complete function as at this date, is below:
 
@@ -153,40 +183,81 @@ The complete function as at this date, is below:
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
 ```powershell
-function Invoke-WTValidateAzureADGroup {
+function Invoke-WTPlanAzureADGroup {
     [cmdletbinding()]
     param (
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The file path to the JSON file(s) that will be imported"
+            HelpMessage = "Client ID for the Azure AD service principal with Azure AD Graph permissions"
         )]
-        [string[]]$FilePath,
+        [string]$ClientID,
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The directory path(s) of which all JSON file(s) will be imported"
+            HelpMessage = "Client secret for the Azure AD service principal with Azure AD Graph permissions"
         )]
-        [string]$Path,
+        [string]$ClientSecret,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The initial domain (onmicrosoft.com) of the tenant"
+        )]
+        [string]$TenantDomain,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
             ValueFromPipeLine = $true,
-            HelpMessage = "The Azure AD Groups to be validated if not imported from a JSON file"
+            HelpMessage = "The Azure AD group object"
         )]
         [Alias('AzureADGroup', 'GroupDefinition')]
-        [PSCustomObject]$AzureADGroups,
+        [pscustomobject]$AzureADGroups,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to update existing groups deployed in the tenant, where the IDs match"
+        )]
+        [switch]
+        $UpdateExistingGroups,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether existing groups deployed in the tenant will be removed, if not present in the import"
+        )]
+        [switch]
+        $RemoveExistingGroups,
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Specify whether files should be imported only, and not validated"
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
         )]
-        [switch]$ImportOnly
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "If there are no groups to import, whether to forcibly remove any existing groups"
+        )]
+        [switch]$Force
     )
     Begin {
         try {
-            # Variables
-            $RequiredProperties = @("displayName", "mailEnabled", "securityEnabled")
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
+                "Toolkit\Public\Invoke-WTPropertyTagging.ps1",
+                "GraphAPI\Public\AzureAD\Groups\Get-WTAzureADGroup.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
 
         }
         catch {
@@ -196,158 +267,150 @@ function Invoke-WTValidateAzureADGroup {
     }
     Process {
         try {
-
-            # For each directory, get the file path of all JSON files within the directory, if the directory exists
-            if ($Path) {
-                $PathExists = Test-Path -Path $Path
-                if ($PathExists) {
-                    $FilePath = foreach ($Directory in $Path) {
-                        (Get-ChildItem -Path $Directory -Filter "*.json" -Recurse).FullName
-                    }
-                    if (!$FilePath) {
-                        $ErrorMessage = "No JSON files were found in the location specified $Path, please check the path is correct"
-                        throw $ErrorMessage
-                    }
-                }
-                else {
-                    $ErrorMessage = "The provided path does not exist $Path, please check the path is correct"
-                    throw $ErrorMessage
-                }
+            
+            # If there is no access token, obtain one
+            if (!$AccessToken) {
+                $AccessToken = Get-WTGraphAccessToken `
+                    -ClientID $ClientID `
+                    -ClientSecret $ClientSecret `
+                    -TenantDomain $TenantDomain
             }
 
-            # Import groups from JSON file, if the files exist
-            if ($FilePath) {
-                $AzureADGroupImport = foreach ($File in $FilePath) {
-                    $FilePathExists = $null
-                    $FilePathExists = Test-Path -Path $File
-                    if ($FilePathExists) {
-                        Get-Content -Raw -Path $File
-                    }
-                    else {
-                        $ErrorMessage = "The provided filepath $File does not exist, please check the path is correct"
-                        throw $ErrorMessage
-                    }
-                }
-                
-                # If import was successful, convert from JSON
-                if ($AzureADGroupImport) {
-                    $AzureADGroups = $AzureADGroupImport | ConvertFrom-Json
-                }
-                else {
-                    $ErrorMessage = "No JSON files could be imported, please check the filepath is correct"
-                    throw $ErrorMessage
-                }
-            }
+            if ($AccessToken) {
 
-            # If a file has been imported, or objects provided in the parameter
-            if ($AzureADGroups) {
-                
                 # Output current action
-                Write-Host "Importing Azure AD Groups"
-                Write-Host "Groups: $($AzureADGroups.count)"
+                Write-Host "Evaluating Azure AD Groups"
                 
-                foreach ($Group in $AzureADGroups) {
-                    if ($Group.displayName) {
-                        Write-Host "Import: Group Name: $($Group.displayName)"
-                    }
-                    elseif ($Group.id) {
-                        Write-Host "Import: Group Id: $($Group.id)"
-                    }
-                    else {
-                        Write-Host "Import: Group Invalid"
-                    }
+                # Build Parameters
+                $Parameters = @{
+                    AccessToken = $AccessToken
+                }
+                if ($ExcludePreviewFeatures) {
+                    $Parameters.Add("ExcludePreviewFeatures", $true)
                 }
 
-                # If import only is set, return groups without validating
-                if ($ImportOnly) {
-                    $AzureADGroups
+                # Evaluate groups if parameters exist
+                if ($RemoveExistingGroups -or $UpdateExistingGroups) {
+
+                    # Get existing groups for comparison
+                    $ExistingGroups = Get-WTAzureADGroup @Parameters
+
+                    if ($ExistingGroups) {
+
+                        if ($AzureADGroups) {
+
+                            # Compare object on id and pass thru all objects, including those that exist and are to be imported
+                            $GroupComparison = Compare-Object `
+                                -ReferenceObject $ExistingGroups `
+                                -DifferenceObject $AzureADGroups `
+                                -Property id `
+                                -PassThru
+
+                            # Filter for groups that should be removed, as they do not exist in the import
+                            $RemoveGroups = $GroupComparison | Where-Object { $_.sideindicator -eq "<=" }
+
+                            # Filter for groups that did not contain an id, and so are groups that should be created
+                            $CreateGroups = $GroupComparison | Where-Object { $_.sideindicator -eq "=>" }
+                        }
+                        else {
+
+                            # If force is enabled, then if removal of groups is specified, all existing will be removed
+                            if ($Force) {
+                                $RemoveGroups = $ExistingGroups
+                            }
+                        }
+
+                        if (!$RemoveExistingGroups) {
+
+                            # If groups are not to be removed, disregard any groups for removal
+                            $RemoveGroups = $null
+                        }
+                        if ($UpdateExistingGroups) {
+                            if ($AzureADGroups) {
+                                
+                                # Check whether the groups that could be updated have valid ids (so can be updated, ignore the rest)
+                                $UpdateGroups = foreach ($Group in $AzureADGroups) {
+                                    if ($Group.id -in $ExistingGroups.id) {
+                                        $Group
+                                    }
+                                }
+
+                                # If groups exist, with ids that matched the import
+                                if ($UpdateGroups) {
+                            
+                                    # Compare again, with all mandatory property elements for differences
+                                    $GroupPropertyComparison = Compare-Object `
+                                        -ReferenceObject $ExistingGroups `
+                                        -DifferenceObject $UpdateGroups `
+                                        -Property id, displayName, description, membershipRule
+
+                                    $UpdateGroups = $GroupPropertyComparison | Where-Object { $_.sideindicator -eq "=>" }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        # If no groups exist, any imported must be created
+                        $CreateGroups = $AzureADGroups
+                    }
                 }
                 else {
-                        
+                    # If no groups are to be removed or updated, any imported must be created
+                    $CreateGroups = $AzureADGroups
+                }
+                
+                # Build object to return
+                $PlanAzureADGroups = [ordered]@{}
+
+                if ($RemoveGroups) {
+                    $PlanAzureADGroups.Add("RemoveGroups", $RemoveGroups)
+                    
                     # Output current action
-                    Write-Host "Validating Azure AD Groups"
-    
-                    # For each group, run validation checks
-                    $InvalidGroups = foreach ($Group in $AzureADGroups) {
-                        $GroupValidate = $null
-    
-                        # Check for missing properties
-                        $GroupProperties = $null
-                        $GroupProperties = ($Group | Get-Member -MemberType NoteProperty).name
-                        $PropertyCheck = $null
+                    Write-Host "Groups to remove: $($RemoveGroups.count)"
 
-                        # Check whether each required property, exists in the list of properties for the object
-                        $PropertyCheck = foreach ($Property in $RequiredProperties) {
-                            if ($Property -notin $GroupProperties) {
-                                $Property
-                            }
-                        }
-
-                        # Check whether each required property has a value, if not, return property
-                        $PropertyValueCheck = $null
-                        $PropertyValueCheck = foreach ($Property in $RequiredProperties) {
-                            if ($null -eq $Group.$Property) {
-                                $Property
-                            }
-                        }
-
-                        # Build and return object
-                        if ($PropertyCheck -or $PropertyValueCheck) {
-                            $GroupValidate = [ordered]@{}
-                            if ($Group.displayName) {
-                                $GroupValidate.Add("DisplayName", $Group.displayName)
-                            }
-                            elseif ($Group.id) {
-                                $GroupValidate.Add("Id", $Group.id)
-                            }
-                        }
-                        if ($PropertyCheck) {
-                            $GroupValidate.Add("MissingProperties", $PropertyCheck)
-                        }
-                        if ($PropertyValueCheck) {
-                            $GroupValidate.Add("MissingPropertyValues", $PropertyValueCheck)
-                        }
-                        if ($GroupValidate) {
-                            [pscustomobject]$GroupValidate
-                        }
+                    foreach ($Group in $RemoveGroups) {
+                        Write-Host "Remove: Group ID: $($Group.id)" -ForegroundColor DarkRed
                     }
-
-                    # Return validation result for each group
-                    if ($InvalidGroups) {
-                        Write-Host "Invalid Groups: $($InvalidGroups.count) out of $($AzureADGroups.count) imported"
-                        foreach ($Group in $InvalidGroups) {
-                            if ($Group.displayName) {
-                                Write-Host "INVALID: Group Name: $($Group.displayName)" -ForegroundColor Yellow
-                            }
-                            elseif ($Group.id) {
-                                Write-Host "INVALID: Group Id: $($Group.id)" -ForegroundColor Yellow
-                            }
-                            else {
-                                Write-Host "INVALID: No displayName or Id for group" -ForegroundColor Yellow
-                            }
-                            if ($Group.MissingProperties) {
-                                Write-Warning "Required properties not present ($($Group.MissingProperties.count)): $($Group.MissingProperties)"
-                            }
-                            if ($Group.MissingPropertyValues) {
-                                Write-Warning "Required property values not present ($($Group.MissingPropertyValues.count)): $($Group.MissingPropertyValues)"
-                            }
-                        }
-    
-                        # Abort import
-                        $ErrorMessage = "Validation of groups was not successful, review configuration files and any warnings generated"
-                        throw $ErrorMessage
+                }
+                else {
+                    Write-Host "No groups will be removed, as none exist that are different to the import"
+                }
+                if ($UpdateGroups) {
+                    $PlanAzureADGroups.Add("UpdateGroups", $UpdateGroups)
+                                        
+                    # Output current action
+                    Write-Host "Groups to update: $($UpdateGroups.count)"
+                    
+                    foreach ($Group in $UpdateGroups) {
+                        Write-Host "Update: Group ID: $($Group.id)" -ForegroundColor DarkYellow
                     }
-                    else {
+                }
+                else {
+                    Write-Host "No groups will be updated, as none exist that are different to the import"
+                }
+                if ($CreateGroups) {
+                    $PlanAzureADGroups.Add("CreateGroups", $CreateGroups)
+                                        
+                    # Output current action
+                    Write-Host "Groups to create: $($CreateGroups.count)"
 
-                        # Return validated groups
-                        Write-Host "All groups have passed validation for required properties and values"
-                        $ValidGroups = $AzureADGroups
-                        $ValidGroups
+                    foreach ($Group in $CreateGroups) {
+                        Write-Host "Create: Group Name: $($Group.displayName)" -ForegroundColor DarkGreen
                     }
+                }
+                else {
+                    Write-Host "No groups will be created, as none exist that are different to the import"
+                }
+
+                # If there are groups, return PS object
+                if ($PlanAzureADGroups) {
+                    $PlanAzureADGroups = [pscustomobject]$PlanAzureADGroups
+                    $PlanAzureADGroups
                 }
             }
             else {
-                $ErrorMessage = "No Azure AD groups to be imported, import may have failed or none may exist"
+                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                Write-Error $ErrorMessage
                 throw $ErrorMessage
             }
         }
@@ -370,6 +433,6 @@ function Invoke-WTValidateAzureADGroup {
 
 </details>
 
-[function-validate]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Pipeline/Invoke-WTValidateAzureADGroup.ps1
+[function-plan]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Pipeline/Invoke-WTPlanAzureADGroup.ps1
 [devops-link]: https://dev.azure.com/wesleytrust/GraphAPI
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig

@@ -18,7 +18,7 @@ _Both Azure Pipelines and GitHub Actions have free tiers for public projects, an
 
 For managing Azure AD groups in a pipeline, I'm taking a three stage approach consisting of:
 - Import & Validate
-- Evaluate & Plan
+- Plan & Evaluate
 - Apply & Deploy
 
 This post covers the YAML and PowerShell involved in the first stage of importing and validating the input. The PowerShell can also be called directly.
@@ -34,12 +34,12 @@ This imports JSON definitions of groups, or imports group objects via a paramete
 
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
+_Azure Pipelines automatically clones this repo_
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```yaml
-stages:
 - stage: Validate
   pool:
     vmImage: 'windows-latest'
@@ -53,7 +53,7 @@ stages:
       name: CloneGraphAPI
       displayName: Clone Graph API repo
       inputs:
-        script: 'git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git'
+        script: 'git clone --branch $(Branch) --single-branch https://github.com/wesley-trust/GraphAPI.git'
         workingDirectory: '$(System.ArtifactsDirectory)'
     - task: PowerShell@2
       name: InvokeWTValidateAzureADGroup
