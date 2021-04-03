@@ -19,7 +19,7 @@ This is the third stage, in the three stage pipeline for managing Azure AD group
 - Plan & Evaluate
 - Apply & Deploy
 
-This post covers the YAML and PowerShell involved in the third stage which applies a plan of actions (if any). The PowerShell can also be called directly.
+This post covers the YAML and PowerShell involved in the third stage which executes the plan of actions (if any). The PowerShell can also be called directly.
 
 |   Current Apply & Deploy Status   |
 |:---------------------------------:|
@@ -30,12 +30,10 @@ This function is [Invoke-WTApplyAzureADGroup][function-apply], which you can acc
 
 Within the pipeline, this imports the validated JSON artifact of groups (should they exist), which is passed to the function via a parameter. This then creates a plan of what should be created, updated or removed (as appropriate).
 
-Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
-
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
 
-As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD, but do not exist in the config repo. 
+As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD and do not exist in the config repo. 
 
 _Azure Pipelines automatically downloads artifacts created in the previous stage_
 
@@ -163,7 +161,7 @@ $Parameters = @{
 Invoke-WTApplyAzureADGroup @Parameters
 
 # Or pipe specific object definitions to the apply function, with an access token previously obtained
-$PlanAzureADGroup| Invoke-WTApplyAzureADGroup -AccessToken $AccessToken
+$PlanAzureADGroup | Invoke-WTApplyAzureADGroup -AccessToken $AccessToken
 
 # Or specify each parameter individually, with an access token previously obtained
 Invoke-WTApplyAzureADGroup -AzureADGroup $PlanAzureADGroup -AccessToken $AccessToken -UpdateExistingGroups
@@ -173,10 +171,10 @@ Invoke-WTApplyAzureADGroup -AzureADGroup $PlanAzureADGroup -AccessToken $AccessT
 
 ### What does this do?
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
-- If groups should be removed, and the groups objects exist, the group IDs are provided to the remove group function
-- If groups should be updated, and the groups objects exist, the group objects are provided to the edit group function
-- If the group objects to be created exist, the group objects are provided to the new group function
-  - The new group config information is then exported
+- If groups should be removed, and the objects exist, the group IDs are provided to the remove group function
+- If groups should be updated, and the objects exist, the group objects are provided to the edit group function
+- If the group objects to be created exist, the objects are provided to the new group function
+  - The new group config information is then exported (so IDs are available to manage the groups)
   - Within the pipeline, these files are added, committed and pushed to the config repo
 
 The complete function as at this date, is below:
