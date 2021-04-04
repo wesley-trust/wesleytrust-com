@@ -1,12 +1,12 @@
 ---
-title: "GraphAPIConfig - a series of baseline definitions for Azure AD groups"
+title: "GraphAPIConfig - Recommended Azure AD Conditional Access policies"
 categories:
   - blog
 tags:
   - graphapi
   - graphapiconfig
   - powershell
-  - groups
+  - conditional-access
   - azuread
   - config
   - baseline
