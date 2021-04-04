@@ -10,20 +10,25 @@ tags:
   - azuread
   - config
   - baseline
-excerpt: "For the Azure AD Conditional Access pipeline, we'll be using a series of dependent groups to be used in the inclusion/exclusion groups..."
+  - recommendations
+excerpt: "For Azure AD Conditional Access, I've put together a set of recommended baseline polices based on my experience and research..."
 ---
-Within GitHub, I've created a [baseline configuration template repo][GraphAPIConfig], that can be used as recommended definitions for the groups, policies and named locations that will be created as part of the Conditional Access pipeline. I'll be covering each in a series of posts, including the design of the policies.
+Within GitHub, I've created a [baseline configuration template repo][GraphAPIConfig], that can be used as recommended definitions for the groups, policies and named locations that will be created as part of the Conditional Access and related pipelines. I'll be covering the design of these in a series of posts.
 
-Initially, there are three Azure AD groups that will be used within the Conditional Access pipeline, as nested groups that are included in the inclusion/exclusion groups that will be created for (almost) every Conditional Access policy.
+Firstly, to make full use of Conditional Access policies, there are dependencies on the following:
+- Azure AD
+  - Groups
+  - Named Locations
+- Endpoint Manager
+  - Device Compliance
+  - App Protection
 
-The current groups are:
-- All Users
-- All Guests
-- SVC-CA; Exclude from all Conditional Access policies
+I'm going to cover each of the recommended baseline policies, and over the next series of posts, 
 
-The definitions of these groups are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub. By defining these groups, rather than using the inbuilt "All Users" options within Conditional Access, allows for greater customisation of each policy.
-
-_For each group, a mailNickName is required, when this does not exist, when executed in the pipeline it will be generated._
+### Recommended Azure AD Conditional Access policies
+- [All Users](#all-users)
+- [All Guests](#all-guests)
+- [SVC-CA; Exclude from all Conditional Access policies](#svc-ca-exclude-from-all-conditional-access-policies)
 
 ## All Users
 This definition is available here: [All Users][group-users], which you can access from my GitHub.
