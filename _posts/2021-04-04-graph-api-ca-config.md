@@ -1,5 +1,5 @@
 ---
-title: "GraphAPIConfig - Recommended Azure AD Conditional Access policies"
+title: "Recommended Azure AD Conditional Access policies - GraphAPIConfig"
 categories:
   - blog
 tags:

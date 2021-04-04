@@ -1,5 +1,5 @@
 ---
-title: "GraphAPIConfig - a series of baseline definitions for Azure AD groups"
+title: "A series of baseline definitions for Azure AD groups - GraphAPIConfig"
 categories:
   - blog
 tags:
