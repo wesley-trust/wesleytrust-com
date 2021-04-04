@@ -1,5 +1,5 @@
 ---
-title: "Managing Azure AD group relationships via the Graph API & PowerShell"
+title: "Manage Azure AD group relationships via the Graph API & PowerShell"
 categories:
   - blog
 tags:
