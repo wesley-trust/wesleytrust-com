@@ -20,7 +20,7 @@ In the context of my Conditional Access policies, I already had pseudo tags that
 However there's no native way to tag these responses. They do have an id, as a unique identifier, but these ids don't exist until after you create something, and are randomly generated. I needed something that I was able to control, and crucially, know before the object was created in Azure AD.
 
 ## What's the use case?
-Each of my Conditional Access policies has a defined reference number, as well as a version, and an environment tag (in [P]roduction use, only in [A]cceptance testing with certain users etc etc).
+Each of my Conditional Access policies has a defined reference number, as well as a version, and an environment tag (in [P]roduction use, only in [A]cceptance testing with certain users etc etc). This can also be applied to other policies, such as Endpoint Manager (Intune) Device Compliance, App Protection etc.
 
 As well as this being handy visual indicators, this reference number I need to use to match to the inclusion and exclusion groups that I'll be creating for each policy. As you can imagine, this is very important to get right. It also gives me the flexibility to have more use cases in the future.
 
