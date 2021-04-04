@@ -13,27 +13,31 @@ tags:
   - recommendations
 excerpt: "For Azure AD Conditional Access, I've put together a set of recommended baseline polices based on my experience and research..."
 ---
-Within GitHub, I've created a [baseline configuration template repo][GraphAPIConfig], that can be used as recommended definitions for the groups, policies and named locations that will be created as part of the Conditional Access and related pipelines. I'll be covering the design of these in a series of posts.
+Within GitHub, I've created a [baseline configuration template repo][GraphAPIConfig] for the Graph API, that can be used as recommended definitions for the groups, policies and named locations that will be created as part of the Conditional Access and related pipelines. I'll be covering the design of these in a series of posts.
 
-Firstly, to make full use of Conditional Access policies, there are dependencies on the following:
+Firstly, to make full use of Conditional Access policies, there are dependencies on the following to consider:
 - Azure AD
   - Groups
   - Named Locations
 - Endpoint Manager
   - Device Compliance
   - App Protection
+- Exchange Online
+  - App enforced restrictions
+- SharePoint Online (including OneDrive)
+  - App enforced restrictions
 
-I'm going to cover each of the recommended baseline policies, and over the next series of posts, 
+I'm going to cover each of the dependencies in their own series of posts, but today I'm going to cover the recommended Conditional Access baseline policies.
+
+_These aren't intended to be fully exhaustive, they're supposed to be customised to suit individual needs and are intended to serve as a good starting point (that I use in my personal Azure AD tenant)._
 
 ### Recommended Azure AD Conditional Access policies
-- [All Users](#all-users)
-- [All Guests](#all-guests)
-- [SVC-CA; Exclude from all Conditional Access policies](#svc-ca-exclude-from-all-conditional-access-policies)
+- [Block access, for all cloud apps, for any location, excluding trusted or named locations](#block-access-for-all-cloud-apps-for-any-location-excluding-trusted-or-named-locations)
 
-## All Users
-This definition is available here: [All Users][group-users], which you can access from my GitHub.
+## Block access, for all cloud apps, for any location, excluding trusted or named locations
+This definition is available here: [REF-01][policy-ref1], which you can access from my GitHub.
 
-This has a dynamic query that includes all users (including members and external users) within the Azure AD tenant.
+This is used to restrict the ability to sign in to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from), and block all signs ins from locations other than these. To reduce the chance of malicious sign in events.
 
 Example below:
 
@@ -42,68 +46,69 @@ Example below:
 
 ```json
 {
-  "description": "Dynamic query that includes all users (including guests and external users) within the directory",
-  "displayName": "All Users",
-  "groupTypes": [
-    "DynamicMembership"
-  ],
-  "mailEnabled": false,
-  "membershipRule": "(user.objectId -ne null)",
-  "membershipRuleProcessingState": "On",
-  "securityEnabled": true,
+  "REF": "01",
+  "VER": "2",
+  "ENV": "P",
+  "@odata.context": "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies/$entity",
+  "conditions": {
+    "userRiskLevels": [],
+    "signInRiskLevels": [],
+    "clientAppTypes": [
+      "all"
+    ],
+    "platforms": null,
+    "deviceStates": null,
+    "devices": null,
+    "clientApplications": null,
+    "applications": {
+      "includeApplications": [
+        "All"
+      ],
+      "excludeApplications": [],
+      "includeUserActions": [],
+      "includeAuthenticationContextClassReferences": []
+    },
+    "users": {
+      "includeUsers": [],
+      "excludeUsers": [],
+      "includeGroups": [
+        "9c6b6939-ded5-43ed-8d2a-70838fccb2ed"
+      ],
+      "excludeGroups": [
+        "e7f5a73c-2029-4a34-8734-a21484843732"
+      ],
+      "includeRoles": [],
+      "excludeRoles": []
+    },
+    "locations": {
+      "includeLocations": [
+        "All"
+      ],
+      "excludeLocations": [
+        "00000000-0000-0000-0000-000000000000",
+        "102afe99-db6a-49d1-bdb6-45f973812aaf"
+      ]
+    }
+  },
+  "createdDateTime": "2021-03-19T20:10:29.9780638Z",
+  "displayName": "REF-01;ENV-P;VER-2; Block access, for all cloud apps, for any location, excluding trusted or named locations",
+  "grantControls": {
+    "operator": "OR",
+    "builtInControls": [
+      "block"
+    ],
+    "customAuthenticationFactors": [],
+    "termsOfUse": []
+  },
+  "id": "f3dc1672-18a9-493e-9b6f-e50bda10c2cc",
+  "modifiedDateTime": null,
+  "sessionControls": null,
+  "state": "disabled"
 }
 ```
 
 </details>
 
-## All Guests
-This definition is available here: [All Guests][group-guests], which you can access from my GitHub.
+[policy-ref1]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-01%3BENV-P%3BVER-2%3B%20Block%20access%2C%20for%20all%20cloud%20apps%2C%20for%20any%20location%2C%20excluding%20trusted%20or%20named%20locations.json
 
-This has a dynamic query that includes all guests (which is all external users excluding members) within the Azure AD tenant.
-
-Example below:
-
-<details>
-  <summary><em><strong>Expand code block</strong></em></summary>
-
-```json
-{
-  "description": "Dynamic query that includes all quests (including external users) within the directory",
-  "displayName": "All Guests",
-  "groupTypes": [
-    "DynamicMembership"
-  ],
-  "mailEnabled": false,
-  "membershipRule": "(user.userType -ne \"member\")",
-  "membershipRuleProcessingState": "On",
-  "securityEnabled": true,
-}
-```
-
-</details>
-
-## SVC-CA; Exclude from all Conditional Access policies
-This definition is available here: [SVC-CA; Exclude from all Conditional Access policies][group-exclude], which you can access from my GitHub.
-
-This allows accounts to be added, such as break-glass accounts or others that should be excluded from all policies.
-
-Example below:
-
-<details>
-  <summary><em><strong>Expand code block</strong></em></summary>
-
-```json
-{
-  "description": "Contains the Break Glass accounts and any other account that should all be excluded from Conditional Access",
-  "displayName": "SVC-CA; Exclude from all Conditional Access Policies",
-  "mailEnabled": false,
-  "securityEnabled": true,
-}
-```
-
-</details>
-
-[group-users]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/All%20Users.json
-[group-guests]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/All%20Guests.json
-[group-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-CA/SVC-CA%3B%20Exclude%20from%20all%20Conditional%20Access%20Policies.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
