@@ -29,6 +29,8 @@ This definition is available here: [All Users][group-users], which you can acces
 
 This has a dynamic query that includes all users (including members and external users) within the Azure AD tenant.
 
+Example below:
+
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
 
@@ -53,6 +55,8 @@ This definition is available here: [All Guests][group-guests], which you can acc
 
 This has a dynamic query that includes all guests (which is all external users excluding members) within the Azure AD tenant.
 
+Example below:
+
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
 
@@ -76,6 +80,8 @@ This has a dynamic query that includes all guests (which is all external users e
 This definition is available here: [SVC-CA; Exclude from all Conditional Access policies][group-exclude], which you can access from my GitHub.
 
 This allows accounts to be added, such as break-glass accounts or others that should be excluded from all policies.
+
+Example below:
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>

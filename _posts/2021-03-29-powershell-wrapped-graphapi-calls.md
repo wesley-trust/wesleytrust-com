@@ -40,6 +40,8 @@ The first function is [Invoke-WTGraphQuery][function-query], which you can acces
 - This also sets up the required parameters, such as the headers and provides the Access Token in the request (provided by a public function)
 - The private functions below provide the method to this query function, and the public functions provide the Uri (such as 'groups' for Azure AD groups)
 
+The complete function as at this date, is below:
+
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
@@ -190,6 +192,8 @@ You can access the [Invoke-WTGraphGet][function-get] function, on my GitHub.
 - If there are specific IDs to get (rather than just performing a list) the call is altered as appropriate
 - For interactive runs, a progress status bar is displayed
 - The responses are tagged, if tags are provided, using the [Invoke-WTPropertyTagging][function-tag] function
+
+The complete function as at this date, is below:
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
@@ -350,6 +354,8 @@ You can access the [Invoke-WTGraphPatch][function-patch] function, on my GitHub.
 - This passes the required variables of "Patch" and the Access Token to the query function, which corresponds to an update or 'Edit'
 - The input object could contain properties such as dates that are readonly, as well as tags, so these are removed to prevent errors
 - For interactive runs, a progress status bar is displayed
+
+The complete function as at this date, is below:
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
@@ -523,6 +529,8 @@ You can access the [Invoke-WTGraphPost][function-post] function, on my GitHub.
 - This passes the required variables of "Post" and the Access Token to the query function, which corresponds to a create or 'New'
 - The input object could contain properties such as dates that are readonly, as well as tags, so these are removed to prevent errors
 - For interactive runs, a progress status bar is displayed
+
+The complete function as at this date, is below:
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
@@ -699,6 +707,8 @@ You can access the [Invoke-WTGraphDelete][function-delete] function, on my GitHu
 - This passes the required variables of "Delete" and the Access Token to the query function, which corresponds to a 'Remove'
 - To remove objects, the IDs of the objects must be provided
 - For interactive runs, a progress status bar is displayed
+
+The complete function as at this date, is below:
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>

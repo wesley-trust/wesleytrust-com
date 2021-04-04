@@ -71,6 +71,8 @@ Get-WTAzureADGroup -AccessToken $AccessToken -IDs $IDs
   - I tidy this up removing spaces, as well as adding the requirement of id and displayName for tagging
 - The private function is then called, with the query altered as appropriate depending on the parameters
 
+The complete function as at this date, is below:
+
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
@@ -288,6 +290,8 @@ Edit-WTAzureADGroup -AccessToken $AccessToken -AzureADGroup $AzureADGroup
 - An id is required in order to update a group, but this check is done within the private patch function
 - The private function is then called
 
+The complete function as at this date, is below:
+
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
@@ -469,6 +473,8 @@ New-WTAzureADGroup -AccessToken $AccessToken -AzureADGroup $AzureADGroup
 - A mailNickName is a required unique parameter, if one is not specified in the Azure AD group, one is generated
   - This uses the [New-WTRandomString][blog-tagging] function to generate a string, which is concatenated with the Service variable
 - The private function is then called
+
+The complete function as at this date, is below:
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
@@ -661,6 +667,8 @@ Remove-WTAzureADGroup -AccessToken $AccessToken -IDs $IDs
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - The private function is then called
 
+The complete function as at this date, is below:
+
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
@@ -831,6 +839,8 @@ Export-WTAzureADGroup -AccessToken $AccessToken -Path $Path -IDs $IDs
 - if no groups are specified, all groups are obtained unless there are specific ids provided
 - A subdirectory is created if it does not exist to store the policies, if a tag exists, and they should be included
   - A JSON file is then created per group as required
+
+The complete function as at this date, is below:
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>

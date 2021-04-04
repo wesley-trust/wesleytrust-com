@@ -74,6 +74,8 @@ Get-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupIDs $GroupIDs -Re
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - The private function is then called, with the query altered as appropriate depending on the parameters
 
+The complete function as at this date, is below:
+
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
@@ -276,6 +278,8 @@ New-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -Rela
 - To add a relationship, an object must be created in a specific format, this is done for each relationship ID
 - The private function is then called with the collection of object relationships to be added to the group
 
+The complete function as at this date, is below:
+
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
@@ -477,6 +481,8 @@ Remove-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -R
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - A group ID is required to remove a relationship, the relationship IDs are also specified as part of the Uri
 - The private function is then called for each ID to be removed from the group
+
+The complete function as at this date, is below:
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
