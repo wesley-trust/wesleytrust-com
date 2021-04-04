@@ -25,7 +25,7 @@ This post covers the YAML and PowerShell involved in the second stage which crea
 |:----------------------------------:|
 |[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
 
-## Invoke-WTPlanAzureADGroup
+## Invoke Plan Azure AD group
 This function is [Invoke-WTPlanAzureADGroup][function-plan], which you can access from my GitHub.
 
 Within the pipeline, this imports the validated JSON artifact of groups (should they exist), which is passed to the function via a parameter. This then creates a plan of what should be created, updated or removed (as appropriate).
@@ -166,7 +166,7 @@ Invoke-WTPlanAzureADGroup -AzureADGroup $ValidateAzureADGroup -AccessToken $Acce
 
 </details>
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - Checks are performed about whether to evaluate groups for updating or removal
 - Existing groups in Azure AD are obtained (as appropriate), in order to compare against the validated import

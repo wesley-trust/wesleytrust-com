@@ -26,21 +26,16 @@ Let's break these down.
 
 ### Private Functions
 Private functions are not intended to be directly called, so I'll be covering more of a top level overview of what each do, rather than providing example usage.
-- [Invoke-WTGraphQuery](#invoke-wtgraphquery)
-  - [What does this do?](#what-does-this-do)
-- [Invoke-WTGraphGet](#invoke-wtgraphget)
-  - [What does this do?](#what-does-this-do-1)
-- [Invoke-WTGraphPatch](#invoke-wtgraphpatch)
-  - [What does this do?](#what-does-this-do-2)
-- [Invoke-WTGraphPost](#invoke-wtgraphpost)
-  - [What does this do?](#what-does-this-do-3)
-- [Invoke-WTGraphDelete](#invoke-wtgraphdelete)
-  - [What does this do?](#what-does-this-do-4)
+- [Invoke a Graph query](#invoke-a-graph-query)
+- [Invoke a Graph Get method](#invoke-a-graph-get-method)
+- [Invoke a Graph Patch method](#invoke-a-graph-patch-method)
+- [Invoke a Graph Post method](#invoke-a-graph-post-method)
+- [Invoke a Graph Delete method](#invoke-a-graph-delete-method)
 
-## Invoke-WTGraphQuery
+## Invoke a Graph query
 The first function is [Invoke-WTGraphQuery][function-query], which you can access from my GitHub, this is a refactored version of one [Daniel][dan-blog] created. It's important to note, that using preview features, such as in Conditional Access, requires that the 'beta' API be used, this is selected by default.
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This allows you to specify the REST method and the Uri (uniform resource identifier), which executes against the Graph API
 - This also sets up the required parameters, such as the headers and provides the Access Token in the request (provided by a public function)
 - The private functions below provide the method to this query function, and the public functions provide the Uri (such as 'groups' for Azure AD groups)
@@ -187,10 +182,10 @@ function Invoke-WTGraphQuery {
 
 </details>
 
-## Invoke-WTGraphGet
+## Invoke a Graph Get method
 You can access the [Invoke-WTGraphGet][function-get] function, on my GitHub.
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This passes the required variables of "Get" and the Access Token to the query function
 - If there are specific IDs to get (rather than just performing a list) the call is altered as appropriate
 - For interactive runs, a progress status bar is displayed
@@ -348,10 +343,10 @@ function Invoke-WTGraphGet {
 
 </details>
 
-## Invoke-WTGraphPatch
+## Invoke a Graph Patch method
 You can access the [Invoke-WTGraphPatch][function-patch] function, on my GitHub.
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This passes the required variables of "Patch" and the Access Token to the query function, which corresponds to an update or 'Edit'
 - The input object could contain properties such as dates that are readonly, as well as tags, so these are removed to prevent errors
 - For interactive runs, a progress status bar is displayed
@@ -521,10 +516,10 @@ function Invoke-WTGraphPatch {
 
 </details>
 
-## Invoke-WTGraphPost
+## Invoke a Graph Post method
 You can access the [Invoke-WTGraphPost][function-post] function, on my GitHub.
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This passes the required variables of "Post" and the Access Token to the query function, which corresponds to a create or 'New'
 - The input object could contain properties such as dates that are readonly, as well as tags, so these are removed to prevent errors
 - For interactive runs, a progress status bar is displayed
@@ -697,10 +692,10 @@ function Invoke-WTGraphPost {
 
 </details>
 
-## Invoke-WTGraphDelete
+## Invoke a Graph Delete method
 You can access the [Invoke-WTGraphDelete][function-delete] function, on my GitHub.
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This passes the required variables of "Delete" and the Access Token to the query function, which corresponds to a 'Remove'
 - To remove objects, the IDs of the objects must be provided
 - For interactive runs, a progress status bar is displayed

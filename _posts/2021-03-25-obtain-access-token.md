@@ -41,7 +41,7 @@ I'll also need to grant permissions for each resource dependency, as the pipelin
 - Group.ReadWrite.All
 - Directory.ReadWrite.All
 
-## Obtaining an access token
+## Get a Graph Access Token
 Now that we have a service principal with the correct permissions, we need to obtain an access token to authenticate with the Graph API.
 
 This uses the [Get-WTGraphAccessToken][getaccesstoken], which you can access from my GitHub, this is a refactored version of one [Daniel][dan-blog] created. I always build pipeline support in my functions, to you can pipe in the parameters too. Examples below:
@@ -75,7 +75,7 @@ $AccessToken = Get-WTGraphAccessToken @ServicePrincipal
 $AccessToken = Get-WTGraphAccessToken -ClientID $ClientID -ClientSecret $ClientSecret -TenantDomain $TenantDomain
 ```
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 
 This invokes a REST method against the Microsoft Authentication service, for the Graph API resource, using the service principal parameters supplied for the Azure AD tenant. When executed, it returns an access token we can use to make requests against the Graph API (which must be periodically renewed).
 

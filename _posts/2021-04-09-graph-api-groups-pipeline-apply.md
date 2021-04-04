@@ -25,7 +25,7 @@ This post covers the YAML and PowerShell involved in the third stage which execu
 |:---------------------------------:|
 |[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Apply&jobName=Deploy)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
 
-## Invoke-WTApplyAzureADGroup
+## Invoke Apply Azure AD group
 This function is [Invoke-WTApplyAzureADGroup][function-apply], which you can access from my GitHub.
 
 Within the pipeline, this imports the validated JSON artifact of groups (should they exist), which is passed to the function via a parameter. This then creates a plan of what should be created, updated or removed (as appropriate).
@@ -169,7 +169,7 @@ Invoke-WTApplyAzureADGroup -AzureADGroup $PlanAzureADGroup -AccessToken $AccessT
 
 </details>
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - If groups should be removed, and the objects exist, the group IDs are provided to the remove group function
 - If groups should be updated, and the objects exist, the group objects are provided to the edit group function

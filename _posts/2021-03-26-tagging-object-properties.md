@@ -24,7 +24,7 @@ Each of my Conditional Access policies has a defined reference number, as well a
 
 As well as this being handy visual indicators, this reference number I need to use to match to the inclusion and exclusion groups that I'll be creating for each policy. As you can imagine, this is very important to get right. It also gives me the flexibility to have more use cases in the future.
 
-## Obtaining a tagged object
+## Invoke Property Tagging
 To get a tagged object, we use the [Invoke-WTPropertyTagging][function-link] function I wrote which is on my GitHub.
 
 Examples below:
@@ -76,7 +76,7 @@ $TaggedInputObject = Get-WTGraphAccessToken -InputObject $InputObject -PropertyT
   state           : 
 ```
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 This takes an array of tags, as well as a single property to tag, and the input object that will be evaluated for the tags.
 - The inputobject can be a collection of objects, and the function contains a foreach loop to support that
 - For the object, I get all the property names of the object, as I'll be adding these back to the new tagged object

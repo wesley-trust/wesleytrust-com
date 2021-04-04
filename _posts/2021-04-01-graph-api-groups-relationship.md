@@ -1,5 +1,5 @@
 ---
-title: "Update Azure AD group relationships via the Graph API & PowerShell"
+title: "Managing Azure AD group relationships via the Graph API & PowerShell"
 categories:
   - blog
 tags:
@@ -16,15 +16,12 @@ Managing Azure AD group members is a dependency for the Conditional Access polic
 
 This creates a complete solution that can be deployed in an Azure Pipeline.
 
-### Updating Azure AD group relationships
-- [Get-WTAzureADGroupRelationship](#get-wtazureadgrouprelationship)
-  - [What does this do?](#what-does-this-do)
-- [New-WTAzureADGroupRelationship](#new-wtazureadgrouprelationship)
-  - [What does this do?](#what-does-this-do-1)
-- [Remove-WTAzureADGroupRelationship](#remove-wtazureadgrouprelationship)
-  - [What does this do?](#what-does-this-do-2)
+### Managing Azure AD group relationships
+- [Get Azure AD group relationships](#get-azure-ad-group-relationships)
+- [Create Azure AD group relationships](#create-azure-ad-group-relationships)
+- [Remove Azure AD group relationships](#remove-azure-ad-group-relationships)
 
-## Get-WTAzureADGroupRelationship
+## Get Azure AD group relationships
 The first function is [Get-WTAzureADGroupRelationship][function-get], which you can access from my GitHub.
 
 This gets the Azure AD group owners, memberOf or members, for the specific group IDs specified.
@@ -71,7 +68,7 @@ Get-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupIDs $GroupIDs -Re
 
 </details>
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity, the tags to be evaluated in the relationships, and the Graph Uri
   - A group relationship could consist of owners, memberOf or members which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
@@ -223,7 +220,7 @@ function Get-WTAzureADGroupRelationship {
 
 </details>
 
-## New-WTAzureADGroupRelationship
+## Create Azure AD group relationships
 The next function is [New-WTAzureADGroupRelationship][function-new], which you can access from my GitHub.
 
 This creates new Azure AD group relationships, which can be either owners or members, this is used within the pipeline to add members to the Conditional Access inclusion/exclusion groups created in the pipeline.
@@ -271,7 +268,7 @@ New-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -Rela
 
 </details>
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity and the Graph Uri
   - A group relationship could consist of owners or members which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
@@ -426,7 +423,7 @@ function New-WTAzureADGroupRelationship {
 
 </details>
 
-## Remove-WTAzureADGroupRelationship
+## Remove Azure AD group relationships
 The last function is [Remove-WTAzureADGroupRelationship][function-remove], which you can access from my GitHub.
 
 This removes Azure AD group relationships, which can be either owners or members.
@@ -474,7 +471,7 @@ Remove-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -R
 
 </details>
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity and the Graph Uri
   - A group relationship could consist of owners or members which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline

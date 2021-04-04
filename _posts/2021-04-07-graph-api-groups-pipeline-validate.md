@@ -27,7 +27,7 @@ This post covers the YAML and PowerShell involved in the first stage of importin
 |:----------------------------------:|
 |[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
 
-## Invoke-WTValidateAzureADGroup
+## Invoke Validate Azure AD group
 This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
 
 This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria.
@@ -138,7 +138,7 @@ $AzureADGroup | Invoke-WTValidateAzureADGroup
 
 </details>
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the required properties that must be present in the input
 - To import, a file path to specific files or a directory path from which all files will be imported is required
   - Alternatively, a group or collection of groups can also be passed in a parameter to validate

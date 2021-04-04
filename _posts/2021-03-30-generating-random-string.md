@@ -17,7 +17,7 @@ The original version only allowed for each character from the character set to a
 
 The use case for the Graph API, is using this for Azure AD groups. When creating an Azure AD group, there are certain required fields, one of which is mailNickName, which must be a unique string in the Azure AD tenant. _Annoyingly, even for security groups, you must also specify this parameter._
 
-## Obtaining a random string
+## Create a random string
 To get a random string, we use the [New-WTRandomString][function-link] function I wrote which is on my GitHub.
 
 Examples below:
@@ -48,7 +48,7 @@ New-WTRandomString @Parameters
 New-WTRandomString -CharacterLength $CharacterLength -Alphanumeric
 ```
 
-### What does this do?
+### What does this do? <!-- omit in toc -->
 - First the variables are set, these are the specific character sets for lowercase, uppercase, numbers and special characters
 - By default, all character sets are used with a length of 12, but you can also specify "Simplified" for letters only, as well as "Alphanumeric"
 - The character sets are built up as individual objects, for each character, I randomise the character set by combining "Sort-Object" with "Get-Random"
