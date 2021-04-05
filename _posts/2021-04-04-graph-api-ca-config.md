@@ -15,7 +15,9 @@ excerpt: "For Azure AD Conditional Access, I've put together a set of recommende
 ---
 Within GitHub, I've created the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate._
 
-This repo covers recommended definitions for default Azure AD groups, Conditional Access and Endpoint Manager (Intune) policies etc. All of which will be created as part of either the Conditional Access pipeline, or a related pipeline (groups, Endpoint Manager etc). I'll be covering the design of these in a series of posts.
+This repo covers recommended definitions for default Azure AD groups, Conditional Access and Endpoint Manager (Intune) policies.
+
+All of which will be created as part of either the Conditional Access pipeline, or a related pipeline (Azure AD groups, Endpoint Manager etc). I'll be covering the design of these in a series of posts.
 
 Firstly, to make full use of Conditional Access policies, there are dependencies of the following to consider:
 - Azure AD
@@ -46,8 +48,8 @@ This definition is available here: [REF-01][policy-ref1], which you can access f
   <summary><em><strong>Assignments</strong></em></summary>
 
 #### Users & Groups  <!-- omit in toc -->
-- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" added
-- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts) added.
+- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" automatically added
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts)
 #### Cloud apps or actions  <!-- omit in toc -->
 - Cloud apps: All cloud apps
 #### Conditions  <!-- omit in toc -->
@@ -145,8 +147,8 @@ This definition is available here: [REF-02][policy-ref2], which you can access f
   <summary><em><strong>Assignments</strong></em></summary>
 
 #### Users & Groups  <!-- omit in toc -->
-- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" added
-- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts) added.
+- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" automatically added
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts)
 #### Cloud apps or actions  <!-- omit in toc -->
 - User action: Register security information
 #### Conditions  <!-- omit in toc -->
@@ -168,11 +170,11 @@ _It's important to include IPv6 and unknown locations, to reduce the chance that
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This is used to restrict the ability to register security information (IE MFA registration), to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from). Or devices that are already hybrid joined or compliant with security policies.
-
-_This can be customised to restrict further._
+This is used to restrict the ability to register security information (IE MFA registration), to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from). Or devices that are already hybrid joined or compliant with security policies. 
 
 Blocking all attempts from locations other than these, reducing the attack vector so it's less likely malicious registration could occur.
+
+_This can be customised to restrict further._
 
 Example below:
 <details>
