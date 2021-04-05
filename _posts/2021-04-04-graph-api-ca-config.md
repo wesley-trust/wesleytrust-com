@@ -31,7 +31,7 @@ I'm going to cover each of the dependencies in their own series of posts, but to
 
 _These aren't intended to be fully exhaustive, they're supposed to be customised to suit individual needs and are intended to serve as a good starting point (that I use in my personal Azure AD tenant)._
 
-These polices use the "beta" Microsoft Graph API (as at this date), as they make use of features in "Preview". Typically it's not recommended to use preview features in production, however, in this case, the alternative is to not make use of these security features, which would likely be higher risk.
+These polices use the "beta" Microsoft Graph API (as at this date), as they make use of features in "Preview". Typically it's not recommended to use preview features in production, however, in this case, the alternative is to not make use of these features, so it's an acceptable risk.
 
 ### Recommended Azure AD Conditional Access policies
 - [Block access, for all cloud apps, for any location, excluding trusted or named locations](#block-access-for-all-cloud-apps-for-any-location-excluding-trusted-or-named-locations)
@@ -41,7 +41,20 @@ These polices use the "beta" Microsoft Graph API (as at this date), as they make
 ## Block access, for all cloud apps, for any location, excluding trusted or named locations
 This definition is available here: [REF-01][policy-ref1], which you can access from my GitHub.
 
-This is used to restrict the ability to sign in, to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from). Blocking all signs ins from locations other than these, reducing the attack vector so it's less likely malicious sign ins will be successful.
+This is used to restrict the ability to sign-in, to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign-in from). Blocking all signs-ins from locations other than these, reducing the attack vector so it's less likely malicious sign ins will be successful.
+
+### Assignments <!-- omit in toc -->
+#### Users & Groups  <!-- omit in toc -->
+Applied to the Inclusion and Exclusion groups that are automatically created by the pipeline. The inclusion will contain the dynamic nested group "All Users" and the exclusion will contain the nested group that includes all accounts that should be excluded from all policies (such as break-glass accounts).
+#### Cloud apps or actions  <!-- omit in toc -->
+All cloud apps
+#### Conditions  <!-- omit in toc -->
+Include any location
+Exclude selected named locations: MFA Trusted IPs, United Kingdom, IPv6 and unknown
+### Access controls  <!-- omit in toc -->
+#### Grant  <!-- omit in toc -->
+Block access
+#### Session  <!-- omit in toc -->
 
 Example below:
 
