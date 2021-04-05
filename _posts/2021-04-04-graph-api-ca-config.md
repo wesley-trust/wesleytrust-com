@@ -13,7 +13,9 @@ tags:
   - recommendations
 excerpt: "For Azure AD Conditional Access, I've put together a set of recommended baseline polices based on my experience and research..."
 ---
-Within GitHub, I've created a [baseline configuration template repo][GraphAPIConfig] for the Graph API, that can be used as recommended definitions for the groups, policies and named locations that will be created as part of the Conditional Access and related pipelines. I'll be covering the design of these in a series of posts.
+Within GitHub, I've created the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate._
+
+This repo covers recommended definitions for default Azure AD groups, Conditional Access and Endpoint Manager (Intune) policies etc. All of which will be created as part of either the Conditional Access pipeline, or a related pipeline (groups, Endpoint Manager etc). I'll be covering the design of these in a series of posts.
 
 Firstly, to make full use of Conditional Access policies, there are dependencies of the following to consider:
 - Azure AD
@@ -36,7 +38,6 @@ These polices use the "beta" Microsoft Graph API (as at this date), as they make
 ### Recommended Azure AD Conditional Access policies
 - [Block access, for all cloud apps, for any location, excluding trusted or named locations](#block-access-for-all-cloud-apps-for-any-location-excluding-trusted-or-named-locations)
 - [Block access, for registering security information, for any location, excluding trusted or named locations, hybrid joined or compliant devices](#block-access-for-registering-security-information-for-any-location-excluding-trusted-or-named-locations-hybrid-joined-or-compliant-devices)
-- [Block access, for all cloud apps, for any location, excluding trusted or named locations](#block-access-for-all-cloud-apps-for-any-location-excluding-trusted-or-named-locations-1)
 
 ## Block access, for all cloud apps, for any location, excluding trusted or named locations
 This definition is available here: [REF-01][policy-ref1], which you can access from my GitHub.
@@ -46,12 +47,13 @@ This definition is available here: [REF-01][policy-ref1], which you can access f
 
 #### Users & Groups  <!-- omit in toc -->
 - Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" added
-- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (such as break-glass accounts) added.
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts) added.
 #### Cloud apps or actions  <!-- omit in toc -->
-- All cloud apps
+- Cloud apps: All cloud apps
 #### Conditions  <!-- omit in toc -->
-- Include: Any location
-- Exclude: Selected named locations, MFA Trusted IPs, United Kingdom, IPv6 and unknown
+- Locations: Include: Any location
+- Locations: Exclude: Selected named locations: MFA Trusted IPs, United Kingdom, IPv6 and unknown
+
 _It's important to include IPv6 and unknown locations, to reduce the chance that legitimate users will be blocked_
 </details>
 
@@ -139,14 +141,40 @@ Example below:
 ## Block access, for registering security information, for any location, excluding trusted or named locations, hybrid joined or compliant devices
 This definition is available here: [REF-02][policy-ref2], which you can access from my GitHub.
 
-This is used to restrict the ability to register security information (MFA registration information), to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from). Or devices that are already hybrid joined or compliant with security policies.
+<details>
+  <summary><em><strong>Assignments</strong></em></summary>
+
+#### Users & Groups  <!-- omit in toc -->
+- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" added
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts) added.
+#### Cloud apps or actions  <!-- omit in toc -->
+- User action: Register security information
+#### Conditions  <!-- omit in toc -->
+- Locations: Include: Any location
+- Locations: Exclude: Selected named locations: MFA Trusted IPs, United Kingdom, IPv6 and unknown
+- Device state: Include: All device state
+- Device state: Exclude: Device Hybrid Azure AD joined, Device marked as compliant
+
+_It's important to include IPv6 and unknown locations, to reduce the chance that legitimate users will be blocked_
+</details>
+
+<details>
+  <summary><em><strong>Access controls</strong></em></summary>
+
+#### Grant  <!-- omit in toc -->
+- Block access
+#### Session  <!-- omit in toc -->
+- None
+</details>
+
+### What does this do? <!-- omit in toc -->
+This is used to restrict the ability to register security information (IE MFA registration), to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from). Or devices that are already hybrid joined or compliant with security policies.
 
 _This can be customised to restrict further._
 
-Blocking all attempts from locations other than these, reducing the attack vector so it's less likely malicious registration will be successful.
+Blocking all attempts from locations other than these, reducing the attack vector so it's less likely malicious registration could occur.
 
 Example below:
-
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
 
@@ -218,81 +246,6 @@ Example below:
     "termsOfUse": []
   },
   "id": "50352922-ee14-4374-9378-2c275dce663b",
-  "modifiedDateTime": null,
-  "sessionControls": null,
-  "state": "disabled"
-}
-```
-
-</details>
-
-## Block access, for all cloud apps, for any location, excluding trusted or named locations
-This definition is available here: [REF-01][policy-ref1], which you can access from my GitHub.
-
-This is used to restrict the ability to sign in, to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from). Blocking all signs ins from locations other than these, reducing the attack vector so it's less likely malicious sign ins will be successful.
-
-Example below:
-
-<details>
-  <summary><em><strong>Expand code block</strong></em></summary>
-
-```json
-{
-  "REF": "01",
-  "VER": "2",
-  "ENV": "P",
-  "@odata.context": "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies/$entity",
-  "conditions": {
-    "userRiskLevels": [],
-    "signInRiskLevels": [],
-    "clientAppTypes": [
-      "all"
-    ],
-    "platforms": null,
-    "deviceStates": null,
-    "devices": null,
-    "clientApplications": null,
-    "applications": {
-      "includeApplications": [
-        "All"
-      ],
-      "excludeApplications": [],
-      "includeUserActions": [],
-      "includeAuthenticationContextClassReferences": []
-    },
-    "users": {
-      "includeUsers": [],
-      "excludeUsers": [],
-      "includeGroups": [
-        "9c6b6939-ded5-43ed-8d2a-70838fccb2ed"
-      ],
-      "excludeGroups": [
-        "e7f5a73c-2029-4a34-8734-a21484843732"
-      ],
-      "includeRoles": [],
-      "excludeRoles": []
-    },
-    "locations": {
-      "includeLocations": [
-        "All"
-      ],
-      "excludeLocations": [
-        "00000000-0000-0000-0000-000000000000",
-        "102afe99-db6a-49d1-bdb6-45f973812aaf"
-      ]
-    }
-  },
-  "createdDateTime": "2021-03-19T20:10:29.9780638Z",
-  "displayName": "REF-01;ENV-P;VER-2; Block access, for all cloud apps, for any location, excluding trusted or named locations",
-  "grantControls": {
-    "operator": "OR",
-    "builtInControls": [
-      "block"
-    ],
-    "customAuthenticationFactors": [],
-    "termsOfUse": []
-  },
-  "id": "f3dc1672-18a9-493e-9b6f-e50bda10c2cc",
   "modifiedDateTime": null,
   "sessionControls": null,
   "state": "disabled"
