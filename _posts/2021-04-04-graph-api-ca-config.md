@@ -41,23 +41,33 @@ These polices use the "beta" Microsoft Graph API (as at this date), as they make
 ## Block access, for all cloud apps, for any location, excluding trusted or named locations
 This definition is available here: [REF-01][policy-ref1], which you can access from my GitHub.
 
-This is used to restrict the ability to sign-in, to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign-in from). Blocking all signs-ins from locations other than these, reducing the attack vector so it's less likely malicious sign ins will be successful.
+<details>
+  <summary><em><strong>Assignments</strong></em></summary>
 
-### Assignments <!-- omit in toc -->
 #### Users & Groups  <!-- omit in toc -->
-Applied to the Inclusion and Exclusion groups that are automatically created by the pipeline. The inclusion will contain the dynamic nested group "All Users" and the exclusion will contain the nested group that includes all accounts that should be excluded from all policies (such as break-glass accounts).
+- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" added
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (such as break-glass accounts) added.
 #### Cloud apps or actions  <!-- omit in toc -->
-All cloud apps
+- All cloud apps
 #### Conditions  <!-- omit in toc -->
-Include any location
-Exclude selected named locations: MFA Trusted IPs, United Kingdom, IPv6 and unknown
-### Access controls  <!-- omit in toc -->
+- Include: Any location
+- Exclude: Selected named locations, MFA Trusted IPs, United Kingdom, IPv6 and unknown
+_It's important to include IPv6 and unknown locations, to reduce the chance that legitimate users will be blocked_
+</details>
+
+<details>
+  <summary><em><strong>Access controls</strong></em></summary>
+
 #### Grant  <!-- omit in toc -->
-Block access
+- Block access
 #### Session  <!-- omit in toc -->
+- None
+</details>
+
+### What does this do? <!-- omit in toc -->
+This is used to restrict the ability to sign-in, to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign-in from). Blocking all signs-ins from locations other than these, reducing the attack vector so it's less likely malicious sign-ins could occur.
 
 Example below:
-
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
 
