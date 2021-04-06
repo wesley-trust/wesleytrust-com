@@ -13,7 +13,7 @@ tags:
   - recommendations
 excerpt: "For Azure AD Conditional Access, I've put together a set of recommended baseline polices based on my experience and research..."
 ---
-Within GitHub, I've created the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate._
+Within GitHub, I've created the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate. Please always grab the latest versions from GitHub._
 
 This repo covers recommended definitions for default Azure AD groups, Conditional Access and Endpoint Manager (Intune) policies.
 
@@ -48,7 +48,7 @@ These polices use the "beta" Microsoft Graph API (as at this date), as they make
 - [Require app protection policy or compliant device, for Exchange and SharePoint, for all mobile devices](#require-app-protection-policy-or-compliant-device-for-exchange-and-sharepoint-for-all-mobile-devices)
 - [Require app-enforced restrictions, for Exchange and SharePoint, for all browsers, excluding hybrid joined or compliant devices](#require-app-enforced-restrictions-for-exchange-and-sharepoint-for-all-browsers-excluding-hybrid-joined-or-compliant-devices)
 - [Require daily sign-in frequency with no persistent sessions, for all cloud apps, for all browsers, excluding hybrid joined or compliant devices](#require-daily-sign-in-frequency-with-no-persistent-sessions-for-all-cloud-apps-for-all-browsers-excluding-hybrid-joined-or-compliant-devices)
-- [Require daily sign-in frequency with no persistent sessions, for all cloud apps, for all browsers, excluding hybrid joined or compliant devices](#require-daily-sign-in-frequency-with-no-persistent-sessions-for-all-cloud-apps-for-all-browsers-excluding-hybrid-joined-or-compliant-devices-1)
+- [Require MFA, for administrators, for all cloud apps](#require-mfa-for-administrators-for-all-cloud-apps)
 - [Require MFA, for Azure Management](#require-mfa-for-azure-management)
 - [Require MFA, for risky sign-in events, for all cloud apps](#require-mfa-for-risky-sign-in-events-for-all-cloud-apps)
 - [Require password change with MFA, for users at risk, for all cloud apps](#require-password-change-with-mfa-for-users-at-risk-for-all-cloud-apps)
@@ -600,6 +600,7 @@ This definition is available here: [REF-06][policy-ref6], which you can access f
 
 #### Grant  <!-- omit in toc -->
 - Grant access: Require device to be marked as compliant, Require Hybrid Azure AD joined device
+
 _Require one of the selected controls_
 #### Session  <!-- omit in toc -->
 - None
@@ -704,6 +705,7 @@ This definition is available here: [REF-07][policy-ref7], which you can access f
 
 #### Grant  <!-- omit in toc -->
 - Grant access: Require device to be marked as compliant, Require approved client app
+
 _Require one of the selected controls_
 #### Session  <!-- omit in toc -->
 - None
@@ -807,6 +809,7 @@ This definition is available here: [REF-08][policy-ref8], which you can access f
 
 #### Grant  <!-- omit in toc -->
 - Grant access: Require device to be marked as compliant, Require app protection policy
+
 _Require one of the selected controls_
 #### Session  <!-- omit in toc -->
 - None
@@ -817,7 +820,7 @@ This requires that users must sign-in from a device marked as compliant, or use 
 
 This means that for mobile operating systems, there is a choice to enrol a device for MDM, typically used for corporate devices, where administrators will have full control of the device, or users must use a client app with an app protection policy applied, typically used for personal devices. This extends security for supported apps, above just requiring an approved app, which applies for apps that do not support this control.
 
-_Only specific client apps support this setting, so it's recommended to not apply to "All cloud apps", [more info here][policy-ref8-applink]_
+_Only specific client apps support this setting, so it's recommended to not apply to "All cloud apps", [more info here][policy-ref8-applink]._
 
 Example below:
 <details>
@@ -920,7 +923,7 @@ This definition is available here: [REF-09][policy-ref9], which you can access f
 ### What does this do? <!-- omit in toc -->
 This requires that users have app-enforced restrictions (such as the inability to download data) when using a web browser accessing Exchange or SharePoint. Unless accessed using devices that are Hybrid Azure AD joined or marked as compliant.
 
-_This requires configuration changes for Exchange Online and SharePoint Online to enforce restrictions, [more info here][policy-ref9-applink]_
+_This requires configuration changes for Exchange Online and SharePoint Online to enforce restrictions, [more info here][policy-ref9-applink]._
 
 Example below:
 <details>
@@ -1105,7 +1108,7 @@ Example below:
 
 </details>
 
-## Require daily sign-in frequency with no persistent sessions, for all cloud apps, for all browsers, excluding hybrid joined or compliant devices
+## Require MFA, for administrators, for all cloud apps
 This definition is available here: [REF-11][policy-ref11], which you can access from my GitHub.
 
 <details>
@@ -1268,7 +1271,7 @@ This definition is available here: [REF-12][policy-ref12], which you can access 
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This requires multi-factor authentication for all users accessing Microsoft Azure Management. This is a sensitive application as this allows the ability to view, change or remove Azure resources, with the correct permissions on the resources which do not require an Azure AD role, and so is protected.
+This requires multi-factor authentication for all users accessing Microsoft Azure Management. This is a sensitive application as this allows the ability to view, change or remove Azure resources (with the correct permissions on the resource) which does not require an Azure AD role, and so management is protected.
 
 Example below:
 <details>
@@ -1452,7 +1455,7 @@ This definition is available here: [REF-14][policy-ref14], which you can access 
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This requires multi-factor authentication for users Azure AD Identity Protection has determined to be at a high risk level of being compromised (such as through leaked credentials). This allows these users to be challenged with MFA, which if successful, requires that they change their password. Enhancing security by requiring automatically that users with compromised accounts and identified with action taken.
+This requires multi-factor authentication for users Azure AD Identity Protection has determined to be at a high risk level of being compromised (such as through leaked credentials). This allows these users to be challenged with MFA, which if successful, requires that they change their password. Enhancing security by requiring automatically that users with compromised accounts are identified with action taken.
 
 _This can be customised to increase or decrease the risk appetite for triggering the password change and also whether the user is blocked instead._
 _A user without MFA configured, will not be allowed to configure MFA when at risk._
@@ -1549,7 +1552,7 @@ This definition is available here: [REF-15][policy-ref15], which you can access 
 ### What does this do? <!-- omit in toc -->
 This requires multi-factor authentication for when users register or join their devices to Azure AD. When enrolling a device in Endpoint Manager (Intune) or using an App with an "App Protection" policy applied, the device is registered in Azure AD, and so would also be required to complete MFA.
 
-_This replaces the tenant wide setting, allowing customisation, such as including location based exclusions_
+_This replaces the tenant wide setting, allowing customisation, such as including location based exclusions._
 
 Example below:
 <details>
