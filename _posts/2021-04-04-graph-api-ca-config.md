@@ -40,6 +40,10 @@ These polices use the "beta" Microsoft Graph API (as at this date), as they make
 ### Recommended Azure AD Conditional Access policies
 - [Block access, for all cloud apps, for any location, excluding trusted or named locations](#block-access-for-all-cloud-apps-for-any-location-excluding-trusted-or-named-locations)
 - [Block access, for registering security information, for any location, excluding trusted or named locations, hybrid joined or compliant devices](#block-access-for-registering-security-information-for-any-location-excluding-trusted-or-named-locations-hybrid-joined-or-compliant-devices)
+- [Block access, for guests, for all cloud apps, except approved apps](#block-access-for-guests-for-all-cloud-apps-except-approved-apps)
+- [Block access, for all cloud apps, for all client apps supporting legacy authentication](#block-access-for-all-cloud-apps-for-all-client-apps-supporting-legacy-authentication)
+- [Require MFA, for all cloud apps, for any location, excluding trusted locations, hybrid joined or compliant devices](#require-mfa-for-all-cloud-apps-for-any-location-excluding-trusted-locations-hybrid-joined-or-compliant-devices)
+- [Require hybrid joined or compliant device, for all cloud apps, for all desktop devices](#require-hybrid-joined-or-compliant-device-for-all-cloud-apps-for-all-desktop-devices)
 
 ## Block access, for all cloud apps, for any location, excluding trusted or named locations
 This definition is available here: [REF-01][policy-ref1], which you can access from my GitHub.
@@ -51,7 +55,7 @@ This definition is available here: [REF-01][policy-ref1], which you can access f
 - Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" automatically added
 - Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts)
 #### Cloud apps or actions  <!-- omit in toc -->
-- Cloud apps: All cloud apps
+- Cloud apps: Include: All cloud apps
 #### Conditions  <!-- omit in toc -->
 - Locations: Include: Any location
 - Locations: Exclude: Selected named locations: MFA Trusted IPs, United Kingdom, IPv6 and unknown
@@ -256,6 +260,426 @@ Example below:
 
 </details>
 
+## Block access, for guests, for all cloud apps, except approved apps
+This definition is available here: [REF-03][policy-ref3], which you can access from my GitHub.
+
+<details>
+  <summary><em><strong>Assignments</strong></em></summary>
+
+#### Users & Groups  <!-- omit in toc -->
+- Inclusion: Group created by the pipeline, with the dynamic nested group "All Guests" automatically added
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts)
+#### Cloud apps or actions  <!-- omit in toc -->
+- Cloud apps: Include: All cloud apps
+- Cloud apps: Exclude: Office 365 Exchange Online, Office 365 SharePoint Online, Microsoft Planner, Microsoft Stream, Microsoft Teams
+#### Conditions  <!-- omit in toc -->
+- Client apps: Modern authentication clients: Browser, Mobile apps and desktop clients
+
+_Other client apps will be blocked by another policy (IE disabling legacy authentication)_
+</details>
+
+<details>
+  <summary><em><strong>Access controls</strong></em></summary>
+
+#### Grant  <!-- omit in toc -->
+- Block access
+#### Session  <!-- omit in toc -->
+- None
+</details>
+
+### What does this do? <!-- omit in toc -->
+This is used to restrict the ability of guests and external users to only access approved cloud apps (such as collaboration apps). Blocking all attempts to access other cloud apps to increase security. Combining this with approved external domains for sharing within SharePoint Online will enhance security further.
+
+_This can be customised to restrict or relax the apps included within the policy._
+
+Example below:
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "REF": "03",
+  "VER": "2",
+  "ENV": "P",
+  "@odata.context": "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies/$entity",
+  "conditions": {
+    "userRiskLevels": [],
+    "signInRiskLevels": [],
+    "clientAppTypes": [
+      "browser",
+      "mobileAppsAndDesktopClients"
+    ],
+    "platforms": null,
+    "locations": null,
+    "deviceStates": null,
+    "devices": null,
+    "clientApplications": null,
+    "applications": {
+      "includeApplications": [
+        "All"
+      ],
+      "excludeApplications": [
+        "00000002-0000-0ff1-ce00-000000000000",
+        "00000003-0000-0ff1-ce00-000000000000",
+        "00000004-0000-0ff1-ce00-000000000000",
+        "09abbdfd-ed23-44ee-a2d9-a627aa1c90f3",
+        "2634dd23-5e5a-431c-81ca-11710d9079f4",
+        "cc15fd57-2c6c-4117-a88c-83b1d56b4bbe"
+      ],
+      "includeUserActions": [],
+      "includeAuthenticationContextClassReferences": []
+    },
+    "users": {
+      "includeUsers": [],
+      "excludeUsers": [],
+      "includeGroups": [
+        "44e33914-4a7e-46f8-85f7-c10f75c39fb0"
+      ],
+      "excludeGroups": [
+        "51864daf-1d49-4d7c-bade-3aeea99c458c"
+      ],
+      "includeRoles": [],
+      "excludeRoles": []
+    }
+  },
+  "createdDateTime": "2021-03-19T20:10:33.1289159Z",
+  "displayName": "REF-03;ENV-P;VER-2; Block access, for guests, for all cloud apps, except approved apps",
+  "grantControls": {
+    "operator": "OR",
+    "builtInControls": [
+      "block"
+    ],
+    "customAuthenticationFactors": [],
+    "termsOfUse": []
+  },
+  "id": "3fc2f375-20ba-4f8c-94c8-3aad88e2638d",
+  "modifiedDateTime": null,
+  "sessionControls": null,
+  "state": "disabled"
+}
+```
+
+</details>
+
+## Block access, for all cloud apps, for all client apps supporting legacy authentication
+This definition is available here: [REF-04][policy-ref4], which you can access from my GitHub.
+
+<details>
+  <summary><em><strong>Assignments</strong></em></summary>
+
+#### Users & Groups  <!-- omit in toc -->
+- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" automatically added
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts)
+#### Cloud apps or actions  <!-- omit in toc -->
+- Cloud apps: Include: All cloud apps
+#### Conditions  <!-- omit in toc -->
+- Client apps: Legacy authentication clients: Exchange ActiveSync clients, Other clients
+
+</details>
+
+<details>
+  <summary><em><strong>Access controls</strong></em></summary>
+
+#### Grant  <!-- omit in toc -->
+- Block access
+#### Session  <!-- omit in toc -->
+- None
+</details>
+
+### What does this do? <!-- omit in toc -->
+This is used to restrict the ability of users to only authenticate with modern authentication clients (which fully support Conditional Access, MFA and the latest security protocols). Blocking all attempts to access using legacy authentication clients.
+
+_This can be customised to allow ActiveSync, but this is not recommended as app protection policies will not apply, lowering security._
+
+Example below:
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "REF": "04",
+  "VER": "2",
+  "ENV": "P",
+  "@odata.context": "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies/$entity",
+  "conditions": {
+    "userRiskLevels": [],
+    "signInRiskLevels": [],
+    "clientAppTypes": [
+      "exchangeActiveSync",
+      "other"
+    ],
+    "platforms": null,
+    "locations": null,
+    "deviceStates": null,
+    "devices": null,
+    "clientApplications": null,
+    "applications": {
+      "includeApplications": [
+        "All"
+      ],
+      "excludeApplications": [],
+      "includeUserActions": [],
+      "includeAuthenticationContextClassReferences": []
+    },
+    "users": {
+      "includeUsers": [],
+      "excludeUsers": [],
+      "includeGroups": [
+        "e3560bd8-19a9-464a-a37b-61a05fa6fef7"
+      ],
+      "excludeGroups": [
+        "d77bcccc-1a7e-4d71-80d3-64bbcbff2bfc"
+      ],
+      "includeRoles": [],
+      "excludeRoles": []
+    }
+  },
+  "createdDateTime": "2021-03-19T20:10:35.0719324Z",
+  "displayName": "REF-04;ENV-P;VER-2; Block access, for all cloud apps, for all client apps supporting legacy authentication",
+  "grantControls": {
+    "operator": "OR",
+    "builtInControls": [
+      "block"
+    ],
+    "customAuthenticationFactors": [],
+    "termsOfUse": []
+  },
+  "id": "794fdafa-39cc-4219-9df3-7d3e804dd779",
+  "modifiedDateTime": null,
+  "sessionControls": null,
+  "state": "disabled"
+}
+```
+
+</details>
+
+## Require MFA, for all cloud apps, for any location, excluding trusted locations, hybrid joined or compliant devices
+This definition is available here: [REF-05][policy-ref5], which you can access from my GitHub.
+
+<details>
+  <summary><em><strong>Assignments</strong></em></summary>
+
+#### Users & Groups  <!-- omit in toc -->
+- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" automatically added
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts)
+#### Cloud apps or actions  <!-- omit in toc -->
+- Cloud apps: Include: All cloud apps
+#### Conditions  <!-- omit in toc -->
+- Locations: Include: Any location
+- Locations: Exclude: All trusted locations
+- Device state: Include: All device state
+- Device state: Exclude: Device Hybrid Azure AD joined, Device marked as compliant
+
+</details>
+
+<details>
+  <summary><em><strong>Access controls</strong></em></summary>
+
+#### Grant  <!-- omit in toc -->
+- Grant access: Require multi-factor authentication
+#### Session  <!-- omit in toc -->
+- None
+</details>
+
+### What does this do? <!-- omit in toc -->
+This requires that users are challenged for multi-factor authentication during sign-in for compatible client apps. Unless they're within a trusted location or have devices that are Hybrid Azure AD joined or marked as compliant.
+
+As trusted locations are excluded, as well as specific devices, locations marked as trusted should be limited and devices that are Windows AD joined should be within a trust boundary (IE can only be joined by administrators or a trusted join workflow where security can be assured).
+
+When used in combination with [REF-06](#require-hybrid-joined-or-compliant-device-for-all-cloud-apps-for-all-desktop-devices), common scenarios might include a Windows Virtual Desktop, or Windows Server mult-session environment, which are locked down within a cloud provider. When combined with Endpoint Manager, device security can be assured with a compliance policy which can be revoked.
+
+Example below:
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "REF": "05",
+  "VER": "2",
+  "ENV": "P",
+  "@odata.context": "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies/$entity",
+  "conditions": {
+    "userRiskLevels": [],
+    "signInRiskLevels": [],
+    "clientAppTypes": [
+      "all"
+    ],
+    "platforms": null,
+    "deviceStates": null,
+    "clientApplications": null,
+    "applications": {
+      "includeApplications": [
+        "All"
+      ],
+      "excludeApplications": [],
+      "includeUserActions": [],
+      "includeAuthenticationContextClassReferences": []
+    },
+    "users": {
+      "includeUsers": [],
+      "excludeUsers": [],
+      "includeGroups": [
+        "1217be06-fdb0-4ad4-bd2b-be95fa5cd39e"
+      ],
+      "excludeGroups": [
+        "1e578ca6-5b86-48e1-ab8a-63dfea8b7374"
+      ],
+      "includeRoles": [],
+      "excludeRoles": []
+    },
+    "locations": {
+      "includeLocations": [
+        "All"
+      ],
+      "excludeLocations": [
+        "AllTrusted"
+      ]
+    },
+    "devices": {
+      "includeDeviceStates": [],
+      "excludeDeviceStates": [],
+      "includeDevices": [
+        "All"
+      ],
+      "excludeDevices": [
+        "Compliant",
+        "DomainJoined"
+      ],
+      "deviceFilter": null
+    }
+  },
+  "createdDateTime": "2021-03-19T20:10:36.8989474Z",
+  "displayName": "REF-05;ENV-P;VER-2; Require MFA, for all cloud apps, for any location, excluding trusted locations, hybrid joined or compliant devices",
+  "grantControls": {
+    "operator": "OR",
+    "builtInControls": [
+      "mfa"
+    ],
+    "customAuthenticationFactors": [],
+    "termsOfUse": []
+  },
+  "id": "457c0169-b8d3-4469-9c16-9415ebce5a52",
+  "modifiedDateTime": null,
+  "sessionControls": null,
+  "state": "disabled"
+}
+
+```
+
+</details>
+
+## Require hybrid joined or compliant device, for all cloud apps, for all desktop devices
+This definition is available here: [REF-06][policy-ref6], which you can access from my GitHub.
+
+<details>
+  <summary><em><strong>Assignments</strong></em></summary>
+
+#### Users & Groups  <!-- omit in toc -->
+- Inclusion: Group created by the pipeline, with the dynamic nested group "All Users" automatically added
+- Exclusion: Group created by the pipeline, with the nested group containing all accounts to be excluded (IE break-glass accounts)
+#### Cloud apps or actions  <!-- omit in toc -->
+- Cloud apps: Include: All cloud apps
+#### Conditions  <!-- omit in toc -->
+- Device platforms: Include: Any device
+- Device platforms: Exclude: Android, iOS, Windows Phone
+- Client apps: Modern authentication clients
+
+</details>
+
+<details>
+  <summary><em><strong>Access controls</strong></em></summary>
+
+#### Grant  <!-- omit in toc -->
+- Grant access: Require device to be marked as compliant, Require Hybrid Azure AD joined device
+_Require one of the selected controls_
+#### Session  <!-- omit in toc -->
+- None
+</details>
+
+### What does this do? <!-- omit in toc -->
+This requires that users are challenged for multi-factor authentication during sign-in for compatible client apps. Unless they're within a trusted location or have devices that are Hybrid Azure AD joined or marked as compliant.
+
+As trusted locations are excluded, as well as specific devices, locations marked as trusted should be limited and devices that are Windows AD joined should be within a trust boundary (IE can only be joined by administrators or a trusted join workflow where security can be assured).
+
+Common scenarios might include a Windows Virtual Desktop, or Windows Server mult-session environment, which are locked down within a cloud provider.
+
+When combined with Endpoint Manager, device security can be assured with a compliance policy which can be revoked.
+
+Example below:
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "REF": "06",
+  "VER": "2",
+  "ENV": "P",
+  "@odata.context": "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies/$entity",
+  "conditions": {
+    "userRiskLevels": [],
+    "signInRiskLevels": [],
+    "clientAppTypes": [
+      "mobileAppsAndDesktopClients"
+    ],
+    "locations": null,
+    "deviceStates": null,
+    "devices": null,
+    "clientApplications": null,
+    "applications": {
+      "includeApplications": [
+        "All"
+      ],
+      "excludeApplications": [],
+      "includeUserActions": [],
+      "includeAuthenticationContextClassReferences": []
+    },
+    "users": {
+      "includeUsers": [],
+      "excludeUsers": [],
+      "includeGroups": [
+        "aa1ab765-496c-4920-871f-96835e961771"
+      ],
+      "excludeGroups": [
+        "3c1b73af-a7a2-4670-8dbb-5827184cc849"
+      ],
+      "includeRoles": [],
+      "excludeRoles": []
+    },
+    "platforms": {
+      "includePlatforms": [
+        "all"
+      ],
+      "excludePlatforms": [
+        "android",
+        "iOS",
+        "windowsPhone"
+      ]
+    }
+  },
+  "createdDateTime": "2021-03-19T20:10:38.6351451Z",
+  "displayName": "REF-06;ENV-P;VER-2; Require hybrid joined or compliant device, for all cloud apps, for all desktop devices",
+  "grantControls": {
+    "operator": "OR",
+    "builtInControls": [
+      "compliantDevice",
+      "domainJoinedDevice"
+    ],
+    "customAuthenticationFactors": [],
+    "termsOfUse": []
+  },
+  "id": "97458381-1ece-4bc6-8a0e-7bd00ea53ab5",
+  "modifiedDateTime": null,
+  "sessionControls": null,
+  "state": "disabled"
+}
+```
+
+</details>
+
 [policy-ref1]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-01%3BENV-P%3BVER-2%3B%20Block%20access%2C%20for%20all%20cloud%20apps%2C%20for%20any%20location%2C%20excluding%20trusted%20or%20named%20locations.json
 [policy-ref2]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-02%3BENV-P%3BVER-2%3B%20Block%20access%2C%20for%20registering%20security%20information%2C%20for%20any%20location%2C%20excluding%20trusted%20or%20named%20locations%2C%20hybrid%20joined%20or%20compliant%20devices.json
+[policy-ref3]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-03%3BENV-P%3BVER-2%3B%20Block%20access%2C%20for%20guests%2C%20for%20all%20cloud%20apps%2C%20except%20approved%20apps.json
+[policy-ref4]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-04%3BENV-P%3BVER-2%3B%20Block%20access%2C%20for%20all%20cloud%20apps%2C%20for%20all%20client%20apps%20supporting%20legacy%20authentication.json
+[policy-ref5]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-05%3BENV-P%3BVER-2%3B%20Require%20MFA%2C%20for%20all%20cloud%20apps%2C%20for%20any%20location%2C%20excluding%20trusted%20locations%2C%20hybrid%20joined%20or%20compliant%20devices.json
+[policy-ref6]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-06%3BENV-P%3BVER-2%3B%20Require%20hybrid%20joined%20or%20compliant%20device%2C%20for%20all%20cloud%20apps%2C%20for%20all%20desktop%20devices.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
