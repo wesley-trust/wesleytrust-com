@@ -10,7 +10,7 @@ tags:
   - group-members
   - group-owners
   - azuread
-excerpt: "For Azure AD groups, owners or members of the group are defined as group 'relationships' this is a series of PowerShell functions to manage these..."
+excerpt: "For Azure AD groups, owners or members of the group are defined as group 'relationships', this is a series of PowerShell functions to manage these..."
 ---
 Managing Azure AD group members is a dependency for the Conditional Access policies, as for (almost) every policy we'll be adding members to groups. Such as the nested groups that will be added to the inclusion/exclusion groups created within the pipeline.
 
