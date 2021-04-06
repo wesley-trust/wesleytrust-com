@@ -1128,7 +1128,7 @@ This definition is available here: [REF-11][policy-ref11], which you can access 
   <summary><em><strong>Access controls</strong></em></summary>
 
 #### Grant  <!-- omit in toc -->
-- Require multi-factor authentication
+- Grant access: Require multi-factor authentication
 #### Session  <!-- omit in toc -->
 - None
 </details>
@@ -1265,7 +1265,7 @@ This definition is available here: [REF-12][policy-ref12], which you can access 
   <summary><em><strong>Access controls</strong></em></summary>
 
 #### Grant  <!-- omit in toc -->
-- Require multi-factor authentication
+- Grant access: Require multi-factor authentication
 #### Session  <!-- omit in toc -->
 - None
 </details>
@@ -1354,7 +1354,7 @@ This definition is available here: [REF-13][policy-ref13], which you can access 
   <summary><em><strong>Access controls</strong></em></summary>
 
 #### Grant  <!-- omit in toc -->
-- Require multi-factor authentication
+- Grant access: Require multi-factor authentication
 #### Session  <!-- omit in toc -->
 - None
 </details>
@@ -1449,7 +1449,9 @@ This definition is available here: [REF-14][policy-ref14], which you can access 
   <summary><em><strong>Access controls</strong></em></summary>
 
 #### Grant  <!-- omit in toc -->
-- Require multi-factor authentication
+- Grant access: Require multi-factor authentication, Require password change
+
+_Require all of the selected controls_
 #### Session  <!-- omit in toc -->
 - None
 </details>
@@ -1544,7 +1546,7 @@ This definition is available here: [REF-15][policy-ref15], which you can access 
   <summary><em><strong>Access controls</strong></em></summary>
 
 #### Grant  <!-- omit in toc -->
-- Require multi-factor authentication
+- Grant access: Require multi-factor authentication
 #### Session  <!-- omit in toc -->
 - None
 </details>
