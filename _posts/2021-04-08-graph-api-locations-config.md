@@ -19,7 +19,10 @@ Initially, there are three Azure AD groups that will be used within the Conditio
 The current groups are:
 - All Users
 - All Guests
+- All Devices
 - SVC-CA; Exclude from all Conditional Access policies
+- SVC-EM; Exclude from all Endpoint Manager device policies
+- SVC-EM; Exclude from all Endpoint Manager user policies
 
 The definitions of these groups are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub. By defining these groups, rather than using the inbuilt "All Users" options within Conditional Access, allows for greater customisation of each policy.
 
