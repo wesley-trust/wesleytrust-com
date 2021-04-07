@@ -11,7 +11,7 @@ tags:
   - config
   - baseline
   - recommendations
-excerpt: "For Azure AD Conditional Access, I've put together a set of recommended baseline polices based on my experience and research..."
+excerpt: "I've designed a set of recommended baseline policies for Azure AD Conditional Access based on my experience and research..."
 ---
 Within GitHub, I've created the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate. Please always grab the latest versions from GitHub._
 
@@ -35,7 +35,7 @@ I'm going to cover each of the dependencies in their own series of posts, but to
 
 _These aren't intended to be fully exhaustive, they're supposed to be customised to suit individual needs and are intended to serve as a good starting point (that I use in my personal Azure AD tenant)._
 
-These polices use the "beta" Microsoft Graph API (as at this date), as they make use of features in "Preview". Typically it's not recommended to use preview features in production, however, in this case, the alternative is to not make use of these features, so it's an acceptable risk.
+These policies use the "beta" Microsoft Graph API (as at this date), as they make use of features in "Preview". Typically it's not recommended to use preview features in production, however, in this case, the alternative is to not make use of these features, so it's an acceptable risk.
 
 ### Recommended Azure AD Conditional Access policies
 - [Block access, for all cloud apps, for any location, excluding trusted or named locations](#block-access-for-all-cloud-apps-for-any-location-excluding-trusted-or-named-locations)
