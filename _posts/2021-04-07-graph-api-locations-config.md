@@ -1,5 +1,5 @@
 ---
-title: "Location, location, Azure AD Named location definitions - GraphAPIConfig"
+title: "Location, location, Azure AD Named Location - GraphAPIConfig"
 categories:
   - blog
 tags:
@@ -23,14 +23,14 @@ So it's important to combine policies such as MFA protection for administrators,
 _Within Azure AD, the countries and regions are defined with their two-letter format specified by ISO 3166-2._
 
 I've created the below definitions which have been useful for me, with common trade and travel areas:
-- British Isles Common Travel Area, IPv6 and Unknown
-- European Schengen Area, Gibraltar, IPv6 and unknown
-- European Economic Area, IPv6 and Unknown
-- European Free Trade Area, IPv6 and Unknown
-- European Union, IPv6 and Unknown
-- Trans-Tasman Travel Arrangement, IPv6 and Unknown
+- [British Isles Common Travel Area](#british-isles-common-travel-area)
+- [European Schengen Area, Gibraltar](#european-schengen-area-gibraltar)
+- [European Economic Area](#european-economic-area)
+- [European Free Trade Area](#european-free-trade-area)
+- [European Union](#european-union)
+- [Trans-Tasman Travel Arrangement](#trans-tasman-travel-arrangement)
 
-These definitions (and some common country definitions) are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub.
+These definitions (and some country definitions) are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub.
 
 ## British Isles Common Travel Area
 This definition is available here: [REF-01][location-ref1], which you can access from my GitHub.
