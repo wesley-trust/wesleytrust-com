@@ -1,5 +1,5 @@
 ---
-title: "Azure AD Named Location definitions - GraphAPIConfig"
+title: "Location, location, Azure AD Named location definitions - GraphAPIConfig"
 categories:
   - blog
 tags:
@@ -12,13 +12,15 @@ tags:
   - config
 excerpt: "For the Azure AD Conditional Access policies, I'll be defining named locations, that can be targeted within the policies..."
 ---
-Within GitHub, I've created the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate. Please always grab the latest versions from GitHub._
+This post continues the coverage of the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate. Please always grab the latest versions from GitHub._
 
 For the Azure AD Conditional Access policies, I'll be defining named locations, that can be targeted within the policies. So for example, Azure AD sign-ins could be restricted to regions that typically users would be expected to sign-in from, lowering the chance of unexpected sign-in events (that could be malicious).
 
-It's important to remember, that a location policy, such as this, could be expected to be quite broad, as users could be legitimately signing-in from multiple locations, or have their location not be identified (such as if via IPv6). So it's important to combine policies such as MFA protection for administrators, for administrative actions, or sign-in or user risk to also reduce malicious actions.
+It's important to remember, that a location policy, such as this, could be expected to be quite broad, as users could be legitimately signing-in from multiple locations, or have their location not be identified (such as if via IPv6).
 
-The countries and regions are defined with their two-letter format specified by ISO 3166-2.
+So it's important to combine policies such as MFA protection for administrators, for administrative actions, or sign-in or user risk to also reduce malicious sign-in events.
+
+_Within Azure AD, the countries and regions are defined with their two-letter format specified by ISO 3166-2._
 
 I've created the below definitions which have been useful for me, with common trade and travel areas:
 - British Isles Common Travel Area, IPv6 and Unknown
