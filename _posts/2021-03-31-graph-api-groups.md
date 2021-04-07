@@ -9,7 +9,7 @@ tags:
   - azuread
 excerpt: "The first of the public functions is managing Azure AD groups, this is a dependency for the Conditional Access policies, so seems a good place to start..."
 ---
-Managing Azure AD groups is a dependency for the Conditional Access policies, as for (almost) every policy we'll be creating both an inclusion and exclusion group. I'll also be creating nested groups, such as dynamic groups such as "All Users" and "All Guests".
+Managing Azure AD groups is a dependency for the Conditional Access policies, as for (almost) every policy I'll be creating both an inclusion and exclusion group. I'll also be creating nested groups, such as dynamic groups such as "All Users" and "All Guests".
 
 This creates a complete solution that can be deployed in an Azure Pipeline.
 

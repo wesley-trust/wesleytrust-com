@@ -10,7 +10,7 @@ tags:
   - azuread
   - config
   - baseline
-excerpt: "For the Azure AD Conditional Access pipeline, we'll be using a series of dependent groups to be used in the inclusion/exclusion groups..."
+excerpt: "For the Azure AD Conditional Access pipeline, I'll be using a series of dependent groups to be used in the inclusion/exclusion groups..."
 ---
 Within GitHub, I've created a [baseline configuration template repo][GraphAPIConfig], that can be used as recommended definitions for the groups, policies and named locations that will be created as part of the Conditional Access pipeline. I'll be covering each in a series of posts, including the design of the policies.
 
