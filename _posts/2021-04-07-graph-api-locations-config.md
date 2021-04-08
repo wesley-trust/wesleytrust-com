@@ -22,20 +22,24 @@ So it's important to combine policies such as MFA protection for administrators,
 
 _Within Azure AD, the countries and regions are defined with their two-letter format specified by ISO 3166-2._
 
-I've created the below definitions which have been useful for me, with common trade and travel areas:
+I've created the below definitions which have been useful for me, with common trade, travel areas and countries:
 - [British Isles Common Travel Area](#british-isles-common-travel-area)
 - [European Schengen Area, Gibraltar](#european-schengen-area-gibraltar)
 - [European Economic Area](#european-economic-area)
 - [European Free Trade Area](#european-free-trade-area)
 - [European Union](#european-union)
 - [Trans-Tasman Travel Arrangement](#trans-tasman-travel-arrangement)
+- [United Kingdom](#united-kingdom)
+- [United States](#united-states)
 
-These definitions (and some country definitions) are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub.
+These definitions (and more country definitions) are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub.
 
 ## British Isles Common Travel Area
 This definition is available here: [REF-01][location-ref1], which you can access from my GitHub.
 
-This contains the UK, Ireland, Isle of Man, Jersey and Guernsey who all share a Common Travel Area.
+This contains the UK, Ireland, Isle of Man, Jersey and Guernsey who all share a Common Travel Area (CTA).
+
+_Often combined with the [SA, Gibraltar](#european-schengen-area-gibraltar), [EEA](#european-economic-area) and [EFTA](#european-free-trade-area) to target the majority of Europe._
 
 Example below:
 
@@ -69,7 +73,9 @@ Example below:
 ## European Schengen Area, Gibraltar
 This definition is available here: [REF-02][location-ref2], which you can access from my GitHub.
 
-This contains all members of the Schengen Area, as well as de facto members: Monaco, San Marino and the Vatican City as well as Gibraltar.
+This contains all members of the Schengen Area (SA), as well as de facto members: Monaco, San Marino and the Vatican City as well as Gibraltar.
+
+_Often combined with the [CTA](#british-isles-common-travel-area), [EEA](#european-economic-area) and [EFTA](#european-free-trade-area) to target the majority of Europe._
 
 Example below:
 
@@ -128,7 +134,11 @@ Example below:
 ## European Economic Area
 This definition is available here: [REF-03][location-ref3], which you can access from my GitHub.
 
-This contains all members of the European Union as well as Iceland, Liechtenstein and Norway. 
+This contains all members of the European Union as well as Iceland, Liechtenstein and Norway, forming the EEA.
+
+_Often used when targeting EU GDPR data protection residency, that applies to countries within the EEA, which are outside the [EU](#european-union) but not [EFTA](#european-free-trade-area). This also is typically combined with [UK](#united-kingdom) for UK GDPR data protection residency._
+
+_Often combined with the [CTA](#british-isles-common-travel-area), [SA, Gibraltar](#european-schengen-area-gibraltar) and [EFTA](#european-free-trade-area) to target the majority of Europe._
 
 Example below:
 
@@ -187,7 +197,9 @@ Example below:
 ## European Free Trade Area
 This definition is available here: [REF-04][location-ref4], which you can access from my GitHub.
 
-This contains all members of the European Free Trade Area, including EU members: Iceland, Liechtenstein and Norway and non-EU member: Switzerland.
+This contains EU members: Iceland, Liechtenstein and Norway and non-EU member: Switzerland, forming the EFTA.
+
+_Often combined with the [CTA](#british-isles-common-travel-area), [SA, Gibraltar](#european-schengen-area-gibraltar) and [EEA](#european-economic-area) to target the majority of Europe._
 
 Example below:
 
@@ -220,7 +232,9 @@ Example below:
 ## European Union
 This definition is available here: [REF-05][location-ref5], which you can access from my GitHub.
 
-This contains all members of the European Union.
+This contains all members of the European Union (EU).
+
+_This may not typically be used, as [SA, Gibraltar](#european-schengen-area-gibraltar) or [EEA](#european-economic-area) may be more appropriate._
 
 Example below:
 
@@ -304,10 +318,74 @@ Example below:
 
 </details>
 
+## United Kingdom
+This definition is available here: [UK][location-uk], which you can access from my GitHub.
+
+This contains the United Kingdom of Great Britain and Northern Ireland only, using the two-digit country code "GB".
+
+_Often used for UK GDPR data protection residency and combined with [EEA](#european-economic-area) for EU GDPR data protection residency._
+
+Example below:
+
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "SVC": null,
+  "REF": null,
+  "ENV": null,
+  "@odata.context": "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/namedLocations/$entity",
+  "@odata.type": "#microsoft.graph.countryNamedLocation",
+  "countriesAndRegions": [
+    "GB"
+  ],
+  "createdDateTime": "2021-04-07T17:00:27.1836021Z",
+  "displayName": "United Kingdom, IPv6 and Unknown",
+  "id": "1f090c87-d633-4118-bf6f-3f18a8e9be30",
+  "includeUnknownCountriesAndRegions": true,
+  "modifiedDateTime": "2021-04-07T17:00:27.1836021Z"
+}
+```
+
+</details>
+
+## United States
+This definition is available here: [US][location-ref6], which you can access from my GitHub.
+
+This contains the United States of America only, using the two-digit country code "US".
+
+Example below:
+
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "SVC": null,
+  "REF": null,
+  "ENV": null,
+  "@odata.context": "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/namedLocations/$entity",
+  "@odata.type": "#microsoft.graph.countryNamedLocation",
+  "countriesAndRegions": [
+    "US"
+  ],
+  "createdDateTime": "2021-04-07T14:43:07.2557482Z",
+  "displayName": "United States, IPv6 and unknown",
+  "id": "10643880-d240-4e26-ba7e-49630255e53b",
+  "includeUnknownCountriesAndRegions": true,
+  "modifiedDateTime": "2021-04-07T14:43:07.2557482Z"
+}
+```
+
+</details>
+
 [location-ref1]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/NamedLocations/REF-01%3B%20British%20Isles%20Common%20Travel%20Area%2C%20IPv6%20and%20Unknown.json
 [location-ref2]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/NamedLocations/REF-02%3B%20European%20Schengen%20Area%2C%20Gibraltar%2C%20IPv6%20and%20unknown.json
 [location-ref3]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/NamedLocations/REF-03%3B%20European%20Economic%20Area%2C%20IPv6%20and%20unknown.json
 [location-ref4]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/NamedLocations/REF-04%3B%20European%20Free%20Trade%20Area%2C%20IPv6%20and%20unknown.json
 [location-ref5]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/NamedLocations/REF-05%3B%20European%20Union%2C%20IPv6%20and%20unknown.json
 [location-ref6]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/NamedLocations/REF-06%3B%20Trans-Tasman%20Travel%20Arrangement%2C%20IPv6%20and%20Unknown.json
+[location-uk]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/NamedLocations/United%20Kingdom%2C%20IPv6%20and%20unknown.json
+[location-us]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/NamedLocations/United%20States%2C%20IPv6%20and%20unknown.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
