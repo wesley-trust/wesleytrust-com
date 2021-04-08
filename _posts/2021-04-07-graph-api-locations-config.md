@@ -197,7 +197,7 @@ Example below:
 ## European Free Trade Area
 This definition is available here: [REF-04][location-ref4], which you can access from my GitHub.
 
-This contains EU members: Iceland, Liechtenstein and Norway and non-EU member: Switzerland, forming the EFTA.
+This contains EEA members: Iceland, Liechtenstein and Norway and non-EEA member: Switzerland, forming the EFTA.
 
 _Often combined with the [CTA](#british-isles-common-travel-area), [SA, Gibraltar](#european-schengen-area-gibraltar) and [EEA](#european-economic-area) to target the majority of Europe._
 
@@ -232,7 +232,7 @@ Example below:
 ## European Union
 This definition is available here: [REF-05][location-ref5], which you can access from my GitHub.
 
-This contains all members of the European Union (EU).
+This contains all members of the European Union (EU) only.
 
 _This may not typically be used, as [SA, Gibraltar](#european-schengen-area-gibraltar) or [EEA](#european-economic-area) may be more appropriate._
 
