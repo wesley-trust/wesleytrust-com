@@ -10,19 +10,19 @@ tags:
   - azuread
   - config
   - baseline
-excerpt: "For the Azure AD Conditional Access pipeline, I'll be using a series of dependent groups to be used in the inclusion/exclusion groups..."
+excerpt: "For the Azure AD Conditional Access and Endpoint Manager policies, I'll be using a series of dependent groups to be used in the inclusion/exclusion groups..."
 ---
-Within GitHub, I've created a [baseline configuration template repo][GraphAPIConfig], that can be used as recommended definitions for the groups, policies and named locations that will be created as part of the Conditional Access pipeline. I'll be covering each in a series of posts, including the design of the policies.
+This post continues the coverage of the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate. Please always grab the latest versions from GitHub._
 
-Initially, there are three Azure AD groups that will be used within the Conditional Access pipeline, as nested groups that are included in the inclusion/exclusion groups that will be created for (almost) every Conditional Access policy.
+There are six Azure AD groups that will be used within the Conditional Access and Endpoint Manager pipelines, as nested groups that are included in the inclusion/exclusion groups that will be created for the Conditional Access and Endpoint Manager policies.
 
 The current groups are:
-- All Users
-- All Guests
-- All Devices
-- SVC-CA; Exclude from all Conditional Access policies
-- SVC-EM; Exclude from all Endpoint Manager device policies
-- SVC-EM; Exclude from all Endpoint Manager user policies
+- [All Users](#all-users)
+- [All Guests](#all-guests)
+- [All Devices](#all-devices)
+- [SVC-CA; Exclude from all Conditional Access policies](#svc-ca-exclude-from-all-conditional-access-policies)
+- [SVC-EM; Exclude from all Endpoint Manager device policies](#svc-em-exclude-from-all-endpoint-manager-device-policies)
+- [SVC-EM; Exclude from all Endpoint Manager user policies](#svc-em-exclude-from-all-endpoint-manager-user-policies)
 
 The definitions of these groups are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub. By defining these groups, rather than using the inbuilt "All Users" options within Conditional Access, allows for greater customisation of each policy.
 
@@ -80,6 +80,32 @@ Example below:
 
 </details>
 
+## All Devices
+This definition is available here: [All Devices][group-devices], which you can access from my GitHub.
+
+This has a dynamic query that includes all devices within the Azure AD tenant.
+
+Example below:
+
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "description": "Dynamic query that includes all devices within the directory",
+  "displayName": "All Devices",
+  "groupTypes": [
+    "DynamicMembership"
+  ],
+  "mailEnabled": false,
+  "membershipRule": "(device.deviceId -ne null)",
+  "membershipRuleProcessingState": "On",
+  "securityEnabled": true,
+}
+```
+
+</details>
+
 ## SVC-CA; Exclude from all Conditional Access policies
 This definition is available here: [SVC-CA; Exclude from all Conditional Access policies][group-exclude], which you can access from my GitHub.
 
@@ -101,7 +127,52 @@ Example below:
 
 </details>
 
+## SVC-EM; Exclude from all Endpoint Manager device policies
+This definition is available here: [SVC-EM; Exclude from all Endpoint Manager device policies][group-em-device-exclude], which you can access from my GitHub.
+
+This allows accounts to be added, such as break-glass accounts or others that should be excluded from all policies.
+
+Example below:
+
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "description": "Contains the Break Glass accounts and any other account that should all be excluded from Endpoint Manager",
+  "displayName": "SVC-EM; Exclude from all Endpoint Manager Device Policies",
+  "mailEnabled": false,
+  "securityEnabled": true,
+}
+```
+
+</details>
+
+## SVC-EM; Exclude from all Endpoint Manager user policies
+This definition is available here: [SVC-EM; Exclude from all Endpoint Manager user policies][group-em-user-exclude], which you can access from my GitHub.
+
+This allows accounts to be added, such as break-glass accounts or others that should be excluded from all policies.
+
+Example below:
+
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "description": "Contains the Break Glass accounts and any other account that should all be excluded from Endpoint Manager",
+  "displayName": "SVC-EM; Exclude from all Endpoint Manager User Policies",
+  "mailEnabled": false,
+  "securityEnabled": true,
+}
+```
+
+</details>
+
 [group-users]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/All%20Users.json
 [group-guests]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/All%20Guests.json
 [group-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-CA/SVC-CA%3B%20Exclude%20from%20all%20Conditional%20Access%20Policies.json
+[group-devices]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/All%20Devices.json
+[group-em-device-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-EM/SVC-EM%3B%20Exclude%20from%20all%20Endpoint%20Manager%20Device%20Policies.json
+[group-em-user-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-EM/SVC-EM%3B%20Exclude%20from%20all%20Endpoint%20Manager%20User%20Policies.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
