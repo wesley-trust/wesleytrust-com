@@ -10,11 +10,11 @@ tags:
   - azuread
   - config
   - baseline
-excerpt: "For the Azure AD Conditional Access and Endpoint Manager policies, I'll be using a series of dependent groups to be used in the inclusion/exclusion groups..."
+excerpt: "For the Azure AD Conditional Access and Endpoint Manager (Intune) policies, I'll be using a series of dependent groups to be used in the inclusion/exclusion groups..."
 ---
 This post continues the coverage of the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate. Please always grab the latest versions from GitHub._
 
-There are six Azure AD groups that will be used within the Conditional Access and Endpoint Manager pipelines, as nested groups that are included in the inclusion/exclusion groups that will be created for the Conditional Access and Endpoint Manager policies.
+There are six Azure AD groups that will be used within the Conditional Access and Endpoint Manager (Intune) pipelines, as nested groups that are included in the inclusion/exclusion groups that will be created for the Conditional Access and Endpoint Manager policies.
 
 The current groups are:
 - [All Users](#all-users)
@@ -132,6 +132,8 @@ This definition is available here: [SVC-EM; Exclude from all Endpoint Manager de
 
 This allows accounts to be added, such as break-glass accounts or others that should be excluded from all policies.
 
+_It's important to remember that for Endpoint Manager, you cannot mix users and devices in the same group._
+
 Example below:
 
 <details>
@@ -152,6 +154,8 @@ Example below:
 This definition is available here: [SVC-EM; Exclude from all Endpoint Manager user policies][group-em-user-exclude], which you can access from my GitHub.
 
 This allows accounts to be added, such as break-glass accounts or others that should be excluded from all policies.
+
+_It's important to remember that for Endpoint Manager, you cannot mix users and devices in the same group._
 
 Example below:
 
