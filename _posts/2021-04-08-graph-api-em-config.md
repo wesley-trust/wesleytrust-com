@@ -14,9 +14,8 @@ excerpt: "Design of Compliance and App Protection policies for Endpoint Manager 
 ---
 This post continues the coverage of the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate. Please always grab the latest versions from GitHub._
 
-For the Azure AD Conditional Access policies, I'll be defining named locations, that can be targeted within the policies. So for example, Azure AD sign-ins could be restricted to regions that typically users would be expected to sign-in from, lowering the chance of unexpected sign-in events (that could be malicious).
+For Endpoint Manager, I'll be defining App Protection policies for Android and iOS (including iPadOS) and Device Compliance policies for Windows 10. This is because for Android and iOS, these are mostly used for personal devices, and for Windows, it's more likely that they'll be corporate devices.
 
-I've created the below definitions which have been useful for me, with common trade, travel areas and countries:
 - [App Protection for Android](#app-protection-for-android)
 - [App Protection for iOS & iPadOS](#app-protection-for-ios--ipados)
 - [Device Compliance for Windows 10](#device-compliance-for-windows-10)
@@ -26,6 +25,8 @@ These definitions are available in the [GraphAPIConfig][GraphAPIConfig] template
 ## App Protection for Android
 This definition is available here: [REF-01][em-ref1], which you can access from my GitHub.
 
+This sets some recommendations such as requiring app encryption, PIN (with minimum length) or biometric protection for apps, blocks rooted devices as well as access to data when offline for 12 hours.
+
 Example below:
 
 <details>
@@ -33,102 +34,108 @@ Example below:
 
 ```json
 {
-    "@odata.context": "https://graph.microsoft.com/beta/$metadata#deviceAppManagement/androidManagedAppProtections",
-    "value": [
-        {
-            "displayName": "REF-01;ENV-P;VER-02; App Protection for Android",
-            "description": "",
-            "createdDateTime": "2020-07-20T22:19:14.7672125Z",
-            "lastModifiedDateTime": "2020-07-20T22:19:14.7672125Z",
-            "roleScopeTagIds": [
-                "0"
-            ],
-            "id": "T_807c2930-1765-4a70-aa13-c5527c6e1aa0",
-            "version": "\"ac9daa58-421d-466d-b8f3-7061b3b67afb\"",
-            "periodOfflineBeforeAccessCheck": "PT12H",
-            "periodOnlineBeforeAccessCheck": "PT30M",
-            "allowedInboundDataTransferSources": "allApps",
-            "allowedOutboundDataTransferDestinations": "allApps",
-            "organizationalCredentialsRequired": false,
-            "allowedOutboundClipboardSharingLevel": "allApps",
-            "dataBackupBlocked": false,
-            "deviceComplianceRequired": true,
-            "managedBrowserToOpenLinksRequired": false,
-            "saveAsBlocked": false,
-            "periodOfflineBeforeWipeIsEnforced": "P90D",
-            "pinRequired": true,
-            "maximumPinRetries": 5,
-            "simplePinBlocked": false,
-            "minimumPinLength": 6,
-            "pinCharacterSet": "numeric",
-            "periodBeforePinReset": "PT0S",
-            "allowedDataStorageLocations": [],
-            "contactSyncBlocked": false,
-            "printBlocked": false,
-            "fingerprintBlocked": false,
-            "disableAppPinIfDevicePinIsSet": false,
-            "maximumRequiredOsVersion": null,
-            "maximumWarningOsVersion": null,
-            "maximumWipeOsVersion": null,
-            "minimumRequiredOsVersion": null,
-            "minimumWarningOsVersion": null,
-            "minimumRequiredAppVersion": null,
-            "minimumWarningAppVersion": null,
-            "minimumWipeOsVersion": null,
-            "minimumWipeAppVersion": null,
-            "appActionIfDeviceComplianceRequired": "block",
-            "appActionIfMaximumPinRetriesExceeded": "block",
-            "pinRequiredInsteadOfBiometricTimeout": null,
-            "allowedOutboundClipboardSharingExceptionLength": 0,
-            "notificationRestriction": "allow",
-            "previousPinBlockCount": 0,
-            "managedBrowser": "notConfigured",
-            "maximumAllowedDeviceThreatLevel": "notConfigured",
-            "mobileThreatDefenseRemediationAction": "block",
-            "blockDataIngestionIntoOrganizationDocuments": false,
-            "allowedDataIngestionLocations": [
-                "oneDriveForBusiness",
-                "sharePoint",
-                "camera"
-            ],
-            "appActionIfUnableToAuthenticateUser": null,
-            "dialerRestrictionLevel": "allApps",
-            "isAssigned": true,
-            "targetedAppManagementLevels": "unspecified",
-            "screenCaptureBlocked": false,
-            "disableAppEncryptionIfDeviceEncryptionIsEnabled": false,
-            "encryptAppData": true,
-            "deployedAppCount": 45,
-            "minimumRequiredPatchVersion": "0000-00-00",
-            "minimumWarningPatchVersion": "0000-00-00",
-            "minimumWipePatchVersion": "0000-00-00",
-            "allowedAndroidDeviceManufacturers": null,
-            "appActionIfAndroidDeviceManufacturerNotAllowed": "block",
-            "requiredAndroidSafetyNetDeviceAttestationType": "none",
-            "appActionIfAndroidSafetyNetDeviceAttestationFailed": "block",
-            "requiredAndroidSafetyNetAppsVerificationType": "none",
-            "appActionIfAndroidSafetyNetAppsVerificationFailed": "block",
-            "customBrowserPackageId": "",
-            "customBrowserDisplayName": "",
-            "minimumRequiredCompanyPortalVersion": null,
-            "minimumWarningCompanyPortalVersion": null,
-            "minimumWipeCompanyPortalVersion": null,
-            "keyboardsRestricted": false,
-            "allowedAndroidDeviceModels": [],
-            "appActionIfAndroidDeviceModelNotAllowed": "block",
-            "customDialerAppPackageId": "",
-            "customDialerAppDisplayName": "",
-            "biometricAuthenticationBlocked": false,
-            "requiredAndroidSafetyNetEvaluationType": "basic",
-            "blockAfterCompanyPortalUpdateDeferralInDays": 0,
-            "warnAfterCompanyPortalUpdateDeferralInDays": 0,
-            "wipeAfterCompanyPortalUpdateDeferralInDays": 0,
-            "deviceLockRequired": false,
-            "appActionIfDeviceLockNotSet": "block",
-            "exemptedAppPackages": [],
-            "approvedKeyboards": []
-        }
-    ]
+    "SVC":  null,
+    "REF":  null,
+    "ENV":  null,
+    "allowedAndroidDeviceManufacturers":  null,
+    "allowedAndroidDeviceModels":  [
+
+                                   ],
+    "allowedDataIngestionLocations":  [
+                                          "oneDriveForBusiness",
+                                          "sharePoint",
+                                          "camera"
+                                      ],
+    "allowedDataStorageLocations":  [
+
+                                    ],
+    "allowedInboundDataTransferSources":  "allApps",
+    "allowedOutboundClipboardSharingExceptionLength":  0,
+    "allowedOutboundClipboardSharingLevel":  "allApps",
+    "allowedOutboundDataTransferDestinations":  "allApps",
+    "appActionIfAndroidDeviceManufacturerNotAllowed":  "block",
+    "appActionIfAndroidDeviceModelNotAllowed":  "block",
+    "appActionIfAndroidSafetyNetAppsVerificationFailed":  "block",
+    "appActionIfAndroidSafetyNetDeviceAttestationFailed":  "block",
+    "appActionIfDeviceComplianceRequired":  "block",
+    "appActionIfDeviceLockNotSet":  "block",
+    "appActionIfMaximumPinRetriesExceeded":  "block",
+    "appActionIfUnableToAuthenticateUser":  null,
+    "approvedKeyboards":  [
+
+                          ],
+    "biometricAuthenticationBlocked":  false,
+    "blockAfterCompanyPortalUpdateDeferralInDays":  0,
+    "blockDataIngestionIntoOrganizationDocuments":  false,
+    "contactSyncBlocked":  false,
+    "createdDateTime":  "2021-04-08T14:17:18.1393133Z",
+    "customBrowserDisplayName":  "",
+    "customBrowserPackageId":  "",
+    "customDialerAppDisplayName":  "",
+    "customDialerAppPackageId":  "",
+    "dataBackupBlocked":  false,
+    "deployedAppCount":  0,
+    "description":  "",
+    "deviceComplianceRequired":  true,
+    "deviceLockRequired":  false,
+    "dialerRestrictionLevel":  "allApps",
+    "disableAppEncryptionIfDeviceEncryptionIsEnabled":  false,
+    "disableAppPinIfDevicePinIsSet":  false,
+    "displayName":  "EM: Public App Protection for Android",
+    "encryptAppData":  true,
+    "exemptedAppPackages":  [
+
+                            ],
+    "fingerprintBlocked":  false,
+    "id":  "T_992343b3-1e73-4359-b80e-dc8f30559d3b",
+    "isAssigned":  false,
+    "keyboardsRestricted":  false,
+    "lastModifiedDateTime":  "2021-04-08T14:17:18.1393133Z",
+    "managedBrowser":  "notConfigured",
+    "managedBrowserToOpenLinksRequired":  false,
+    "maximumAllowedDeviceThreatLevel":  "notConfigured",
+    "maximumPinRetries":  5,
+    "maximumRequiredOsVersion":  null,
+    "maximumWarningOsVersion":  null,
+    "maximumWipeOsVersion":  null,
+    "minimumPinLength":  6,
+    "minimumRequiredAppVersion":  null,
+    "minimumRequiredCompanyPortalVersion":  null,
+    "minimumRequiredOsVersion":  null,
+    "minimumRequiredPatchVersion":  "0000-00-00",
+    "minimumWarningAppVersion":  null,
+    "minimumWarningCompanyPortalVersion":  null,
+    "minimumWarningOsVersion":  null,
+    "minimumWarningPatchVersion":  "0000-00-00",
+    "minimumWipeAppVersion":  null,
+    "minimumWipeCompanyPortalVersion":  null,
+    "minimumWipeOsVersion":  null,
+    "minimumWipePatchVersion":  "0000-00-00",
+    "mobileThreatDefenseRemediationAction":  "block",
+    "notificationRestriction":  "allow",
+    "organizationalCredentialsRequired":  false,
+    "periodBeforePinReset":  "PT0S",
+    "periodOfflineBeforeAccessCheck":  "PT12H",
+    "periodOfflineBeforeWipeIsEnforced":  "P90D",
+    "periodOnlineBeforeAccessCheck":  "PT30M",
+    "pinCharacterSet":  "numeric",
+    "pinRequired":  true,
+    "pinRequiredInsteadOfBiometricTimeout":  null,
+    "previousPinBlockCount":  0,
+    "printBlocked":  false,
+    "requiredAndroidSafetyNetAppsVerificationType":  "none",
+    "requiredAndroidSafetyNetDeviceAttestationType":  "none",
+    "requiredAndroidSafetyNetEvaluationType":  "basic",
+    "roleScopeTagIds":  [
+                            "0"
+                        ],
+    "saveAsBlocked":  false,
+    "screenCaptureBlocked":  false,
+    "simplePinBlocked":  false,
+    "targetedAppManagementLevels":  "unspecified",
+    "version":  "\"c38a2c92-686a-407c-8b08-b8300ea42607\"",
+    "warnAfterCompanyPortalUpdateDeferralInDays":  0,
+    "wipeAfterCompanyPortalUpdateDeferralInDays":  0
 }
 ```
 
@@ -136,6 +143,8 @@ Example below:
 
 ## App Protection for iOS & iPadOS
 This definition is available here: [REF-02][em-ref2], which you can access from my GitHub.
+
+This sets some recommendations such as requiring app encryption, PIN (with minimum length) or biometric protection for apps, blocks jailbroken devices as well as access to data when offline for 12 hours.
 
 Example below:
 
@@ -234,6 +243,8 @@ Example below:
 
 ## Device Compliance for Windows 10
 This definition is available here: [REF-03][em-ref3], which you can access from my GitHub.
+
+This sets some recommendations such as requiring device encryption and secure boot, requiring antivirus and the firewall to be enabled.
 
 Example below:
 
