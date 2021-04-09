@@ -256,7 +256,7 @@ Example below:
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```json
-{{
+{
     "SVC": null,
     "REF": "03",
     "ENV": "P",
