@@ -16,8 +16,10 @@ This post continues the coverage of the [GraphAPIConfig][GraphAPIConfig] repo, w
 
 For Endpoint Manager, I'll be defining App Protection policies for Android and iOS (including iPadOS) and Device Compliance policies for Windows 10. This is because for Android and iOS, these are mostly used for personal devices, and for Windows, it's more likely that they'll be corporate devices.
 
+I apply these policies to my personal Azure AD tenant, so they apply to my iPad, Android phone and Windows laptop. I don't have a Mac...so I haven't created a policy for that...
+
 - [App Protection for Android](#app-protection-for-android)
-- [App Protection for iOS & iPadOS](#app-protection-for-ios--ipados)
+- [App Protection for iOS (including iPadOS)](#app-protection-for-ios-including-ipados)
 - [Device Compliance for Windows 10](#device-compliance-for-windows-10)
 
 These definitions are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub.
@@ -141,7 +143,7 @@ Example below:
 
 </details>
 
-## App Protection for iOS & iPadOS
+## App Protection for iOS (including iPadOS)
 This definition is available here: [REF-02][em-ref2], which you can access from my GitHub.
 
 This sets some recommendations such as requiring app encryption, PIN (with minimum length) or biometric protection for apps, blocks jailbroken devices as well as access to data when offline for 12 hours.
@@ -153,89 +155,91 @@ Example below:
 
 ```json
 {
-    "@odata.context": "https://graph.microsoft.com/beta/$metadata#deviceAppManagement/iosManagedAppProtections",
-    "value": [
-        {
-            "displayName": "REF-02;ENV-P;VER-02; App Protection for iOS & iPadOS",
-            "description": "",
-            "createdDateTime": "2020-07-20T22:59:19.5998226Z",
-            "lastModifiedDateTime": "2020-07-20T22:59:19.5998226Z",
-            "roleScopeTagIds": [
-                "0"
-            ],
-            "id": "T_481ce110-71cf-4407-926d-de146693e823",
-            "version": "\"77e7caa4-af47-4d7d-8acd-109a4347ddc8\"",
-            "periodOfflineBeforeAccessCheck": "PT12H",
-            "periodOnlineBeforeAccessCheck": "PT30M",
-            "allowedInboundDataTransferSources": "allApps",
-            "allowedOutboundDataTransferDestinations": "allApps",
-            "organizationalCredentialsRequired": false,
-            "allowedOutboundClipboardSharingLevel": "allApps",
-            "dataBackupBlocked": false,
-            "deviceComplianceRequired": true,
-            "managedBrowserToOpenLinksRequired": false,
-            "saveAsBlocked": false,
-            "periodOfflineBeforeWipeIsEnforced": "P90D",
-            "pinRequired": true,
-            "maximumPinRetries": 5,
-            "simplePinBlocked": false,
-            "minimumPinLength": 6,
-            "pinCharacterSet": "numeric",
-            "periodBeforePinReset": "PT0S",
-            "allowedDataStorageLocations": [],
-            "contactSyncBlocked": false,
-            "printBlocked": false,
-            "fingerprintBlocked": false,
-            "disableAppPinIfDevicePinIsSet": true,
-            "maximumRequiredOsVersion": null,
-            "maximumWarningOsVersion": null,
-            "maximumWipeOsVersion": null,
-            "minimumRequiredOsVersion": null,
-            "minimumWarningOsVersion": null,
-            "minimumRequiredAppVersion": null,
-            "minimumWarningAppVersion": null,
-            "minimumWipeOsVersion": null,
-            "minimumWipeAppVersion": null,
-            "appActionIfDeviceComplianceRequired": "block",
-            "appActionIfMaximumPinRetriesExceeded": "block",
-            "pinRequiredInsteadOfBiometricTimeout": null,
-            "allowedOutboundClipboardSharingExceptionLength": 0,
-            "notificationRestriction": "allow",
-            "previousPinBlockCount": 0,
-            "managedBrowser": "notConfigured",
-            "maximumAllowedDeviceThreatLevel": "notConfigured",
-            "mobileThreatDefenseRemediationAction": "block",
-            "blockDataIngestionIntoOrganizationDocuments": false,
-            "allowedDataIngestionLocations": [
-                "oneDriveForBusiness",
-                "sharePoint",
-                "camera"
-            ],
-            "appActionIfUnableToAuthenticateUser": null,
-            "dialerRestrictionLevel": "allApps",
-            "isAssigned": true,
-            "targetedAppManagementLevels": "unspecified",
-            "appDataEncryptionType": "whenDeviceLocked",
-            "minimumRequiredSdkVersion": null,
-            "deployedAppCount": 54,
-            "faceIdBlocked": false,
-            "minimumWipeSdkVersion": null,
-            "allowedIosDeviceModels": null,
-            "appActionIfIosDeviceModelNotAllowed": "block",
-            "thirdPartyKeyboardsBlocked": false,
-            "filterOpenInToOnlyManagedApps": false,
-            "disableProtectionOfManagedOutboundOpenInData": false,
-            "protectInboundDataFromUnknownSources": false,
-            "customBrowserProtocol": "",
-            "customDialerAppProtocol": "",
-            "exemptedAppProtocols": [
-                {
-                    "name": "Default",
-                    "value": "skype;app-settings;calshow;itms;itmss;itms-apps;itms-appss;itms-services;"
-                }
-            ]
-        }
-    ]
+    "SVC":  null,
+    "REF":  "02",
+    "ENV":  "P",
+    "@odata.context":  "https://graph.microsoft.com/beta/$metadata#deviceAppManagement/managedAppPolicies/$entity",
+    "@odata.type":  "#microsoft.graph.iosManagedAppProtection",
+    "allowedDataIngestionLocations":  [
+                                          "oneDriveForBusiness",
+                                          "sharePoint",
+                                          "camera"
+                                      ],
+    "allowedDataStorageLocations":  [
+
+                                    ],
+    "allowedInboundDataTransferSources":  "allApps",
+    "allowedIosDeviceModels":  null,
+    "allowedOutboundClipboardSharingExceptionLength":  0,
+    "allowedOutboundClipboardSharingLevel":  "allApps",
+    "allowedOutboundDataTransferDestinations":  "allApps",
+    "appActionIfDeviceComplianceRequired":  "block",
+    "appActionIfIosDeviceModelNotAllowed":  "block",
+    "appActionIfMaximumPinRetriesExceeded":  "block",
+    "appActionIfUnableToAuthenticateUser":  null,
+    "appDataEncryptionType":  "whenDeviceLocked",
+    "blockDataIngestionIntoOrganizationDocuments":  false,
+    "contactSyncBlocked":  false,
+    "createdDateTime":  "2021-04-08T17:01:06.5512908Z",
+    "customBrowserProtocol":  "",
+    "customDialerAppProtocol":  "",
+    "dataBackupBlocked":  false,
+    "deployedAppCount":  0,
+    "description":  "",
+    "deviceComplianceRequired":  true,
+    "dialerRestrictionLevel":  "allApps",
+    "disableAppPinIfDevicePinIsSet":  true,
+    "disableProtectionOfManagedOutboundOpenInData":  false,
+    "displayName":  "REF-02;ENV-P;VER-02; App Protection for iOS",
+    "exemptedAppProtocols":  [
+                                 {
+                                     "name":  "Default",
+                                     "value":  "skype;app-settings;calshow;itms;itmss;itms-apps;itms-appss;itms-services;"
+                                 }
+                             ],
+    "faceIdBlocked":  false,
+    "filterOpenInToOnlyManagedApps":  false,
+    "fingerprintBlocked":  false,
+    "id":  "T_69e55462-5715-4b41-9128-4b67a76d4c64",
+    "isAssigned":  false,
+    "lastModifiedDateTime":  "2021-04-08T17:01:06Z",
+    "managedBrowser":  "notConfigured",
+    "managedBrowserToOpenLinksRequired":  false,
+    "maximumAllowedDeviceThreatLevel":  "notConfigured",
+    "maximumPinRetries":  5,
+    "maximumRequiredOsVersion":  null,
+    "maximumWarningOsVersion":  null,
+    "maximumWipeOsVersion":  null,
+    "minimumPinLength":  6,
+    "minimumRequiredAppVersion":  null,
+    "minimumRequiredOsVersion":  null,
+    "minimumRequiredSdkVersion":  null,
+    "minimumWarningAppVersion":  null,
+    "minimumWarningOsVersion":  null,
+    "minimumWipeAppVersion":  null,
+    "minimumWipeOsVersion":  null,
+    "minimumWipeSdkVersion":  null,
+    "mobileThreatDefenseRemediationAction":  "block",
+    "notificationRestriction":  "allow",
+    "organizationalCredentialsRequired":  false,
+    "periodBeforePinReset":  "PT0S",
+    "periodOfflineBeforeAccessCheck":  "PT12H",
+    "periodOfflineBeforeWipeIsEnforced":  "P90D",
+    "periodOnlineBeforeAccessCheck":  "PT30M",
+    "pinCharacterSet":  "numeric",
+    "pinRequired":  true,
+    "pinRequiredInsteadOfBiometricTimeout":  null,
+    "previousPinBlockCount":  0,
+    "printBlocked":  false,
+    "protectInboundDataFromUnknownSources":  false,
+    "roleScopeTagIds":  [
+                            "0"
+                        ],
+    "saveAsBlocked":  false,
+    "simplePinBlocked":  false,
+    "targetedAppManagementLevels":  "unspecified",
+    "thirdPartyKeyboardsBlocked":  false,
+    "version":  "\"ca39e994-db9a-482f-a4de-7a6d3f069de2\""
 }
 ```
 
@@ -252,60 +256,58 @@ Example below:
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```json
-{
-    "@odata.context": "https://graph.microsoft.com/beta/$metadata#deviceManagement/deviceCompliancePolicies",
-    "value": [
-        {
-            "@odata.type": "#microsoft.graph.windows10CompliancePolicy",
-            "roleScopeTagIds": [
-                "0"
-            ],
-            "id": "e8c8b379-af43-4c5c-8df0-a72b7276148d",
-            "createdDateTime": "2020-07-07T15:08:20.0938467Z",
-            "description": null,
-            "lastModifiedDateTime": "2020-11-01T13:56:55.5928833Z",
-            "displayName": "REF-03;ENV-P;VER-02; Device Compliance for Windows 10",
-            "version": 6,
-            "passwordRequired": true,
-            "passwordBlockSimple": true,
-            "passwordRequiredToUnlockFromIdle": false,
-            "passwordMinutesOfInactivityBeforeLock": 15,
-            "passwordExpirationDays": null,
-            "passwordMinimumLength": 6,
-            "passwordMinimumCharacterSetCount": null,
-            "passwordRequiredType": "deviceDefault",
-            "passwordPreviousPasswordBlockCount": null,
-            "requireHealthyDeviceReport": false,
-            "osMinimumVersion": null,
-            "osMaximumVersion": null,
-            "mobileOsMinimumVersion": null,
-            "mobileOsMaximumVersion": null,
-            "earlyLaunchAntiMalwareDriverEnabled": false,
-            "bitLockerEnabled": true,
-            "secureBootEnabled": true,
-            "codeIntegrityEnabled": false,
-            "storageRequireEncryption": true,
-            "activeFirewallRequired": true,
-            "defenderEnabled": true,
-            "defenderVersion": null,
-            "signatureOutOfDate": true,
-            "rtpEnabled": true,
-            "antivirusRequired": true,
-            "antiSpywareRequired": true,
-            "deviceThreatProtectionEnabled": false,
-            "deviceThreatProtectionRequiredSecurityLevel": "unavailable",
-            "configurationManagerComplianceRequired": false,
-            "tpmRequired": true,
-            "deviceCompliancePolicyScript": null,
-            "validOperatingSystemBuildRanges": []
-        }
-    ]
+{{
+    "SVC": null,
+    "REF": "03",
+    "ENV": "P",
+    "@odata.type": "#microsoft.graph.windows10CompliancePolicy",
+    "roleScopeTagIds": [
+        "0"
+    ],
+    "id": "e8c8b379-af43-4c5c-8df0-a72b7276148d",
+    "createdDateTime": "2020-07-07T15:08:20.0938467Z",
+    "description": null,
+    "lastModifiedDateTime": "2020-11-01T13:56:55.5928833Z",
+    "displayName": "REF-03;ENV-P;VER-02; Device Compliance for Windows 10",
+    "version": 6,
+    "passwordRequired": true,
+    "passwordBlockSimple": true,
+    "passwordRequiredToUnlockFromIdle": false,
+    "passwordMinutesOfInactivityBeforeLock": 15,
+    "passwordExpirationDays": null,
+    "passwordMinimumLength": 6,
+    "passwordMinimumCharacterSetCount": null,
+    "passwordRequiredType": "deviceDefault",
+    "passwordPreviousPasswordBlockCount": null,
+    "requireHealthyDeviceReport": false,
+    "osMinimumVersion": null,
+    "osMaximumVersion": null,
+    "mobileOsMinimumVersion": null,
+    "mobileOsMaximumVersion": null,
+    "earlyLaunchAntiMalwareDriverEnabled": false,
+    "bitLockerEnabled": true,
+    "secureBootEnabled": true,
+    "codeIntegrityEnabled": false,
+    "storageRequireEncryption": true,
+    "activeFirewallRequired": true,
+    "defenderEnabled": true,
+    "defenderVersion": null,
+    "signatureOutOfDate": true,
+    "rtpEnabled": true,
+    "antivirusRequired": true,
+    "antiSpywareRequired": true,
+    "deviceThreatProtectionEnabled": false,
+    "deviceThreatProtectionRequiredSecurityLevel": "unavailable",
+    "configurationManagerComplianceRequired": false,
+    "tpmRequired": true,
+    "deviceCompliancePolicyScript": null,
+    "validOperatingSystemBuildRanges": []
 }
 ```
 
 </details>
 
-[em-ref1]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/AppProtection/Policies/ENV-P/REF-01%3BENV-P%3BVER-02%3B%20App%20Protection%20for%20Android.json
-[em-ref2]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/AppProtection/Policies/ENV-P/REF-02%3BENV-P%3BVER-02%3B%20App%20Protection%20for%20iOS%20%26%20iPadOS.json
-[em-ref3]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/DeviceCompliance/Policies/ENV-P/REF-03%3BENV-P%3BVER-02%3B%20Device%20Compliance%20for%20Windows%2010.json
+[em-ref1]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/AppManagement/Policies/ENV-P/REF-01%3BENV-P%3BVER-02%3B%20App%20Protection%20for%20Android.json
+[em-ref2]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/AppManagement/Policies/ENV-P/REF-02%3BENV-P%3BVER-02%3B%20App%20Protection%20for%20iOS.json
+[em-ref3]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/DeviceManagement/Policies/ENV-P/REF-03%3BENV-P%3BVER-02%3B%20Device%20Compliance%20for%20Windows%2010.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
