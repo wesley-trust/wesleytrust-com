@@ -35,7 +35,7 @@ Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
 
-As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD and do not exist in the config repo. 
+As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD and do not exist in the config repo. In the future I might consider a "state" file, similar to Terraform to keep track of this.
 
 _Azure Pipelines automatically downloads artifacts created in the previous stage_
 
@@ -180,7 +180,7 @@ Invoke-WTPlanAzureADGroup -AzureADGroup $ValidateAzureADGroup -AccessToken $Acce
   - If there are differences, they're added to a variable
 - If no groups exist, any imported groups must all be created, so the variable is updated
 - An object is then built containing the groups to be removed, updated or created (as appropriate)
-- This object is then returned as a plan of action
+- This object is then returned as a plan of action, which is output as a pipeline artifact for the next stage
 
 The complete function as at this date, is below:
 
