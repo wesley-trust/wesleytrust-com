@@ -20,7 +20,7 @@ I apply these policies to my personal Azure AD tenant, so they apply to my iPad,
 
 - [App Protection for Android](#app-protection-for-android)
 - [App Protection for iOS (including iPadOS)](#app-protection-for-ios-including-ipados)
-- [Device Compliance for Windows 10](#device-compliance-for-windows-10)
+- [Device Compliance for Windows (10)](#device-compliance-for-windows-10)
 
 These definitions are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub.
 
@@ -241,7 +241,7 @@ Example below:
 
 </details>
 
-## Device Compliance for Windows 10
+## Device Compliance for Windows (10)
 This definition is available here: [REF-03][em-ref3], which you can access from my GitHub.
 
 This sets some recommendations such as requiring device encryption and secure boot, requiring antivirus and the firewall to be enabled.
@@ -266,7 +266,7 @@ Example below:
     "createdDateTime": "2020-07-07T15:08:20.0938467Z",
     "description": null,
     "lastModifiedDateTime": "2020-11-01T13:56:55.5928833Z",
-    "displayName": "REF-03;ENV-P;VER-02; Device Compliance for Windows 10",
+    "displayName": "REF-03;ENV-P;VER-02; Device Compliance for Windows",
     "version": 6,
     "passwordRequired": true,
     "passwordBlockSimple": true,
@@ -307,5 +307,5 @@ Example below:
 
 [em-ref1]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/AppManagement/Policies/ENV-P/REF-01%3BENV-P%3BVER-02%3B%20App%20Protection%20for%20Android.json
 [em-ref2]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/AppManagement/Policies/ENV-P/REF-02%3BENV-P%3BVER-02%3B%20App%20Protection%20for%20iOS.json
-[em-ref3]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/DeviceManagement/Policies/ENV-P/REF-03%3BENV-P%3BVER-02%3B%20Device%20Compliance%20for%20Windows%2010.json
+[em-ref3]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/EndpointManager/DeviceManagement/Policies/ENV-P/REF-03%3BENV-P%3BVER-02%3B%20Device%20Compliance%20for%20Windows.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
