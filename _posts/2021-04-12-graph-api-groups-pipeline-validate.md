@@ -20,7 +20,7 @@ _Both Azure Pipelines and GitHub Actions have free tiers for public projects, an
 
 For managing Azure AD groups in a pipeline, I'm taking a three stage approach consisting of:
 - Import & Validate
-- [Plan & Evaluate][plan-post]
+- Plan & Evaluate
 - Apply & Deploy
 
 This post covers the YAML and PowerShell involved in the first stage of importing and validating the input. The PowerShell can also be called directly.
