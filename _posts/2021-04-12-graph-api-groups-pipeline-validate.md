@@ -19,7 +19,7 @@ Managing Azure AD groups is a dependency for the Azure AD Conditional Access pip
 _Both Azure Pipelines and GitHub Actions have free tiers for public projects, and free execution minutes for private projects._
 
 For managing Azure AD groups in a pipeline, I'm taking a three stage approach consisting of:
-- Import & Validate
+- [Plan & Evaluate][plan-post]
 - Plan & Evaluate
 - Apply & Deploy
 
