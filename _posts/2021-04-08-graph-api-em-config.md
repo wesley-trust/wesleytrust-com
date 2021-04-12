@@ -16,7 +16,7 @@ This post continues the coverage of the [GraphAPIConfig][GraphAPIConfig] repo, w
 
 For Endpoint Manager, I'll be defining App Protection policies for Android and iOS (including iPadOS) and Device Compliance policies for Windows 10. This is because for Android and iOS, these are mostly used for personal devices, and for Windows, it's more likely that they'll be corporate devices.
 
-I apply these policies to my personal Azure AD tenant, so they apply to my iPad, Android phone and Windows laptop. I don't have a Mac...so I haven't created a policy for that...
+I apply these policies to my personal Azure AD tenant, so they apply to my iPad, Android phone and Windows laptop. I don't have a Mac...so I haven't created a policy for that...when I have some free time I'll flesh these out more (including device compliance for Android and iOS).
 
 - [App Protection for Android](#app-protection-for-android)
 - [App Protection for iOS (including iPadOS)](#app-protection-for-ios-including-ipados)

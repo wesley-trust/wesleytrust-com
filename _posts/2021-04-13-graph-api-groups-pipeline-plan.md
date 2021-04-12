@@ -15,15 +15,15 @@ excerpt: "This post covers the second stage in the pipeline which will be used t
 The PowerShell I'm writing, which in part mimics the stages that Terraform goes through when deploying Azure resources, adds some "smarts" to the Pipeline.
 
 This is the second stage, in the three stage pipeline for managing Azure AD groups:
-- Import & Validate
+- [Import & Validate][validate-post]
 - Plan & Evaluate
 - Apply & Deploy
 
 This post covers the YAML and PowerShell involved in the second stage which creates a plan of actions (if any), after evaluating the validated group input against Azure AD. The PowerShell can also be called directly.
 
-|   Current Plan & Evaluate Status   |
-|:----------------------------------:|
-|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
+|  Current Import & Validate Status  |   Current Plan & Evaluate Status   |
+|:----------------------------------:|:----------------------------------:|
+|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
 
 ## Invoke Plan Azure AD group
 This function is [Invoke-WTPlanAzureADGroup][function-plan], which you can access from my GitHub.
@@ -35,7 +35,7 @@ Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next
 ### Pipeline YAML example below:
 _Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
 
-As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD and do not exist in the config repo. 
+As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD and do not exist in the config repo. In the future I might consider a "state" file, similar to Terraform to keep track of this.
 
 _Azure Pipelines automatically downloads artifacts created in the previous stage_
 
@@ -180,7 +180,7 @@ Invoke-WTPlanAzureADGroup -AzureADGroup $ValidateAzureADGroup -AccessToken $Acce
   - If there are differences, they're added to a variable
 - If no groups exist, any imported groups must all be created, so the variable is updated
 - An object is then built containing the groups to be removed, updated or created (as appropriate)
-- This object is then returned as a plan of action
+- This object is then returned as a plan of action, which is output as a pipeline artifact for the next stage
 
 The complete function as at this date, is below:
 
@@ -222,7 +222,7 @@ function Invoke-WTPlanAzureADGroup {
             HelpMessage = "The Azure AD group object"
         )]
         [Alias('AzureADGroup', 'GroupDefinition')]
-        [pscustomobject]$AzureADGroups,
+        [PSCustomObject]$AzureADGroups,
         [Parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
@@ -409,7 +409,7 @@ function Invoke-WTPlanAzureADGroup {
 
                 # If there are groups, return PS object
                 if ($PlanAzureADGroups) {
-                    $PlanAzureADGroups = [pscustomobject]$PlanAzureADGroups
+                    $PlanAzureADGroups = [PSCustomObject]$PlanAzureADGroups
                     $PlanAzureADGroups
                 }
             }
@@ -441,3 +441,5 @@ function Invoke-WTPlanAzureADGroup {
 [function-plan]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Pipeline/Invoke-WTPlanAzureADGroup.ps1
 [devops-link]: https://dev.azure.com/wesleytrust/GraphAPI
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig
+[validate-post]: /blog/graph-api-groups-pipeline-validate/
+[apply-post]: /blog/graph-api-groups-pipeline-apply/

@@ -15,15 +15,17 @@ excerpt: "This post covers the third stage in the pipeline which will be used to
 The final stage in the Azure AD groups CI/CD pipeline, applies the changes from the plan provided from the previous stage (should there be any).
 
 This is the third stage, in the three stage pipeline for managing Azure AD groups:
-- Import & Validate
-- Plan & Evaluate
+- [Import & Validate][validate-post]
+- [Plan & Evaluate][plan-post]
 - Apply & Deploy
 
 This post covers the YAML and PowerShell involved in the third stage which executes the plan of actions (if any). The PowerShell can also be called directly.
 
-|   Current Apply & Deploy Status   |
-|:---------------------------------:|
-|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Apply&jobName=Deploy)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
+|  Current Import & Validate Status  |   Current Plan & Evaluate Status   |   Current Apply & Deploy Status   |
+|:----------------------------------:|:----------------------------------:|:---------------------------------:|
+|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Apply&jobName=Deploy)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
+
+_The apply stage is skipped when there are no changes to deploy, and so may show as "cancelled"_
 
 ## Invoke Apply Azure AD group
 This function is [Invoke-WTApplyAzureADGroup][function-apply], which you can access from my GitHub.
@@ -216,7 +218,7 @@ function Invoke-WTApplyAzureADGroup {
             HelpMessage = "The AzureAD group object"
         )]
         [Alias('AzureADGroup', 'GroupDefinition')]
-        [pscustomobject]$AzureADGroups,
+        [PSCustomObject]$AzureADGroups,
         [Parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
@@ -384,3 +386,5 @@ function Invoke-WTApplyAzureADGroup {
 [function-apply]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Pipeline/Invoke-WTApplyAzureADGroup.ps1
 [devops-link]: https://dev.azure.com/wesleytrust/GraphAPI
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig
+[validate-post]: /blog/graph-api-groups-pipeline-validate/
+[plan-post]: /blog/graph-api-groups-pipeline-plan/

@@ -371,3 +371,5 @@ function Invoke-WTValidateAzureADGroup {
 [function-validate]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Pipeline/Invoke-WTValidateAzureADGroup.ps1
 [devops-link]: https://dev.azure.com/wesleytrust/GraphAPI
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig
+[plan-post]: /blog/graph-api-groups-pipeline-plan/
+[apply-post]: /blog/graph-api-groups-pipeline-apply/
