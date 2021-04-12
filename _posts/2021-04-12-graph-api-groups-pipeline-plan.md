@@ -15,15 +15,15 @@ excerpt: "This post covers the second stage in the pipeline which will be used t
 The PowerShell I'm writing, which in part mimics the stages that Terraform goes through when deploying Azure resources, adds some "smarts" to the Pipeline.
 
 This is the second stage, in the three stage pipeline for managing Azure AD groups:
-- Import & Validate
+- [Import & Validate][validate-post]
 - Plan & Evaluate
 - Apply & Deploy
 
 This post covers the YAML and PowerShell involved in the second stage which creates a plan of actions (if any), after evaluating the validated group input against Azure AD. The PowerShell can also be called directly.
 
-|   Current Plan & Evaluate Status   |
-|:----------------------------------:|
-|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
+|  Current Import & Validate Status  |   Current Plan & Evaluate Status   |
+|:----------------------------------:|:----------------------------------:|
+|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|[![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Groups/SVC-AD%3BENV-P%3B%20Groups?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=9&branchName=main)|
 
 ## Invoke Plan Azure AD group
 This function is [Invoke-WTPlanAzureADGroup][function-plan], which you can access from my GitHub.
@@ -222,7 +222,7 @@ function Invoke-WTPlanAzureADGroup {
             HelpMessage = "The Azure AD group object"
         )]
         [Alias('AzureADGroup', 'GroupDefinition')]
-        [pscustomobject]$AzureADGroups,
+        [PSCustomObject]$AzureADGroups,
         [Parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
@@ -409,7 +409,7 @@ function Invoke-WTPlanAzureADGroup {
 
                 # If there are groups, return PS object
                 if ($PlanAzureADGroups) {
-                    $PlanAzureADGroups = [pscustomobject]$PlanAzureADGroups
+                    $PlanAzureADGroups = [PSCustomObject]$PlanAzureADGroups
                     $PlanAzureADGroups
                 }
             }
@@ -441,3 +441,5 @@ function Invoke-WTPlanAzureADGroup {
 [function-plan]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Pipeline/Invoke-WTPlanAzureADGroup.ps1
 [devops-link]: https://dev.azure.com/wesleytrust/GraphAPI
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig
+[validate-post]: /blog/graph-api-groups-pipeline-validate/
+[apply-post]: /blog/graph-api-groups-pipeline-apply/
