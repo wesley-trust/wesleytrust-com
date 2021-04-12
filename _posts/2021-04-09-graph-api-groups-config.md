@@ -26,6 +26,8 @@ The current groups are:
 
 The definitions of these groups are available in the [GraphAPIConfig][GraphAPIConfig] template repo in GitHub. By defining these groups, rather than using the inbuilt "All Users" options within Conditional Access, allows for greater customisation of each policy.
 
+_These are created with the PowerShell [Group][group-link] and [Group relationship][group-relationship-link] functions I wrote that use the Graph API, deployed in an [Azure DevOps pipeline][pipeline-link]._
+
 _For each group, a mailNickName is required, when this does not exist, when executed in the pipeline it will be generated._
 
 ## All Users
@@ -180,3 +182,6 @@ Example below:
 [group-em-device-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-EM/SVC-EM%3B%20Exclude%20from%20all%20Endpoint%20Manager%20Device%20Policies.json
 [group-em-user-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-EM/SVC-EM%3B%20Exclude%20from%20all%20Endpoint%20Manager%20User%20Policies.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
+[group-link]: https://www.wesleytrust.com/blog/graph-api-groups/
+[group-relationship-link]: https://www.wesleytrust.com/blog/graph-api-groups-relationship/
+[pipeline-link]: https://www.wesleytrust.com/blog/graph-api-groups-pipeline-validate/
