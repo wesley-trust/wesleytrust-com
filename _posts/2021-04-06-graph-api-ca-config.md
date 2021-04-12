@@ -31,11 +31,11 @@ Firstly, to make full use of Conditional Access policies, there are dependencies
 - SharePoint Online (including OneDrive)
   - App enforced restrictions
 
-I'm going to cover each of the dependencies in their own series of posts, but today I'm going to cover the recommended Conditional Access baseline policies.
+I'm going to cover each of the dependencies in their own series of posts, but today I'm going to cover recommended Conditional Access baseline policies.
 
-_These aren't intended to be fully exhaustive, they're supposed to be customised to suit individual needs and are intended to serve as a good starting point (that I use in my personal Azure AD tenant)._
+_These aren't intended to be fully exhaustive, they're supposed to be customised to suit individual needs and are intended to serve as a good starting point (that I use in my personal Azure AD tenant). Azure AD P1 licensing is required to use Conditional Access._
 
-These policies use the "beta" Microsoft Graph API (as at this date), as they make use of features in "Preview". Typically it's not recommended to use preview features in production, however, in this case, the alternative is to not make use of these features, so it's an acceptable risk.
+These policies use the "beta" Microsoft Graph API (as at this date), as they make use of features in "Preview". Typically it's not recommended to use preview features, or a preview API in production, however, in this case, the alternative is to not make use of these features, so I consider this an acceptable risk.
 
 ### Recommended Azure AD Conditional Access policies
 - [Block access, for all cloud apps, for any location, excluding trusted or named locations](#block-access-for-all-cloud-apps-for-any-location-excluding-trusted-or-named-locations)
@@ -67,7 +67,7 @@ This definition is available here: [REF-01][policy-ref1], which you can access f
 - Cloud apps: Include: All cloud apps
 #### Conditions  <!-- omit in toc -->
 - Locations: Include: Any location
-- Locations: Exclude: Selected named locations: MFA Trusted IPs, United Kingdom, IPv6 and unknown
+- Locations: Exclude: Selected named locations: MFA Trusted IPs, British Isles Common Travel Area, IPv6 and unknown
 
 _It's important to include IPv6 and unknown locations, to reduce the chance that legitimate users will be blocked_
 </details>
@@ -166,7 +166,7 @@ This definition is available here: [REF-02][policy-ref2], which you can access f
 - User action: Register security information
 #### Conditions  <!-- omit in toc -->
 - Locations: Include: Any location
-- Locations: Exclude: Selected named locations: MFA Trusted IPs, United Kingdom, IPv6 and unknown
+- Locations: Exclude: Selected named locations: MFA Trusted IPs, British Isles Common Travel Area, IPv6 and unknown
 - Device state: Include: All device state
 - Device state: Exclude: Device Hybrid Azure AD joined, Device marked as compliant
 
@@ -1365,7 +1365,10 @@ This definition is available here: [REF-13][policy-ref13], which you can access 
 This requires multi-factor authentication for sign-in events that Azure AD Identity Protection has determined to be at a medium or high risk level. This allows these users to be challenged with MFA when another policy would not have triggered this. Enhancing security as well as reducing user frustration by not requiring MFA for every authentication workflow and instead just for ones with the highest risk.
 
 _This can be customised to increase or decrease the risk appetite for triggering MFA._
-_A user without MFA configured, will not be allowed to configure MFA when at risk._
+
+_A user without MFA configured, will not be allowed to configure MFA when at risk, so it's important that users have this configured in advance._
+
+_This uses Azure AD Identity Protection, so requires Azure AD P2 licensing._
 
 Example below:
 <details>
@@ -1462,7 +1465,10 @@ _Require all of the selected controls_
 This requires multi-factor authentication for users Azure AD Identity Protection has determined to be at a high risk level of being compromised (such as through leaked credentials). This allows these users to be challenged with MFA, which if successful, requires that they change their password. Enhancing security by requiring automatically that users with compromised accounts are identified with action taken.
 
 _This can be customised to increase or decrease the risk appetite for triggering the password change and also whether the user is blocked instead._
-_A user without MFA configured, will not be allowed to configure MFA when at risk._
+
+_A user without MFA configured, will not be allowed to configure MFA when at risk, so it's important that users have this configured in advance._
+
+_This uses Azure AD Identity Protection, so requires Azure AD P2 licensing._
 
 Example below:
 <details>
