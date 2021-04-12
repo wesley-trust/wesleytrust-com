@@ -14,6 +14,8 @@ excerpt: "This post covers the first stage in the pipeline which will be used to
 ---
 Pipelines are awesome for automating Infrastructure as Code. I'm making use of [Azure DevOps][devops-link] to execute my Pipeline, but the YAML should also be compatible with GitHub Actions, making it relatively easy to use on either platform.
 
+Managing Azure AD groups is a dependency for the Azure AD Conditional Access pipeline, as I'll be adding groups created with this pipeline, as nested groups for (almost) every Conditional Access policy.
+
 _Both Azure Pipelines and GitHub Actions have free tiers for public projects, and free execution minutes for private projects._
 
 For managing Azure AD groups in a pipeline, I'm taking a three stage approach consisting of:
@@ -304,7 +306,7 @@ function Invoke-WTValidateAzureADGroup {
                             $GroupValidate.Add("MissingPropertyValues", $PropertyValueCheck)
                         }
                         if ($GroupValidate) {
-                            [pscustomobject]$GroupValidate
+                            [PSCustomObject]$GroupValidate
                         }
                     }
 
