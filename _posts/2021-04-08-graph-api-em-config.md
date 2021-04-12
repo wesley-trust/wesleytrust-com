@@ -246,7 +246,7 @@ This definition is available here: [REF-03][em-ref3], which you can access from 
 
 This sets some recommendations such as requiring device encryption and secure boot, requiring antivirus and the firewall to be enabled.
 
-_The scheduledActionsForRule is required to create a policy, where one does not exist in the config, a default rule of blocking devices after 24 hours is created in the pipeline._
+_The scheduledActionsForRule is required to create a policy, where one does not exist in the config, a default rule of notifying users and then blocking devices after 24 hours is created in the pipeline._
 
 Example below:
 
