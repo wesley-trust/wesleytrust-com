@@ -21,11 +21,11 @@ All of which will be created as part of either the Conditional Access pipeline, 
 
 Firstly, to make full use of Conditional Access policies, there are dependencies of the following to consider:
 - Azure AD
-  - Groups
-  - Named Locations
+  - [Groups][groups-config]
+  - [Named Locations][location-config]
 - Endpoint Manager
-  - Device Compliance
-  - App Protection
+  - [Device Compliance][em-config]
+  - [App Protection][em-config]
 - Exchange Online
   - App enforced restrictions
 - SharePoint Online (including OneDrive)
@@ -925,6 +925,8 @@ This requires that users have app-enforced restrictions (such as the inability t
 
 _This requires configuration changes for Exchange Online and SharePoint Online to enforce restrictions, [more info here][policy-ref9-applink]._
 
+_When configured in SharePoint Online, default Conditional Access policies are created and enabled, I remove these and replace with my recommended policies._
+
 Example below:
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -1635,3 +1637,6 @@ Example below:
 [policy-ref14]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-14%3BENV-P%3BVER-2%3B%20Require%20password%20change%20with%20MFA%2C%20for%20users%20at%20risk%2C%20for%20all%20cloud%20apps.json
 [policy-ref15]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/ConditionalAccess/Policies/ENV-P/REF-15%3BENV-P%3BVER-2%3B%20Require%20MFA%2C%20for%20registering%20or%20joining%20devices.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
+[groups-config]: https://www.wesleytrust.com/blog/graph-api-groups-config/
+[em-config]: https://www.wesleytrust.com/blog/graph-api-em-config/
+[location-config]: https://www.wesleytrust.com/blog/graph-api-locations-config/
