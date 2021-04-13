@@ -82,7 +82,12 @@ _It's important to include IPv6 and unknown locations, to reduce the chance that
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This is used to restrict the ability to sign-in, to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign-in from). Blocking all signs-ins from locations other than these, reducing the attack vector so it's less likely malicious sign-ins could occur.
+This is used to restrict the ability to sign-in, to locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign-in from). Blocking all signs-ins from locations other than these.
+
+### Why is this useful? <!-- omit in toc -->
+Where's is reasonable safe to know where a user will be signing in from, restricting sign-ins to just these locations can reduce the likelihood of malicious sign-in attempts.
+
+This can also be used in part to help meet data residency access requirements, such as restricting the ability to sign-in when outside of a certain country or area such as the [European Economic Area][eea-link]. When combined with [Continuous access evaluation][cae-link], this offers near real time protection for network location changes.
 
 Example below:
 <details>
@@ -185,9 +190,12 @@ _It's important to include IPv6 and unknown locations, to reduce the chance that
 ### What does this do? <!-- omit in toc -->
 This is used to restrict the ability to register security information (IE MFA registration), to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from). Or devices that are already hybrid joined or compliant with security policies. 
 
-Blocking all attempts from locations other than these, reducing the attack vector so it's less likely malicious registration could occur.
+Blocking all attempts from locations other than these.
 
 _This can be customised to restrict further._
+
+### Why is this useful? <!-- omit in toc -->
+Where's it's possible to restrict the ability to register this information to specific locations, such as only within a company office, or cloud environment, the possible attack vector is reduced so it's less likely malicious registration could occur.
 
 Example below:
 <details>
@@ -297,9 +305,16 @@ _Other client apps will be blocked by another policy (IE disabling legacy authen
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This is used to restrict the ability of guests and external users to only access approved cloud apps (such as collaboration apps). Blocking all attempts to access other cloud apps to increase security. Combining this with approved external domains for sharing within SharePoint Online will enhance security further.
+This is used to restrict the ability of guests and external users to only access approved cloud apps. Blocking all attempts to access other cloud apps.
 
 _This can be customised to restrict or relax the apps included within the policy._
+
+### Why is this useful? <!-- omit in toc -->
+Typically it's best to give the minimum amount of access for the tasks people will need to perform. So for example, where it's possible to know that guests will only be using Microsoft Teams and SharePoint to collaborate, then restricting access to all other apps, such as the Azure portal enhances security.
+
+As guests have far limited exposure to the cloud apps within the Azure AD tenant, reducing the chance guests could view information they shouldn't, or that a malicious user could attempt to exploit misconfigurations.
+
+Combining this with approved external domains for sharing within SharePoint Online will enhance security further.
 
 Example below:
 <details>
@@ -396,9 +411,12 @@ This definition is available here: [REF-04][policy-ref4], which you can access f
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This is used to restrict the ability of users to only authenticate with modern authentication clients (which fully support Conditional Access, MFA and the latest security protocols). Blocking all attempts to access using legacy authentication clients.
+This is used to restrict the ability of users to only authenticate with modern authentication clients. Blocking all attempts to access using legacy authentication clients.
 
 _This can be customised to allow ActiveSync, but this is not recommended as app protection policies will not apply._
+
+### Why is this useful? <!-- omit in toc -->
+This is a [Microsoft best practice][defaults-link], as legacy authentication clients do not support the latest security features such as Conditional Access conditions like multi-factor authentication. This forms part of Microsoft Security Defaults for new Azure AD tenants.
 
 Example below:
 <details>
@@ -493,9 +511,12 @@ This definition is available here: [REF-05][policy-ref5], which you can access f
 ### What does this do? <!-- omit in toc -->
 This requires that users are challenged for multi-factor authentication during sign-in for compatible client apps. Unless they're within a trusted location or have devices that are Hybrid Azure AD joined or marked as compliant.
 
-As trusted locations are excluded, as well as specific devices, locations marked as trusted should be limited and devices that are Windows AD joined should be within a trust boundary (IE can only be joined by administrators or a trusted join workflow where security can be assured).
+As trusted locations are excluded, as well as specific devices, locations marked as trusted should be limited and devices that are Windows AD joined should be within a trust boundary (IE can only be joined by administrators or a trusted join workflow where security of the endpoint can be assured).
 
-When used in combination with [REF-06](#require-hybrid-joined-or-compliant-device-for-all-cloud-apps-for-all-desktop-devices), common scenarios might include a Windows Virtual Desktop, or Windows Server mult-session environment, which are locked down within a cloud provider. When combined with Endpoint Manager, device security can be assured with a compliance policy which can be revoked.
+When used in combination with [REF-06](#require-hybrid-joined-or-compliant-device-for-all-cloud-apps-for-all-desktop-devices), common scenarios might include a Windows Virtual Desktop, or Windows Server multi-session environment, which are locked down within a cloud provider. When combined with Endpoint Manager, device security can be assured with a compliance policy which can be revoked.
+
+### Why is this useful? <!-- omit in toc -->
+This is a [Microsoft best practice][defaults-link], where it's recommend that users verify their identity where possible to reduce the chance that a compromised account can complete a successful sign-in.
 
 Example below:
 <details>
@@ -611,6 +632,11 @@ This requires that users must sign-in from a device Hybrid Azure AD joined or ma
 
 This means that for desktop operating systems, device based MDM will be the only option, rather than user based "App Protection" policies which for desktop operating systems isn't the most appropriate choice, as the majority will be corporate devices, than personally owned.
 
+### Why is this useful? <!-- omit in toc -->
+This allows you to only allow access on devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] so you can keep data safe when accessed on these devices.
+
+This also allows for Hybrid Azure AD joined devices, such as Windows Virtual Desktop multi-session environments. Which as of this date, cannot be enrolled in Endpoint Manager (as it's Windows Server based). _This is where it's important to control the ability to join devices to Windows AD to ensure security policies are applied via other methods._
+
 Example below:
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -716,6 +742,15 @@ This requires that users must sign-in from a device marked as compliant, or use 
 
 This means that for mobile operating systems, there is a choice to enrol a device for MDM, typically used for corporate devices, where administrators will have full control of the device, or users must use an approved client app (where app protection policy can be applied), typically used for personal devices. This can be combined with policy [REF-08](#require-app-protection-policy-or-compliant-device-for-exchange-and-sharepoint-for-all-mobile-devices), to further restrict access to supported apps that have App Protection policies enforced.
 
+### Why is this useful? <!-- omit in toc -->
+This allows you to only allow access on devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] or using an approved app, also requiring app encryption from an [Endpoint Manager App Protection policy][em-config], so you can keep data safe when accessed on these devices.
+
+There is an important distinction here though, as these approved apps could have an app protection policy applied, but if one isn't applied, access is still granted.
+
+So there could be a situation where a user is not correctly targeted for the app protection policy, but the Conditional Access policy still allows access as they're using an approved app. So for supported apps, [REF-08](#require-app-protection-policy-or-compliant-device-for-exchange-and-sharepoint-for-all-mobile-devices) can also be used to require an app protection policy.
+
+[A list of approved apps is available here][approved-apps]
+
 Example below:
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -820,7 +855,12 @@ This requires that users must sign-in from a device marked as compliant, or use 
 
 This means that for mobile operating systems, there is a choice to enrol a device for MDM, typically used for corporate devices, where administrators will have full control of the device, or users must use a client app with an app protection policy applied, typically used for personal devices. This extends security for supported apps, above just requiring an approved app, which applies for apps that do not support this control.
 
-_Only specific client apps support this setting, so it's recommended to not apply to "All cloud apps", [more info here][policy-ref8-applink]._
+### Why is this useful? <!-- omit in toc -->
+This allows you to only allow access on devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] or using an app that also requires app encryption from an [Endpoint Manager App Protection policy][em-config], so you can keep data safe when accessed on these devices.
+
+There are more apps that support app protection policies, than this Conditional Access policy can currently target, so it's important to consider the use of [REF-07](#require-approved-client-app-or-compliant-device-for-all-cloud-apps-for-all-mobile-devices) and targeting Endpoint Manager app protection policies (even though Conditional Access cannot enforce them).
+
+[More information available here][policy-ref8-applink]
 
 Example below:
 <details>
@@ -927,6 +967,11 @@ _This requires configuration changes for Exchange Online and SharePoint Online t
 
 _When configured in SharePoint Online, default Conditional Access policies are created and enabled, I remove these and replace with my recommended policies._
 
+### Why is this useful? <!-- omit in toc -->
+This enhances data security by reducing data leakage on devices and in environments where you're unable to verify the security, for example, as the devices may not have encryption enforced in an [Endpoint Manager Compliance policy][em-config] or are not corporate owned and so are not Hybrid Azure AD joined devices.
+
+This could be a security policy, where the goal is to take reasonable actions to control the flow of data, whilst balancing usability by still allowing read access to data in a web browser. As the policies are cumulative, other polices requiring MFA, or restricting access to certain locations would also apply in addition.
+
 Example below:
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -1029,7 +1074,12 @@ This definition is available here: [REF-10][policy-ref10], which you can access 
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This requires that users must sign-in each day, with no persistent sessions allowed, when using a web browser. Unless accessed using devices that are Hybrid Azure AD joined or marked as compliant. This enhances security, so if users are using a shared or guest computer for instance, sign-in information is not retained, and must be refreshed on a daily basis. This will override the "remember sign-in information" tenant wide.
+This requires that users must sign-in each day, with no persistent sessions allowed, when using a web browser. Unless accessed using devices that are Hybrid Azure AD joined or marked as compliant. This will override the "remember sign-in information" tenant wide.
+
+### Why is this useful? <!-- omit in toc -->
+This enhances security, so if users are using a shared or guest computer for instance, sign-in information is not retained, and must be refreshed on a daily basis.
+
+This attempts to find a balance between security and usability so the chance for user impersonation and malicious actions are reduced for users who may forget to sign-out, whilst still allowing them to sign-in for productivity.
 
 _This can be customised further depending on the required risk appetite and level of tolerable disruption to users._
 
@@ -1136,9 +1186,12 @@ This definition is available here: [REF-11][policy-ref11], which you can access 
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This requires multi-factor authentication for all users holding administrator roles, irregardless of the app they are attempting to access, location or device. This enhances security as these users hold privileged roles and so every sign-in attempt is treated with high security. This encourages users to not hold privileged roles permanently and instead to make use of alternatives such as Privileged Identity Management.
+This requires multi-factor authentication for all users holding administrator roles, irregardless of the app they are attempting to access, location or device. 
 
 _The roles included can be customised to suit individual needs._
+
+### Why is this useful? <!-- omit in toc -->
+This is a [Microsoft best practice][defaults-link], which enhances security as these users hold privileged roles and so every sign-in attempt is treated with elevated risk. This encourages users to not hold privileged roles permanently and instead to make use of alternatives such as Privileged Identity Management.
 
 Example below:
 <details>
@@ -1273,7 +1326,12 @@ This definition is available here: [REF-12][policy-ref12], which you can access 
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This requires multi-factor authentication for all users accessing Microsoft Azure Management. This is a sensitive application as this allows the ability to view, change or remove Azure resources (with the correct permissions on the resource) which does not require an Azure AD role, and so management is protected.
+This requires multi-factor authentication for all users accessing Microsoft Azure Management.
+
+### Why is this useful? <!-- omit in toc -->
+This is a [Microsoft best practice][defaults-link], which enhances security as the Azure portal allows for privileged activities, such as the ability to view, change or remove Azure resources (with the correct permissions on the resource) which does not require an Azure AD role, and so management is protected.
+
+This reduces the chance of malicious activity from compromised accounts.
 
 Example below:
 <details>
@@ -1362,13 +1420,16 @@ This definition is available here: [REF-13][policy-ref13], which you can access 
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This requires multi-factor authentication for sign-in events that Azure AD Identity Protection has determined to be at a medium or high risk level. This allows these users to be challenged with MFA when another policy would not have triggered this. Enhancing security as well as reducing user frustration by not requiring MFA for every authentication workflow and instead just for ones with the highest risk.
+This requires multi-factor authentication for sign-in events that Azure AD Identity Protection has determined to be at a medium or high risk level. This allows these users to be challenged with MFA when another policy would not have triggered this. 
+
+_This uses Azure AD Identity Protection, so requires Azure AD P2 licensing._
+
+### Why is this useful? <!-- omit in toc -->
+This enhances security for events categorised as risky, whilst also reducing user frustration by not requiring MFA for every authentication workflow and instead targeting MFA for events with the highest risk or exposure to malicious activity.
 
 _This can be customised to increase or decrease the risk appetite for triggering MFA._
 
 _A user without MFA configured, will not be allowed to configure MFA when at risk, so it's important that users have this configured in advance._
-
-_This uses Azure AD Identity Protection, so requires Azure AD P2 licensing._
 
 Example below:
 <details>
@@ -1462,13 +1523,16 @@ _Require all of the selected controls_
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This requires multi-factor authentication for users Azure AD Identity Protection has determined to be at a high risk level of being compromised (such as through leaked credentials). This allows these users to be challenged with MFA, which if successful, requires that they change their password. Enhancing security by requiring automatically that users with compromised accounts are identified with action taken.
+This requires multi-factor authentication for users Azure AD Identity Protection has determined to be at a high risk level of being compromised (such as through leaked credentials). This allows these users to be challenged with MFA, which if successful, requires that they change their password.
+
+_This uses Azure AD Identity Protection, so requires Azure AD P2 licensing._
+
+### Why is this useful? <!-- omit in toc -->
+This enhances security as accounts Identity Protection determines could be at risk of compromise, are required to complete MFA and then change their password, having their access blocked if they are not registered for MFA. Reducing the risk that malicious actions could be taken by the potentially compromised account.
 
 _This can be customised to increase or decrease the risk appetite for triggering the password change and also whether the user is blocked instead._
 
 _A user without MFA configured, will not be allowed to configure MFA when at risk, so it's important that users have this configured in advance._
-
-_This uses Azure AD Identity Protection, so requires Azure AD P2 licensing._
 
 Example below:
 <details>
@@ -1564,6 +1628,9 @@ This requires multi-factor authentication for when users register or join their 
 
 _This replaces the tenant wide setting, allowing customisation, such as including location based exclusions._
 
+### Why is this useful? <!-- omit in toc -->
+This enhances security as registering or joining devices to Azure AD is a privileged activity, as devices may then be able to access corporate data, this verifies the sign-in event reducing the risk that the account has been compromised and malicious actions may be performed.
+
 Example below:
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -1646,3 +1713,8 @@ Example below:
 [groups-config]: https://www.wesleytrust.com/blog/graph-api-groups-config/
 [em-config]: https://www.wesleytrust.com/blog/graph-api-em-config/
 [location-config]: https://www.wesleytrust.com/blog/graph-api-locations-config/
+[eea-link]: https://www.wesleytrust.com/blog/graph-api-locations-config/#european-economic-area
+[cae-link]: https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/concept-continuous-access-evaluation
+[legacy-link]: https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/howto-conditional-access-policy-block-legacy
+[defaults-link]: https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/concept-fundamentals-security-defaults
+[approved-apps]: https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/concept-conditional-access-grant#require-approved-client-app
