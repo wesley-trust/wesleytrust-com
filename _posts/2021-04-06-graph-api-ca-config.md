@@ -85,9 +85,11 @@ _It's important to include IPv6 and unknown locations, to reduce the chance that
 This is used to restrict the ability to sign-in, to locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign-in from). Blocking all signs-ins from locations other than these.
 
 ### Why is this useful? <!-- omit in toc -->
-Where's is reasonable safe to know where a user will be signing in from, restricting sign-ins to just these locations can reduce the likelihood of malicious sign-in attempts.
+Where it's reasonably safe to know where a user will be signing in from, restricting sign-ins to just these locations can reduce the likelihood of malicious sign-in attempts.
 
-This can also be used in part to help meet data residency access requirements, such as restricting the ability to sign-in when outside of a certain country or area such as the [European Economic Area][eea-link]. When combined with [Continuous access evaluation][cae-link], this offers near real time protection for network location changes.
+This can also be used in part to help meet data residency access requirements, such as restricting the ability to sign-in when outside of a certain country or area such as the [European Economic Area][eea-link].
+
+When combined with [Continuous access evaluation][cae-link], this offers near real time protection for network location changes.
 
 Example below:
 <details>
@@ -188,14 +190,12 @@ _It's important to include IPv6 and unknown locations, to reduce the chance that
 </details>
 
 ### What does this do? <!-- omit in toc -->
-This is used to restrict the ability to register security information (IE MFA registration), to only locations that are trusted (such as an office), or named locations (such as the countries that users would be likely to sign in from). Or devices that are already hybrid joined or compliant with security policies. 
-
-Blocking all attempts from locations other than these.
+This is used to restrict the ability to register security information (IE MFA registration), to only locations that are trusted, or named locations (such as the countries that users would be likely to sign in from). Or devices that are already hybrid joined or compliant with security policies. Blocking all attempts from locations other than these.
 
 _This can be customised to restrict further._
 
 ### Why is this useful? <!-- omit in toc -->
-Where's it's possible to restrict the ability to register this information to specific locations, such as only within a company office, or cloud environment, the possible attack vector is reduced so it's less likely malicious registration could occur.
+Where it's possible to restrict the ability to register this information to specific locations, such as only within a company office, or cloud environment, the possible attack vector is reduced so it's less likely malicious registration could occur.
 
 Example below:
 <details>
@@ -312,7 +312,7 @@ _This can be customised to restrict or relax the apps included within the policy
 ### Why is this useful? <!-- omit in toc -->
 Typically it's best to give the minimum amount of access for the tasks people will need to perform. So for example, where it's possible to know that guests will only be using Microsoft Teams and SharePoint to collaborate, then restricting access to all other apps, such as the Azure portal enhances security.
 
-As guests have far limited exposure to the cloud apps within the Azure AD tenant, reducing the chance guests could view information they shouldn't, or that a malicious user could attempt to exploit misconfigurations.
+As guests will then have more limited access to the cloud apps within the Azure AD tenant, this reduces the chance guests could view information they shouldn't, or that a malicious user could attempt to exploit misconfigurations.
 
 Combining this with approved external domains for sharing within SharePoint Online will enhance security further.
 
@@ -633,9 +633,11 @@ This requires that users must sign-in from a device Hybrid Azure AD joined or ma
 This means that for desktop operating systems, device based MDM will be the only option, rather than user based "App Protection" policies which for desktop operating systems isn't the most appropriate choice, as the majority will be corporate devices, than personally owned.
 
 ### Why is this useful? <!-- omit in toc -->
-This allows you to only allow access on devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] so you can keep data safe when accessed on these devices.
+This restricts access to devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] so you can keep data safe when accessed on these devices.
 
-This also allows for Hybrid Azure AD joined devices, such as Windows Virtual Desktop multi-session environments. Which as of this date, cannot be enrolled in Endpoint Manager (as it's Windows Server based). _This is where it's important to control the ability to join devices to Windows AD to ensure security policies are applied via other methods._
+This also allows for Hybrid Azure AD joined devices, such as Windows Virtual Desktop multi-session environments. Which as of this date, cannot be enrolled in Endpoint Manager (as it's Windows Server based).
+
+_This is where it's important to control the ability to join devices to Windows AD and ensure security policies are applied as appropriate._
 
 Example below:
 <details>
@@ -743,7 +745,7 @@ This requires that users must sign-in from a device marked as compliant, or use 
 This means that for mobile operating systems, there is a choice to enrol a device for MDM, typically used for corporate devices, where administrators will have full control of the device, or users must use an approved client app (where app protection policy can be applied), typically used for personal devices. This can be combined with policy [REF-08](#require-app-protection-policy-or-compliant-device-for-exchange-and-sharepoint-for-all-mobile-devices), to further restrict access to supported apps that have App Protection policies enforced.
 
 ### Why is this useful? <!-- omit in toc -->
-This allows you to only allow access on devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] or using an approved app, also requiring app encryption from an [Endpoint Manager App Protection policy][em-config], so you can keep data safe when accessed on these devices.
+This restricts access to devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] or using an approved app (which could have app encryption from an [Endpoint Manager App Protection policy][em-config]), so you can keep data safe when accessed on these devices.
 
 There is an important distinction here though, as these approved apps could have an app protection policy applied, but if one isn't applied, access is still granted.
 
@@ -856,7 +858,7 @@ This requires that users must sign-in from a device marked as compliant, or use 
 This means that for mobile operating systems, there is a choice to enrol a device for MDM, typically used for corporate devices, where administrators will have full control of the device, or users must use a client app with an app protection policy applied, typically used for personal devices. This extends security for supported apps, above just requiring an approved app, which applies for apps that do not support this control.
 
 ### Why is this useful? <!-- omit in toc -->
-This allows you to only allow access on devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] or using an app that also requires app encryption from an [Endpoint Manager App Protection policy][em-config], so you can keep data safe when accessed on these devices.
+This restricts access to devices where you're able to verify the security, such as requiring encryption in an [Endpoint Manager Compliance policy][em-config] or using an app that requires app encryption from an [Endpoint Manager App Protection policy][em-config], so you can keep data safe when accessed on these devices.
 
 There are more apps that support app protection policies, than this Conditional Access policy can currently target, so it's important to consider the use of [REF-07](#require-approved-client-app-or-compliant-device-for-all-cloud-apps-for-all-mobile-devices) and targeting Endpoint Manager app protection policies (even though Conditional Access cannot enforce them).
 
@@ -1191,7 +1193,7 @@ This requires multi-factor authentication for all users holding administrator ro
 _The roles included can be customised to suit individual needs._
 
 ### Why is this useful? <!-- omit in toc -->
-This is a [Microsoft best practice][defaults-link], which enhances security as these users hold privileged roles and so every sign-in attempt is treated with elevated risk. This encourages users to not hold privileged roles permanently and instead to make use of alternatives such as Privileged Identity Management.
+This is a [Microsoft best practice][defaults-link], which enhances security as these users hold privileged roles and so every sign-in attempt is treated with elevated risk. This encourages users to not hold privileged roles permanently and instead to make use of alternatives such as Privileged Identity Management. This forms part of Microsoft Security Defaults for new Azure AD tenants.
 
 Example below:
 <details>
@@ -1329,9 +1331,7 @@ This definition is available here: [REF-12][policy-ref12], which you can access 
 This requires multi-factor authentication for all users accessing Microsoft Azure Management.
 
 ### Why is this useful? <!-- omit in toc -->
-This is a [Microsoft best practice][defaults-link], which enhances security as the Azure portal allows for privileged activities, such as the ability to view, change or remove Azure resources (with the correct permissions on the resource) which does not require an Azure AD role, and so management is protected.
-
-This reduces the chance of malicious activity from compromised accounts.
+This is a [Microsoft best practice][defaults-link], which enhances security as the Azure portal allows for privileged activities, such as the ability to view, change or remove Azure resources (with the correct permissions on the resource) which does not require an Azure AD role, and so this reduces the chance of malicious activity from compromised accounts. This forms part of Microsoft Security Defaults for new Azure AD tenants.
 
 Example below:
 <details>
@@ -1425,7 +1425,7 @@ This requires multi-factor authentication for sign-in events that Azure AD Ident
 _This uses Azure AD Identity Protection, so requires Azure AD P2 licensing._
 
 ### Why is this useful? <!-- omit in toc -->
-This enhances security for events categorised as risky, whilst also reducing user frustration by not requiring MFA for every authentication workflow and instead targeting MFA for events with the highest risk or exposure to malicious activity.
+This reducing user frustration by not requiring MFA for every authentication workflow, but enhances security by still enforcing MFA for events with the highest risk or exposure to malicious activity.
 
 _This can be customised to increase or decrease the risk appetite for triggering MFA._
 
@@ -1629,7 +1629,7 @@ This requires multi-factor authentication for when users register or join their 
 _This replaces the tenant wide setting, allowing customisation, such as including location based exclusions._
 
 ### Why is this useful? <!-- omit in toc -->
-This enhances security as registering or joining devices to Azure AD is a privileged activity, as devices may then be able to access corporate data, this verifies the sign-in event reducing the risk that the account has been compromised and malicious actions may be performed.
+This enhances security as registering or joining devices to Azure AD is a privileged activity, as devices may then be able to access corporate data. This verifies the sign-in event reducing the risk that the account has been compromised and malicious actions may be performed.
 
 Example below:
 <details>
