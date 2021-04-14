@@ -12,12 +12,12 @@ tags:
   - evaluate
 excerpt: "This post covers the third stage in the pipeline which will be used to automate creating, updating and removing Azure AD groups..."
 ---
-The final stage in the Azure AD groups CI/CD pipeline, applies the changes from the plan provided from the previous stage (should there be any).
+The third stage in the Azure AD groups CI/CD pipeline applies the changes from the plan provided from the previous stage (should there be any).
 
 This is the third stage, in the three stage pipeline for managing Azure AD groups:
 - [Import & Validate][validate-post]
 - [Plan & Evaluate][plan-post]
-- Apply & Deploy
+- **Apply & Deploy**
 
 This post covers the YAML and PowerShell involved in the third stage which executes the plan of actions (if any). The PowerShell can also be called directly.
 
@@ -30,12 +30,12 @@ _The apply stage is skipped when there are no changes to deploy, and so may show
 ## Invoke Apply Azure AD group
 This function is [Invoke-WTApplyAzureADGroup][function-apply], which you can access from my GitHub.
 
-Within the pipeline, this imports the validated JSON artifact of groups (should they exist), which is passed to the function via a parameter. This then creates a plan of what should be created, updated or removed (as appropriate).
+Within the pipeline, this imports the plan JSON artifact of groups, which is passed to the function via a parameter. This contains what groups that should be created, updated or removed (as appropriate).
 
 ### Pipeline YAML example below:
-_Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
+_Triggered on a change to the Azure AD groups within the [GraphAPIConfig template repo in GitHub][github-repo]_
 
-As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD and do not exist in the config repo. 
+As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD and do not exist in the config repo. In the future I might consider a "state" file, similar to Terraform to keep track of this.
 
 _Azure Pipelines automatically downloads artifacts created in the previous stage_
 
@@ -172,12 +172,13 @@ Invoke-WTApplyAzureADGroup -AzureADGroup $PlanAzureADGroup -AccessToken $AccessT
 </details>
 
 ### What does this do? <!-- omit in toc -->
-- An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
-- If groups should be removed, and the objects exist, the group IDs are provided to the remove group function
-- If groups should be updated, and the objects exist, the group objects are provided to the edit group function
-- If the group objects to be created exist, the objects are provided to the new group function
-  - The new group config information is then exported (so IDs are available to manage the groups)
-  - Within the pipeline, these files are added, committed and pushed to the config repo
+- An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
+- If groups should be removed, and the objects exist, the group IDs are provided to the [remove group function][remove-function]
+- If groups should be updated, and the objects exist, the group objects are provided to the [edit group function][update-function]
+- If there are group objects to be created, the objects are provided to the [new group function][create-function]
+  - The new group config information is then exported using the [export group function][export-function]
+  - This ensures the new group Ids are available in the config to manage in the future 
+  - Within the pipeline, the files are added, committed and pushed to the [config repo][config-repo]
 
 The complete function as at this date, is below:
 
@@ -388,3 +389,9 @@ function Invoke-WTApplyAzureADGroup {
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig
 [validate-post]: /blog/graph-api-groups-pipeline-validate/
 [plan-post]: /blog/graph-api-groups-pipeline-plan/
+[remove-function]: /blog/graph-api-groups/#remove-an-azure-ad-group
+[update-function]: /blog/graph-api-groups/#update-an-azure-ad-group
+[create-function]: /blog/graph-api-groups/#create-an-azure-ad-group
+[export-function]: /blog/graph-api-groups/#export-an-azure-ad-group
+[config-repo]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/Groups
+[access-token]: https://www.wesleytrust.com/blog/obtain-access-token/

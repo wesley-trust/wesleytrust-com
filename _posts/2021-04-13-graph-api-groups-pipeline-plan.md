@@ -16,8 +16,8 @@ The PowerShell I'm writing, which in part mimics the stages that Terraform goes 
 
 This is the second stage, in the three stage pipeline for managing Azure AD groups:
 - [Import & Validate][validate-post]
-- Plan & Evaluate
-- Apply & Deploy
+- **Plan & Evaluate**
+- [Apply & Deploy][apply-post]
 
 This post covers the YAML and PowerShell involved in the second stage which creates a plan of actions (if any), after evaluating the validated group input against Azure AD. The PowerShell can also be called directly.
 
@@ -33,7 +33,7 @@ Within the pipeline, this imports the validated JSON artifact of groups (should 
 Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
 
 ### Pipeline YAML example below:
-_Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
+_Triggered on a change to the Azure AD groups within the [GraphAPIConfig template repo in GitHub][github-repo]_
 
 As Azure AD groups can be created in multiple ways, and by multiple applications, having the config repo being the source of authority didn't seem appropriate, so by default, groups are not removed if they exist in Azure AD and do not exist in the config repo. In the future I might consider a "state" file, similar to Terraform to keep track of this.
 
@@ -167,9 +167,9 @@ Invoke-WTPlanAzureADGroup -AzureADGroup $ValidateAzureADGroup -AccessToken $Acce
 </details>
 
 ### What does this do? <!-- omit in toc -->
-- An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
+- An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
 - Checks are performed about whether to evaluate groups for updating or removal
-- Existing groups in Azure AD are obtained (as appropriate), in order to compare against the validated import
+- Existing groups in Azure AD are obtained (as appropriate) from the [Get function][get-function], in order to compare against the validated import
 - An object comparison is performed on the group IDs, determining:
   - What groups could be removed (as they exist, but don't have an ID in the import)
   - What groups could be created (as an ID might not exist, or might not match an existing ID in Azure AD)
@@ -443,3 +443,5 @@ function Invoke-WTPlanAzureADGroup {
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig
 [validate-post]: /blog/graph-api-groups-pipeline-validate/
 [apply-post]: /blog/graph-api-groups-pipeline-apply/
+[get-function]: /blog/graph-api-groups/#get-an-azure-ad-group
+[access-token]: https://www.wesleytrust.com/blog/obtain-access-token/

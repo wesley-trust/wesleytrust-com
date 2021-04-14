@@ -19,9 +19,9 @@ Managing Azure AD groups is a dependency for the Azure AD Conditional Access pip
 _Both Azure Pipelines and GitHub Actions have free tiers for public projects, and free execution minutes for private projects._
 
 For managing Azure AD groups in a pipeline, I'm taking a three stage approach consisting of:
-- Import & Validate
+- **Import & Validate**
 - [Plan & Evaluate][plan-post]
-- Apply & Deploy
+- [Apply & Deploy][apply-post]
 
 This post covers the YAML and PowerShell involved in the first stage of importing and validating the input. The PowerShell can also be called directly.
 
@@ -37,7 +37,7 @@ This imports JSON definitions of groups, or imports group objects via a paramete
 Outputting a JSON validate file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
 
 ### Pipeline YAML example below:
-_Triggered on a change to the [GraphAPIConfig template repo in GitHub][github-repo]_
+_Triggered on a change to the Azure AD groups within the [GraphAPIConfig template repo in GitHub][github-repo]_
 
 _Azure Pipelines automatically clones this repo_
 
