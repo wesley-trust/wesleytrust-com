@@ -16,10 +16,11 @@ This post continues the coverage of the [GraphAPIConfig][GraphAPIConfig] repo, w
 
 There are six Azure AD groups that will be used within the Conditional Access and Endpoint Manager (Intune) pipelines, as nested groups that are included in the inclusion/exclusion groups that will be created for the Conditional Access and Endpoint Manager policies.
 
-The current groups are:
+The current defined groups are:
 - [All Users](#all-users)
 - [All Guests](#all-guests)
 - [All Devices](#all-devices)
+- [All Windows Devices](#all-windows-devices)
 - [SVC-CA; Exclude from all Conditional Access policies](#svc-ca-exclude-from-all-conditional-access-policies)
 - [SVC-EM; Exclude from all Endpoint Manager device policies](#svc-em-exclude-from-all-endpoint-manager-device-policies)
 - [SVC-EM; Exclude from all Endpoint Manager user policies](#svc-em-exclude-from-all-endpoint-manager-user-policies)
@@ -34,6 +35,8 @@ _For each group, a mailNickName is required, when this does not exist, when exec
 This definition is available here: [All Users][group-users], which you can access from my GitHub.
 
 This has a dynamic query that includes all users (including members and external users) within the Azure AD tenant.
+
+Used to target Azure AD Conditional Access and Endpoint Manager App Protection policies.
 
 Example below:
 
@@ -60,6 +63,8 @@ Example below:
 This definition is available here: [All Guests][group-guests], which you can access from my GitHub.
 
 This has a dynamic query that includes all guests (which is all external users excluding members) within the Azure AD tenant.
+
+Used to target Azure AD Conditional Access policies.
 
 Example below:
 
@@ -101,6 +106,34 @@ Example below:
   ],
   "mailEnabled": false,
   "membershipRule": "(device.deviceId -ne null)",
+  "membershipRuleProcessingState": "On",
+  "securityEnabled": true,
+}
+```
+
+</details>
+
+## All Windows Devices
+This definition is available here: [All Windows Devices][group-windows-devices], which you can access from my GitHub.
+
+This has a dynamic query that includes all Windows devices within the Azure AD tenant.
+
+Used to target Endpoint Manager Device Compliance for Windows policy.
+
+Example below:
+
+<details>
+  <summary><em><strong>Expand code block</strong></em></summary>
+
+```json
+{
+  "description": "Dynamic query that includes all Windows devices within the directory",
+  "displayName": "All Windows Devices",
+  "groupTypes": [
+    "DynamicMembership"
+  ],
+  "mailEnabled": false,
+  "membershipRule": "(device.deviceId -ne null) and (device.deviceOSType -eq \"Windows\")",
   "membershipRuleProcessingState": "On",
   "securityEnabled": true,
 }
@@ -179,6 +212,7 @@ Example below:
 [group-guests]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/All%20Guests.json
 [group-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-CA/SVC-CA%3B%20Exclude%20from%20all%20Conditional%20Access%20Policies.json
 [group-devices]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/All%20Devices.json
+[group-windows-devices]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/All%20Windows%20Devices.json
 [group-em-device-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-EM/SVC-EM%3B%20Exclude%20from%20all%20Endpoint%20Manager%20Device%20Policies.json
 [group-em-user-exclude]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/AzureAD/Groups/SVC-EM/SVC-EM%3B%20Exclude%20from%20all%20Endpoint%20Manager%20User%20Policies.json
 [GraphAPIConfig]: https://github.com/wesley-trust/GraphAPIConfig
