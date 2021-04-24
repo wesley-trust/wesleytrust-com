@@ -33,52 +33,15 @@ This is where the addon complexity came into play, as "E5 Security" is an addon 
 ### Managing Subscriptions
 - [Getting subscriptions in an Azure AD tenant](#getting-subscriptions-in-an-azure-ad-tenant)
 - [Evaluating service plan dependencies for subscriptions](#evaluating-service-plan-dependencies-for-subscriptions)
+- [Assigning subscriptions to Azure AD groups]](#assigning-subscriptions-to-azure-ad-groups)
 
 ## Getting subscriptions in an Azure AD tenant
 The first function is [Get-WTAzureADSubscription][function-getsub], which you can access from my GitHub.
 
-This gets the commercial (IE Microsoft 365) subscriptions deployed in an Azure AD tenant. I'll be using this to create a group per subscription, and then assign the subscription to the group in the CI/CD pipeline.
-
-Examples below:
-
-<details>
-  <summary><em><strong>Expand code block</strong></em></summary>
-
-```powershell
-# Clone repo that contains the Graph API and ToolKit functions
-git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
-
-# Dot source function into memory
-. .\GraphAPI\Public\AzureAD\Subscriptions\Get-WTAzureADSubscription.ps1
-
-# Define Variables
-$ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
-$ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
-$TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
-$IDs = @("gkg23497-43gf-983s-5fg36-dsf234kafs24","hsw23497-hg5d-t59b-fd35k-dsf234kafs24")
-$AccessToken = "HWYLAqz6PipzzdtPwRnSN0Socozs2lZ7nsFky90UlDGTmaZY1foVojTUqFgm1vw0iBslogoP"
-
-# Create hashtable
-$ServicePrincipal = @{
-  ClientID     = $ClientID
-  ClientSecret = $ClientSecret
-  TenantDomain = $TenantDomain
-}
-
-# Get all subscriptions, splat the hashtable containing the service principal to obtain an access token
-Get-WTAzureADSubscription @ServicePrincipal
-
-# Or pipe specific IDs to get to the function, splat the hashtable containing the service principal
-$IDs | Get-WTAzureADSubscription @ServicePrincipal
-
-# Or specify each parameter individually, including an access token previously obtained
-Get-WTAzureADSubscription -AccessToken $AccessToken -IDs $IDs
-```
-
-</details>
+This gets the commercial (IE Microsoft 365) subscriptions deployed in an Azure AD tenant. I'll be using this in the CI/CD pipeline to create a group per subscription and then assign the subscription to the group. Allowing members to then be added to the groups to be assigned those licences.
 
 ### What does this do? <!-- omit in toc -->
-- This sets specific variables, including the activity, the tags to be evaluated against the groups, and the Graph Uri
+- This sets specific variables, including the activity and the Graph Uri
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - The private function is then called, with the query altered as appropriate depending on the parameters
 
@@ -219,61 +182,15 @@ The next function is [Get-WTAzureADSubscriptionDependency][function-getsubdep], 
 
 There is no API that Microsoft provide for service plan dependencies for subscriptions (that I've found), so I had to define these myself for the subscriptions that I use.
 
-I defined a [JSON dependency object][dep], which contains service plans that depend on other service plans, and wrote a PowerShell function that uses that definition to evaluate the subscriptions, to decide which subscriptions need to be grouped together (and assigned first) for when assigning subscriptions to groups.
-
-This function returns the 
-
-Examples below:
-
-<details>
-  <summary><em><strong>Expand code block</strong></em></summary>
-
-```powershell
-# Clone repo that contains the Graph API and ToolKit functions
-git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
-
-# Dot source function into memory
-. .\GraphAPI\Public\AzureAD\Subscriptions\Get-WTAzureADSubscription.ps1
-
-# Define Variables
-$ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
-$ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
-$TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
-$AccessToken = "HWYLAqz6PipzzdtPwRnSN0Socozs2lZ7nsFky90UlDGTmaZY1foVojTUqFgm1vw0iBslogoP"
-
-# Create hashtable for service principal
-$ServicePrincipal = @{
-  ClientID     = $ClientID
-  ClientSecret = $ClientSecret
-  TenantDomain = $TenantDomain
-}
-
-# Create dependency object
-$Dependency = [PSCustomObject]@{
-  servicePlanName     = "AAD_PREMIUM_P2"
-  dependency = [PSCustomObject]@{
-      servicePlanName = @(
-          "AAD_PREMIUM"
-      )
-  }
-}
-
-# Get all subscriptions, splat the hashtable containing the service principal to obtain an access token
-Get-WTAzureADSubscriptionDependency @ServicePrincipal
-
-# Or pipe specific IDs to get to the function, splat the hashtable containing the service principal
-$IDs | Get-WTAzureADSubscriptionDependency @ServicePrincipal
-
-# Or specify each parameter individually, including an access token previously obtained
-Get-WTAzureADSubscriptionDependency -AccessToken $AccessToken -IDs $IDs
-```
-
-</details>
+I defined a [JSON dependency object][dep], which contains service plans that depend on other service plans. This PowerShell function then uses that definition to evaluate the subscriptions, to decide which subscriptions have dependent service plans, and so need to be grouped together with the subscriptions that contain those service plans.
 
 ### What does this do? <!-- omit in toc -->
-- This sets specific variables, including the activity, the tags to be evaluated against the groups, and the Graph Uri
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
-- The private function is then called, with the query altered as appropriate depending on the parameters
+- If no subscriptions are provided to the function, they're obtained from Azure AD
+- A check is performed on each subscription, to see if any contain service plans that have a defined dependency
+- If there are subscriptions with service plan dependencies, a check is performed on which subscriptions contain the dependent service plan
+- An object is built and returned for which subscriptions must be bundled with other subscriptions, so they can all be assigned together
+- Depending on the parameter, an object for the subscription with dependent service plans can be returned too
 
 The complete function as at this date, is below:
 
@@ -486,6 +403,13 @@ function Get-WTAzureADSubscriptionDependency {
 
 </details>
 
+## Assigning subscriptions to Azure AD groups]
+Assigning licences to groups is performed by creating an "assignLicense" group relationship.
+
+This uses the [New-WTAzureADGroupRelationship][function-new], which you can access on my GitHub, I've covered this under the [Azure AD groups post here][assign].
+
 [function-getsub]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Get-WTAzureADSubscription.ps1
 [function-getsubdep]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Get-WTAzureADSubscriptionDependency.ps1
 [dep]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/Subscriptions/Dependencies
+[assign]: /blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
+[function-new]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Relationship/New-WTAzureADGroupRelationship.ps1
