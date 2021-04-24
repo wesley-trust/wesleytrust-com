@@ -81,7 +81,7 @@ The complete function as at this date, is below:
 
 ```powershell
 function Get-WTAzureADGroupRelationship {
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [parameter(
             Mandatory = $false,
@@ -132,7 +132,7 @@ function Get-WTAzureADGroupRelationship {
             ValueFromPipeLineByPropertyName = $true,
             HelpMessage = "The group relationship to return, such as group members, owners or groups this group is a member of"
         )]
-        [ValidateSet("members", "owners", "memberOf")]
+        [ValidateSet("members", "owners", "memberOf", "assignLicense")]
         [string]$Relationship
     )
     Begin {
@@ -225,7 +225,7 @@ function Get-WTAzureADGroupRelationship {
 ## Create Azure AD group relationships
 The next function is [New-WTAzureADGroupRelationship][function-new], which you can access from my GitHub.
 
-This creates new Azure AD group relationships, which can be either owners or members, this is used within the pipeline to add members to the Conditional Access inclusion/exclusion groups created in the pipeline.
+This creates new Azure AD group relationships, which can be owners, members as well as assigned licences, this is used within the pipeline to add members to the Conditional Access inclusion/exclusion groups created in the pipeline.
 
 Examples below:
 
@@ -272,7 +272,7 @@ New-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -Rela
 
 ### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity and the Graph Uri
-  - A group relationship could consist of owners or members which is validated
+  - A group relationship could consist of owners, members as well as assigned licences, which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - A group ID is required to add a relationship, this forms part of the Uri, the request must in a specific format
 - To add a relationship, an object must be created in a specific format, this is done for each relationship ID
@@ -285,7 +285,7 @@ The complete function as at this date, is below:
 
 ```powershell
 function New-WTAzureADGroupRelationship {
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [parameter(
             Mandatory = $false,
@@ -330,7 +330,7 @@ function New-WTAzureADGroupRelationship {
             ValueFromPipeLineByPropertyName = $true,
             HelpMessage = "The group relationship to add, such as group members or owners"
         )]
-        [ValidateSet("members", "owners")]
+        [ValidateSet("members", "owners", "assignLicense")]
         [string]$Relationship,
         [parameter(
             Mandatory = $false,
@@ -376,19 +376,40 @@ function New-WTAzureADGroupRelationship {
 
                 # Build Parameters
                 $Parameters = @{
-                    AccessToken       = $AccessToken
-                    Uri               = "$Uri/$Id/$Relationship/`$ref"
-                    Activity          = $Activity
+                    AccessToken = $AccessToken
+                    Activity    = $Activity
                 }
                 if ($ExcludePreviewFeatures) {
                     $Parameters.Add("ExcludePreviewFeatures", $true)
                 }
+                if ($Relationship -eq "assignLicense") {
+                    $Parameters.Add("Uri", "$Uri/$Id/$Relationship")
+                }
+                else {
+                    $Parameters.Add("Uri", "$Uri/$Id/$Relationship/`$ref")
+                }
 
-                # If there are IDs, for each, create an object with the ID
+                # If there are IDs, for each, create an appropriate object with the IDs
                 if ($RelationshipIDs) {
-                    $RelationshipObject = foreach ($RelationshipId in $RelationshipIDs) {
-                        [pscustomobject]@{
-                            "@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$RelationshipId"
+                    if ($Relationship -eq "assignLicense") {
+                        $Licences = foreach ($RelationshipId in $RelationshipIDs) {
+                            [PSCustomObject]@{
+                                "disabledPlans" = @()
+                                "skuId" = $RelationshipId
+                            }
+                        }
+                        $RelationshipObject = [PSCustomObject]@{
+                            addLicenses    = @(
+                                $Licences
+                            )
+                            removeLicenses = @()
+                        }
+                    }
+                    else {
+                        $RelationshipObject = foreach ($RelationshipId in $RelationshipIDs) {
+                            [PSCustomObject]@{
+                                "@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$RelationshipId"
+                            }
                         }
                     }
 
@@ -430,7 +451,7 @@ function New-WTAzureADGroupRelationship {
 ## Remove Azure AD group relationships
 The last function is [Remove-WTAzureADGroupRelationship][function-remove], which you can access from my GitHub.
 
-This removes Azure AD group relationships, which can be either owners or members.
+This removes Azure AD group relationships, which can be owners, members as well as assigned licences.
 
 Examples below:
 
@@ -477,7 +498,7 @@ Remove-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -R
 
 ### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity and the Graph Uri
-  - A group relationship could consist of owners or members which is validated
+  - A group relationship could consist of owners, members as well as assigned licences, which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - A group ID is required to remove a relationship, the relationship IDs are also specified as part of the Uri
 - The private function is then called for each ID to be removed from the group
@@ -489,7 +510,7 @@ The complete function as at this date, is below:
 
 ```powershell
 function Remove-WTAzureADGroupRelationship {
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [parameter(
             Mandatory = $false,
@@ -534,7 +555,7 @@ function Remove-WTAzureADGroupRelationship {
             ValueFromPipeLineByPropertyName = $true,
             HelpMessage = "The group relationship to remove, such as group members or owners"
         )]
-        [ValidateSet("members", "owners")]
+        [ValidateSet("members", "owners", "assignLicense")]
         [string]$Relationship,
         [parameter(
             Mandatory = $false,
@@ -549,6 +570,7 @@ function Remove-WTAzureADGroupRelationship {
             # Function definitions
             $Functions = @(
                 "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
+                "GraphAPI\Private\Invoke-WTGraphPost.ps1",
                 "GraphAPI\Private\Invoke-WTGraphDelete.ps1"
             )
 
@@ -580,21 +602,41 @@ function Remove-WTAzureADGroupRelationship {
 
                 # Build Parameters
                 $Parameters = @{
-                    AccessToken       = $AccessToken
-                    Activity          = $Activity
+                    AccessToken = $AccessToken
+                    Activity    = $Activity
                 }
                 if ($ExcludePreviewFeatures) {
                     $Parameters.Add("ExcludePreviewFeatures", $true)
                 }
 
-                # If there are IDs, for each, remove the group relationship
+                # If there are IDs, for each, where appropriate create an object and remove the group relationship with the appropriate function
                 if ($RelationshipIDs) {
-                    foreach ($RelationshipId in $RelationshipIDs) {
+                    if ($Relationship -eq "assignLicense") {
+                        $Licences = foreach ($RelationshipId in $RelationshipIDs) {
+                            [PSCustomObject]@{
+                                "skuId" = $RelationshipId
+                            }
+                        }
+                        $RelationshipObject = [PSCustomObject]@{
+                            addLicences    = @()
+                            removeLicenses = @(
+                                $Licences
+                            )
+                        }
                         
                         # Remove group relationship
-                        Invoke-WTGraphDelete `
+                        Invoke-WTGraphPost `
                             @Parameters `
-                            -Uri "$Uri/$Id/$Relationship/$RelationshipId/`$ref"
+                            -InputObject $RelationshipObject
+                    }
+                    else {
+                        foreach ($RelationshipId in $RelationshipIDs) {
+                        
+                            # Remove group relationship
+                            Invoke-WTGraphDelete `
+                                @Parameters `
+                                -Uri "$Uri/$Id/$Relationship/$RelationshipId/`$ref"
+                        }
                     }
                 }
                 else {
