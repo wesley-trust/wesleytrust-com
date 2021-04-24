@@ -9,8 +9,6 @@ tags:
   - azuread
   - licences
   - subscriptions
-  - roles
-  - directoryroles
 excerpt: "Using the Graph API & PowerShell, it's possible to assign Azure AD subscription licences to groups for easy and efficient management..."
 ---
 For the next post I had intended on continuing the documentation leading to the Conditional Access pipeline, but over the last week or so, I've been writing code for managing Azure AD subscriptions (licences) and directory roles. All based upon group membership to make management far more efficient. So in short, I got distracted.
@@ -30,7 +28,7 @@ For my Microsoft 365 Dev sandbox tenant, this wasn't a problem, as you get E5 li
 
 This comes with "Office 365 E3" and "EMS E3", which is great, however it's limiting as I can't develop and rollout the full feature set, so I've purchased the "E5 Security" addon, to make use of feature like Privileged Identity Management, Microsoft Defender for Endpoint and Microsoft Defender for Identity.
 
-This is where the addon complexity came into play, as "E5 Security" relies on both "Office 365 E3" and "EMS E3", which are distinct subscriptions.
+This is where the addon complexity came into play, as "E5 Security" is an addon that relies on service plans contained within "Office 365 E3" and "EMS E3", so all three must be assigned together, with the dependencies assigned first.
 
 ### Managing Subscriptions
 - [Getting subscriptions in an Azure AD tenant](#getting-subscriptions-in-an-azure-ad-tenant)
@@ -219,9 +217,11 @@ function Get-WTAzureADSubscription {
 ## Evaluating service plan dependencies for subscriptions
 The next function is [Get-WTAzureADSubscriptionDependency][function-getsubdep], which you can access from my GitHub.
 
-There is no API that Microsoft provide for service plan dependencies for subscriptions (that I've found), so I had to define these myself for the subscription that I use.
+There is no API that Microsoft provide for service plan dependencies for subscriptions (that I've found), so I had to define these myself for the subscriptions that I use.
 
-So I defined a [JSON dependency object][dep] and wrote a PowerShell function that uses that definition to evaluate the subscription dependencies, to decide which subscriptions need to be grouped together (and assigned first) for when assigning subscriptions to groups.
+I defined a [JSON dependency object][dep], which contains service plans that depend on other service plans, and wrote a PowerShell function that uses that definition to evaluate the subscriptions, to decide which subscriptions need to be grouped together (and assigned first) for when assigning subscriptions to groups.
+
+This function returns the 
 
 Examples below:
 
