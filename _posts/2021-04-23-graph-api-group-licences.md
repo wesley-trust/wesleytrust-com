@@ -410,7 +410,7 @@ Assigning licences to groups is performed by creating an "assignLicense" group r
 
 This uses the [New-WTAzureADGroupRelationship][function-new] function, which you can access on my GitHub.
 
-[For more information, see the Azure AD group relationship post here][assign]
+[For more information, see the Azure AD group relationship post here][assign], which I have updated to support assigning licences.
 
 [function-getsub]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Get-WTAzureADSubscription.ps1
 [function-getsubdep]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Get-WTAzureADSubscriptionDependency.ps1

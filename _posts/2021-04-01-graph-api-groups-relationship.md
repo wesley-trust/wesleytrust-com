@@ -225,7 +225,7 @@ function Get-WTAzureADGroupRelationship {
 ## Create Azure AD group relationships
 The next function is [New-WTAzureADGroupRelationship][function-new], which you can access from my GitHub.
 
-This creates new Azure AD group relationships, which can be either owners or members, this is used within the pipeline to add members to the Conditional Access inclusion/exclusion groups created in the pipeline.
+This creates new Azure AD group relationships, which can be owners, members as well as assigned licences, this is used within the pipeline to add members to the Conditional Access inclusion/exclusion groups created in the pipeline.
 
 Examples below:
 
@@ -272,7 +272,7 @@ New-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -Rela
 
 ### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity and the Graph Uri
-  - A group relationship could consist of owners or members which is validated
+  - A group relationship could consist of owners, members as well as assigned licences, which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - A group ID is required to add a relationship, this forms part of the Uri, the request must in a specific format
 - To add a relationship, an object must be created in a specific format, this is done for each relationship ID
@@ -451,7 +451,7 @@ function New-WTAzureADGroupRelationship {
 ## Remove Azure AD group relationships
 The last function is [Remove-WTAzureADGroupRelationship][function-remove], which you can access from my GitHub.
 
-This removes Azure AD group relationships, which can be either owners or members.
+This removes Azure AD group relationships, which can be owners, members as well as assigned licences.
 
 Examples below:
 
@@ -498,7 +498,7 @@ Remove-WTAzureADGroupRelationship -AccessToken $AccessToken -GroupID $GroupID -R
 
 ### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity and the Graph Uri
-  - A group relationship could consist of owners or members which is validated
+  - A group relationship could consist of owners, members as well as assigned licences, which is validated
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - A group ID is required to remove a relationship, the relationship IDs are also specified as part of the Uri
 - The private function is then called for each ID to be removed from the group
