@@ -33,7 +33,7 @@ This is where the addon complexity came into play, as "E5 Security" is an addon 
 ### Managing Subscriptions
 - [Getting subscriptions in an Azure AD tenant](#getting-subscriptions-in-an-azure-ad-tenant)
 - [Evaluating service plan dependencies for subscriptions](#evaluating-service-plan-dependencies-for-subscriptions)
-- [Assigning subscriptions to Azure AD groups]](#assigning-subscriptions-to-azure-ad-groups)
+- [Assigning subscriptions to Azure AD groups](#assigning-subscriptions-to-azure-ad-groups)
 
 ## Getting subscriptions in an Azure AD tenant
 The first function is [Get-WTAzureADSubscription][function-getsub], which you can access from my GitHub.
@@ -187,10 +187,11 @@ I defined a [JSON dependency object][dep], which contains service plans that dep
 ### What does this do? <!-- omit in toc -->
 - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
 - If no subscriptions are provided to the function, they're obtained from Azure AD
-- A check is performed on each subscription, to see if any contain service plans that have a defined dependency
-- If there are subscriptions with service plan dependencies, a check is performed on which subscriptions contain the dependent service plan
-- An object is built and returned for which subscriptions must be bundled with other subscriptions, so they can all be assigned together
-- Depending on the parameter, an object for the subscription with dependent service plans can be returned too
+- A check is performed on each subscription, to see if any contain service plans defined as dependencies
+- If there are subscriptions with service plan dependencies, a check is performed on which subscription contains the dependent service plan
+- An object is built and returned for which subscriptions have dependent subscriptions (as they contain the service plan, and must be assigned together)
+  - By default this returns the SkuId, which is required for assigning the licence
+  - Alternatively the SkuPartNumber can be returned, or just the subscription with dependent service plans instead
 
 The complete function as at this date, is below:
 
@@ -403,10 +404,12 @@ function Get-WTAzureADSubscriptionDependency {
 
 </details>
 
-## Assigning subscriptions to Azure AD groups]
+## Assigning subscriptions to Azure AD groups
 Assigning licences to groups is performed by creating an "assignLicense" group relationship.
 
-This uses the [New-WTAzureADGroupRelationship][function-new], which you can access on my GitHub, I've covered this under the [Azure AD groups post here][assign].
+This uses the [New-WTAzureADGroupRelationship][function-new] function, which you can access on my GitHub.
+
+[For more information, see the Azure AD group relationship post here][assign]
 
 [function-getsub]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Get-WTAzureADSubscription.ps1
 [function-getsubdep]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Get-WTAzureADSubscriptionDependency.ps1
