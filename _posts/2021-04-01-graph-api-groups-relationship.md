@@ -81,7 +81,7 @@ The complete function as at this date, is below:
 
 ```powershell
 function Get-WTAzureADGroupRelationship {
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [parameter(
             Mandatory = $false,
@@ -132,7 +132,7 @@ function Get-WTAzureADGroupRelationship {
             ValueFromPipeLineByPropertyName = $true,
             HelpMessage = "The group relationship to return, such as group members, owners or groups this group is a member of"
         )]
-        [ValidateSet("members", "owners", "memberOf")]
+        [ValidateSet("members", "owners", "memberOf", "assignLicense")]
         [string]$Relationship
     )
     Begin {
@@ -285,7 +285,7 @@ The complete function as at this date, is below:
 
 ```powershell
 function New-WTAzureADGroupRelationship {
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [parameter(
             Mandatory = $false,
@@ -330,7 +330,7 @@ function New-WTAzureADGroupRelationship {
             ValueFromPipeLineByPropertyName = $true,
             HelpMessage = "The group relationship to add, such as group members or owners"
         )]
-        [ValidateSet("members", "owners")]
+        [ValidateSet("members", "owners", "assignLicense")]
         [string]$Relationship,
         [parameter(
             Mandatory = $false,
@@ -376,19 +376,40 @@ function New-WTAzureADGroupRelationship {
 
                 # Build Parameters
                 $Parameters = @{
-                    AccessToken       = $AccessToken
-                    Uri               = "$Uri/$Id/$Relationship/`$ref"
-                    Activity          = $Activity
+                    AccessToken = $AccessToken
+                    Activity    = $Activity
                 }
                 if ($ExcludePreviewFeatures) {
                     $Parameters.Add("ExcludePreviewFeatures", $true)
                 }
+                if ($Relationship -eq "assignLicense") {
+                    $Parameters.Add("Uri", "$Uri/$Id/$Relationship")
+                }
+                else {
+                    $Parameters.Add("Uri", "$Uri/$Id/$Relationship/`$ref")
+                }
 
-                # If there are IDs, for each, create an object with the ID
+                # If there are IDs, for each, create an appropriate object with the IDs
                 if ($RelationshipIDs) {
-                    $RelationshipObject = foreach ($RelationshipId in $RelationshipIDs) {
-                        [pscustomobject]@{
-                            "@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$RelationshipId"
+                    if ($Relationship -eq "assignLicense") {
+                        $Licences = foreach ($RelationshipId in $RelationshipIDs) {
+                            [PSCustomObject]@{
+                                "disabledPlans" = @()
+                                "skuId" = $RelationshipId
+                            }
+                        }
+                        $RelationshipObject = [PSCustomObject]@{
+                            addLicenses    = @(
+                                $Licences
+                            )
+                            removeLicenses = @()
+                        }
+                    }
+                    else {
+                        $RelationshipObject = foreach ($RelationshipId in $RelationshipIDs) {
+                            [PSCustomObject]@{
+                                "@odata.id" = "https://graph.microsoft.com/v1.0/directoryObjects/$RelationshipId"
+                            }
                         }
                     }
 
@@ -489,7 +510,7 @@ The complete function as at this date, is below:
 
 ```powershell
 function Remove-WTAzureADGroupRelationship {
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [parameter(
             Mandatory = $false,
@@ -534,7 +555,7 @@ function Remove-WTAzureADGroupRelationship {
             ValueFromPipeLineByPropertyName = $true,
             HelpMessage = "The group relationship to remove, such as group members or owners"
         )]
-        [ValidateSet("members", "owners")]
+        [ValidateSet("members", "owners", "assignLicense")]
         [string]$Relationship,
         [parameter(
             Mandatory = $false,
@@ -549,6 +570,7 @@ function Remove-WTAzureADGroupRelationship {
             # Function definitions
             $Functions = @(
                 "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
+                "GraphAPI\Private\Invoke-WTGraphPost.ps1",
                 "GraphAPI\Private\Invoke-WTGraphDelete.ps1"
             )
 
@@ -580,21 +602,41 @@ function Remove-WTAzureADGroupRelationship {
 
                 # Build Parameters
                 $Parameters = @{
-                    AccessToken       = $AccessToken
-                    Activity          = $Activity
+                    AccessToken = $AccessToken
+                    Activity    = $Activity
                 }
                 if ($ExcludePreviewFeatures) {
                     $Parameters.Add("ExcludePreviewFeatures", $true)
                 }
 
-                # If there are IDs, for each, remove the group relationship
+                # If there are IDs, for each, where appropriate create an object and remove the group relationship with the appropriate function
                 if ($RelationshipIDs) {
-                    foreach ($RelationshipId in $RelationshipIDs) {
+                    if ($Relationship -eq "assignLicense") {
+                        $Licences = foreach ($RelationshipId in $RelationshipIDs) {
+                            [PSCustomObject]@{
+                                "skuId" = $RelationshipId
+                            }
+                        }
+                        $RelationshipObject = [PSCustomObject]@{
+                            addLicences    = @()
+                            removeLicenses = @(
+                                $Licences
+                            )
+                        }
                         
                         # Remove group relationship
-                        Invoke-WTGraphDelete `
+                        Invoke-WTGraphPost `
                             @Parameters `
-                            -Uri "$Uri/$Id/$Relationship/$RelationshipId/`$ref"
+                            -InputObject $RelationshipObject
+                    }
+                    else {
+                        foreach ($RelationshipId in $RelationshipIDs) {
+                        
+                            # Remove group relationship
+                            Invoke-WTGraphDelete `
+                                @Parameters `
+                                -Uri "$Uri/$Id/$Relationship/$RelationshipId/`$ref"
+                        }
                     }
                 }
                 else {

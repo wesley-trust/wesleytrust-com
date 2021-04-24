@@ -189,9 +189,10 @@ I defined a [JSON dependency object][dep], which contains service plans that dep
 - If no subscriptions are provided to the function, they're obtained from Azure AD
 - A check is performed on each subscription, to see if any contain service plans defined as dependencies
 - If there are subscriptions with service plan dependencies, a check is performed on which subscription contains the dependent service plan
-- An object is built and returned for which subscriptions have dependent subscriptions (as they contain the service plan, and must be assigned together)
+- An object is built and returned for which subscriptions have dependent subscriptions (as they contain the dependent service plan, and so must be assigned together)
   - By default this returns the SkuId, which is required for assigning the licence
-  - Alternatively the SkuPartNumber can be returned, or just the subscription with dependent service plans instead
+  - Alternatively the SkuPartNumber can be returned
+  - Or just the subscriptions that contain dependent service plans
 
 The complete function as at this date, is below:
 
