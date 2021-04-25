@@ -1,5 +1,5 @@
 ---
-title: "Automate the deployment of Azure AD group-based licensing in a CI/CD Pipeline"
+title: "Automating Azure AD group-based licensing in a CI/CD Pipeline"
 categories:
   - blog
 tags:
@@ -25,6 +25,8 @@ This post covers the YAML and PowerShell executed in the pipeline, the PowerShel
 - [Trigger Pipeline](#trigger-pipeline)
 - [Shared Pipeline](#shared-pipeline)
   - [Import & Validate](#import--validate)
+  - [Plan & Evaluate](#plan--evaluate)
+  - [Apply & Deploy](#apply--deploy)
 
 |  Current Import & Validate Status  |   Current Plan & Evaluate Status   |   Current Apply & Deploy Status   |   Overall CI/CD Pipeline Status   |
 |:----------------------------------:|:----------------------------------:|:---------------------------------:|:---------------------------------:|
@@ -84,7 +86,7 @@ You can access the [shared pipeline on my GitHub here][shared-link].
 _Azure Pipelines automatically clones the config repo for the first stage, and any artifacts created in subsequent stages_
 
 <details>
-  <summary><em><strong>Expand code block</strong></em></summary>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
 ```yaml
 variables:
@@ -303,37 +305,267 @@ stages:
   - With a PowerShell task to load the PowerShell pipeline function into memory and execute
   - With artifacts and variables set for subsequent stages as appropriate
 
+#### PowerShell example below: <!-- omit in toc -->
+This function is [Invoke-WTSubscriptionImport][function-import], which you can access from my GitHub. This mimics the pipeline stages, I created this to make it easier to test locally as well as run in a Windows Server docker container containing PowerShell 7.
+
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+function Invoke-WTAzureADSubscriptionImport {
+    [CmdletBinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client ID for the Azure AD service principal with Conditional Access Graph permissions"
+        )]
+        [string]$ClientID,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client secret for the Azure AD service principal with Conditional Access Graph permissions"
+        )]
+        [string]$ClientSecret,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The initial domain (onmicrosoft.com) of the tenant"
+        )]
+        [string]$TenantDomain,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The file path to the JSON file(s) that will be imported"
+        )]
+        [string[]]$FilePath,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The directory path(s) of which all JSON file(s) will be imported"
+        )]
+        [string]$Path,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The directory path to the location where the ServicePlan dependencies will be imported"
+        )]
+        [string]$DependentServicePlansPath,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether defined subscriptions deployed in the tenant will be removed, if not present in the import"
+        )]
+        [switch]
+        $RemoveDefinedSubscriptions,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to the groups used for CA subscriptions, should not be removed, if the policy is removed"
+        )]
+        [switch]
+        $ExcludeGroupRemoval,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "If there are no subscriptions to import, whether to forcibly remove any defined subscriptions"
+        )]
+        [switch]$Force,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify until what stage the import should invoke. All preceding stages will execute as dependencies"
+        )]
+        [ValidateSet("Validate", "Plan", "Apply")]
+        [string]$Stage = "Apply",
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether the function is operating within a pipeline"
+        )]
+        [switch]$Pipeline
+    )
+    Begin {
+        try {
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Pipeline\Invoke-WTValidateSubscription.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Pipeline\Invoke-WTPlanSubscription.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Pipeline\Invoke-WTApplySubscription.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+
+            if ($Stage -eq "Validate" -or $Stage -eq "Plan" -or $Stage -eq "Apply") {
+                
+                # Build Parameters
+                $ValidateParameters = @{}
+                if ($ExcludePreviewFeatures) {
+                    $ValidateParameters.Add("ExcludePreviewFeatures", $true)
+                }
+                if ($FilePath) {
+                    $ValidateParameters.Add("FilePath", $FilePath)
+                }
+                elseif ($Path) {
+                    $ValidateParameters.Add("Path", $Path)
+                }
+            
+                # Import and validate subscriptions
+                Write-Host "Stage 1: Validate"
+                if ($FilePath -or $Path) {
+                    $TestPath = Test-Path $Path -PathType Container
+                    if ($TestPath -or $FilePath) {
+                        Invoke-WTValidateSubscription @ValidateParameters | Tee-Object -Variable ValidateSubscriptions
+                    }
+                }
+            }
+
+            if ($Stage -eq "Plan" -or $Stage -eq "Apply") {
+
+                # If there is no access token, obtain one
+                if (!$AccessToken) {
+                    $AccessToken = Get-WTGraphAccessToken `
+                        -ClientID $ClientID `
+                        -ClientSecret $ClientSecret `
+                        -TenantDomain $TenantDomain
+                }
+
+                if ($AccessToken) {
+
+                    # Build Parameters
+                    $PlanParameters = @{
+                        AccessToken = $AccessToken
+                    }
+                    if ($ExcludePreviewFeatures) {
+                        $PlanParameters.Add("ExcludePreviewFeatures", $true)
+                    }
+                    if ($ValidateSubscriptions) {
+                        $PlanParameters.Add("DefinedSubscriptions", $ValidateSubscriptions)
+                    }
+                    if ($RemoveDefinedSubscriptions) {
+                        $PlanParameters.Add("RemoveDefinedSubscriptions", $true)
+                    }
+                    if ($Force) {
+                        $PlanParameters.Add("Force", $true)
+                    }
+                
+                    # Create plan evaluating whether to create, update or remove subscriptions
+                    Write-Host "Stage 2: Plan"
+                    Invoke-WTPlanSubscription @PlanParameters | Tee-Object -Variable PlanSubscriptions
+
+                }
+                else {
+                    $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                    Write-Error $ErrorMessage
+                    throw $ErrorMessage
+                }
+
+                if ($Stage -eq "Apply") {
+                    if ($PlanSubscriptions) {
+                        
+                        # Import service plan dependencies if they exist and convert from JSON
+                        if ($DependentServicePlansPath) {
+                            $PathExists = Test-Path -Path $DependentServicePlansPath
+                            if ($PathExists) {
+                                $DependentServicePlansFilePath = (Get-ChildItem -Path $DependentServicePlansPath -Filter "*.json").FullName
+                            }
+                            if ($DependentServicePlansFilePath) {
+                                $DependentServicePlansImport = foreach ($DependentServicePlanFile in $DependentServicePlansFilePath) {
+                                    Get-Content -Raw -Path $DependentServicePlanFile
+                                }
+                            }
+                            if ($DependentServicePlansImport) {
+                                $DependentServicePlans = $DependentServicePlansImport | ConvertFrom-Json -Depth 10
+                            }
+                        }
+
+                        # Build Parameters
+                        $ApplyParameters = @{
+                            AccessToken          = $AccessToken
+                            DefinedSubscriptions = $PlanSubscriptions
+                        }
+                        if ($ExcludePreviewFeatures) {
+                            $ApplyParameters.Add("ExcludePreviewFeatures", $true)
+                        }
+                        if ($RemoveDefinedSubscriptions) {
+                            $ApplyParameters.Add("RemoveDefinedSubscriptions", $true)
+                        }
+                        if ($ExcludeGroupRemoval) {
+                            $ApplyParameters.Add("ExcludeGroupRemoval", $true)
+                        }
+                        if ($FilePath) {
+                            $ApplyParameters.Add("FilePath", $FilePath)
+                        }
+                        elseif ($Path) {
+                            $ApplyParameters.Add("Path", $Path)
+                        }
+                        if ($Pipeline) {
+                            $ApplyParameters.Add("Pipeline", $true)
+                        }
+                        if ($DependentServicePlans) {
+                            $ApplyParameters.Add("DependentServicePlans", $DependentServicePlans)
+                        }
+
+                        # Apply plan to Azure AD
+                        Write-Host "Stage 3: Apply"
+                        Invoke-WTApplySubscription @ApplyParameters
+                    }
+                    else {
+                        $WarningMessage = "No subscriptions will be created, updated or removed, as none exist that are different to the import"
+                        Write-Warning $WarningMessage
+                    }
+                }
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+            
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
+
 ### Import & Validate
 This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
 
 This imports JSON definitions of subscriptions, or imports subscription objects via a parameter, and validates these against a set of criteria.
 
 Outputting a JSON validate file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
-
-#### PowerShell example below: <!-- omit in toc -->
-
-<details>
-  <summary><em><strong>Expand code block</strong></em></summary>
-
-```powershell
-# Clone repo that contains the Graph API functions and config definitions
-git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
-git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPIConfig.git
-
-# Dot source function into memory
-. .\GraphAPI\Public\AzureAD\Subscriptions\Pipeline\Invoke-WTValidateSubscription.ps1
-
-# Define Variables
-$Path = ".\GraphAPIConfig\AzureAD\Subscriptions\Definitions"
-
-# Import and validate all JSON files from the path specified
-$TestPath = Test-Path $Path -PathType Container
-if ($TestPath){
-    Invoke-WTValidateSubscription -Path $Path
-}
-```
-
-</details>
 
 #### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the required properties that must be present in the input
@@ -565,6 +797,568 @@ function Invoke-WTValidateSubscription {
 
 </details>
 
+### Plan & Evaluate
+This function is [Invoke-WTPlanSubscription][function-plan], which you can access from my GitHub.
+
+Within the pipeline, this imports the validated JSON artifact of subscriptions (should they exist), which is passed to the function via a parameter. This then creates a plan of what should be created, updated or removed (as appropriate).
+
+Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
+
+#### What does this do? <!-- omit in toc -->
+- An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
+- Checks are performed about whether to evaluate groups for updating or removal
+- Existing groups in Azure AD are obtained (as appropriate) from the [Get function][get-function], in order to compare against the validated import
+- An object comparison is performed on the group IDs, determining:
+  - What groups could be removed (as they exist, but don't have an ID in the import)
+  - What groups could be created (as an ID might not exist, or might not match an existing ID in Azure AD)
+- A safety check is performed, if no groups are provided, the removal of all existing groups requires a "Force" switch
+- If groups should not be removed, the variable for removing groups is cleared
+- If groups should be updated, and there are existing groups in Azure AD, only groups with valid IDs are included
+- An object comparison is then performed on specific object properties, to check for specific differences (only)
+  - If there are differences, they're added to a variable
+- If no groups exist, any imported groups must all be created, so the variable is updated
+- An object is then built containing the groups to be removed, updated or created (as appropriate)
+- This object is then returned as a plan of action, which is output as a pipeline artifact for the next stage
+
+The complete function as at this date, is below:
+
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+function Invoke-WTPlanSubscription {
+    [CmdletBinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client ID for the Azure AD service principal with Subscription Graph permissions"
+        )]
+        [string]$ClientID,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client secret for the Azure AD service principal with Subscription Graph permissions"
+        )]
+        [string]$ClientSecret,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The initial domain (onmicrosoft.com) of the tenant"
+        )]
+        [string]$TenantDomain,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            ValueFromPipeLine = $true,
+            HelpMessage = "The Subscription object"
+        )]
+        [Alias("Subscription", "SubscriptionDefinition", "Subscriptions")]
+        [PSCustomObject]$DefinedSubscriptions,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether current Subscription deployed in the tenant will be removed, if not present in the import"
+        )]
+        [switch]
+        $RemoveDefinedSubscriptions,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "If there are no Subscription to import, whether to forcibly remove any current Subscription"
+        )]
+        [switch]$Force
+    )
+    Begin {
+        try {
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
+                "Toolkit\Public\Invoke-WTPropertyTagging.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Get-WTAzureADSubscription.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+            
+            # If there is no access token, obtain one
+            if (!$AccessToken) {
+                $AccessToken = Get-WTGraphAccessToken `
+                    -ClientID $ClientID `
+                    -ClientSecret $ClientSecret `
+                    -TenantDomain $TenantDomain
+            }
+
+            if ($AccessToken) {
+
+                # Output current action
+                Write-Host "Evaluating Subscriptions"
+                
+                # Build Parameters
+                $Parameters = @{
+                    AccessToken = $AccessToken
+                }
+                if ($ExcludePreviewFeatures) {
+                    $Parameters.Add("ExcludePreviewFeatures", $true)
+                }
+
+                # Get user subscriptions that have not been deleted
+                $CurrentSubscriptions = Get-WTAzureADSubscription @Parameters
+                $AssignableSubscriptions = $CurrentSubscriptions | Where-Object {
+                    $_.capabilityStatus -ne "Deleted" -and $_.appliesTo -eq "User"
+                }
+
+                if ($DefinedSubscriptions) {
+
+                    if ($AssignableSubscriptions) {
+
+                        # Compare object on id and pass thru all objects, including those that exist and are to be imported
+                        $SubscriptionComparison = Compare-Object `
+                            -ReferenceObject $AssignableSubscriptions `
+                            -DifferenceObject $DefinedSubscriptions `
+                            -Property skuPartNumber `
+                            -PassThru
+
+                        # Filter for defined Subscription that should be removed, as they exist only in the import
+                        $RemoveSubscriptions = $SubscriptionComparison | Where-Object { $_.sideindicator -eq "=>" }
+
+                        # Filter for defined Subscription that should be created, as they exist only in Azure AD
+                        $CreateSubscriptions = $SubscriptionComparison | Where-Object { $_.sideindicator -eq "<=" }
+                    }
+                    else {
+
+                        # If force is enabled, then if removal of Subscription is specified, all current will be removed
+                        if ($Force) {
+                            $RemoveSubscriptions = $DefinedSubscriptions
+                        }
+                    }
+
+                    if (!$RemoveDefinedSubscriptions) {
+
+                        # If Subscription are not to be removed, disregard any Subscription for removal
+                        $RemoveSubscriptions = $null
+                    }
+                }
+                else {
+                    
+                    # If no defined subscription exist, any enabled subscriptions should be defined
+                    $CreateSubscriptions = $AssignableSubscriptions
+                }
+                
+                # Build object to return
+                $PlanSubscriptions = [ordered]@{}
+
+                if ($RemoveSubscriptions) {
+                    $PlanSubscriptions.Add("RemoveSubscriptions", $RemoveSubscriptions)
+                    
+                    # Output current action
+                    Write-Host "Defined Subscription to remove: $($RemoveSubscriptions.count)"
+
+                    foreach ($Subscription in $RemoveSubscriptions) {
+                        Write-Host "Remove: Subscription ID: $($Subscription.id) (Subscription Groups will be removed as appropriate)" -ForegroundColor DarkRed
+                    }
+                }
+                else {
+                    Write-Host "No Subscription will be removed, as none exist that are different to the import"
+                }
+                if ($CreateSubscriptions) {
+                    $PlanSubscriptions.Add("CreateSubscriptions", $CreateSubscriptions)
+                                        
+                    # Output current action
+                    Write-Host "Defined Subscription to create: $($CreateSubscriptions.count) (Subscription Groups will be created as appropriate)"
+
+                    foreach ($Subscription in $CreateSubscriptions) {
+                        Write-Host "Create: Subscription Name: $($Subscription.skuPartNumber)" -ForegroundColor DarkGreen
+                    }
+                }
+                else {
+                    Write-Host "No Subscription will be created, as none exist that are different to the import"
+                }
+
+                # If there are Subscription, return PS object
+                if ($PlanSubscriptions) {
+                    $PlanSubscriptions = [PSCustomObject]$PlanSubscriptions
+                    $PlanSubscriptions
+                }
+            }
+            else {
+                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                Write-Error $ErrorMessage
+                throw $ErrorMessage
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+            
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
+
+### Apply & Deploy
+This function is [Invoke-WTApplySubscription][function-apply], which you can access from my GitHub.
+
+Within the pipeline, this imports the plan JSON artifact of subscriptions, which is passed to the function via a parameter. This contains the subscription groups that should be created, updated or removed (as appropriate).
+
+#### What does this do? <!-- omit in toc -->
+- An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
+- If groups should be removed, and the objects exist, the group IDs are provided to the [remove group function][remove-function]
+- If groups should be updated, and the objects exist, the group objects are provided to the [edit group function][update-function]
+- If there are group objects to be created, the objects are provided to the [new group function][create-function]
+  - The new group config information is then exported using the [export group function][export-function]
+  - This ensures the new group Ids are available in the config to manage in the future 
+  - Within the pipeline, the files are added, committed and pushed to the [config repo][config-repo]
+
+The complete function as at this date, is below:
+
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+function Invoke-WTApplySubscription {
+    [CmdletBinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client ID for the Azure AD service principal with Subscription Graph permissions"
+        )]
+        [string]$ClientID,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client secret for the Azure AD service principal with Subscription Graph permissions"
+        )]
+        [string]$ClientSecret,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The initial domain (onmicrosoft.com) of the tenant"
+        )]
+        [string]$TenantDomain,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The Subscription object"
+        )]
+        [Alias("Subscription", "SubscriptionDefinition", "Subscriptions")]
+        [PSCustomObject]$DefinedSubscriptions,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The Subscription object"
+        )]
+        [Alias("ServicePlan", "ServicePlans", "DependentServicePlan")]
+        [PSCustomObject]$DependentServicePlans,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether existing subscriptions deployed in the tenant will be removed, if not present in the import"
+        )]
+        [switch]
+        $RemoveDefinedSubscriptions,
+        [Parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to the groups used for subscriptions, should not be removed, if the subscription is removed"
+        )]
+        [switch]
+        $ExcludeGroupRemoval,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The file path to the JSON file(s) that will be exported"
+        )]
+        [string]$FilePath,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The directory path(s) of which all JSON file(s) will be exported"
+        )]
+        [string]$Path,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether the function is operating within a pipeline"
+        )]
+        [switch]$Pipeline
+    )
+    Begin {
+        try {
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
+                "Toolkit\Public\Invoke-WTPropertyTagging.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Groups\Get-WTAADSubscriptionGroup.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Groups\New-WTAADSubscriptionGroup.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Groups\Remove-WTAADSubscriptionGroup.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Get-WTAzureADSubscriptionDependency.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Export-WTAzureADSubscription.ps1",
+                "GraphAPI\Public\AzureAD\Groups\Export-WTAzureADGroup.ps1",
+                "GraphAPI\Public\AzureAD\Groups\Relationship\Get-WTAzureADGroupRelationship.ps1"
+                "GraphAPI\Public\AzureAD\Groups\Relationship\New-WTAzureADGroupRelationship.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+
+            # Variables
+            $Tag = "SKU"
+            $PropertyToTag = "displayName"
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+
+            # If there is no access token, obtain one
+            if (!$AccessToken) {
+                $AccessToken = Get-WTGraphAccessToken `
+                    -ClientID $ClientID `
+                    -ClientSecret $ClientSecret `
+                    -TenantDomain $TenantDomain
+            }
+
+            if ($AccessToken) {
+
+                # Output current action
+                Write-Host "Deploying Subscriptions"
+
+                # Build Parameters
+                $Parameters = @{
+                    AccessToken = $AccessToken
+                }
+                if ($ExcludePreviewFeatures) {
+                    $Parameters.Add("ExcludePreviewFeatures", $true)
+                }
+
+                if ($RemoveDefinedSubscriptions) {
+
+                    # If subscriptions require removing, pass the ids to the remove function
+                    if ($DefinedSubscriptions.RemoveSubscriptions) {
+                        
+                        # Remove subscription definition and groups
+                        $SubscriptionSkuPartNumbers = $DefinedSubscriptions.RemoveSubscriptions.skuPartNumber
+                        foreach ($SubscriptionSkuPartNumber in $SubscriptionSkuPartNumbers) {
+                            Remove-Item -Path "$Path\$SubscriptionSkuPartNumber.json"
+                        
+                            # If the switch to not remove groups is not set, remove the groups for each Subscription also
+                            if (!$ExcludeGroupRemoval) {
+
+                                # Get, tag and identify the group for the subscription
+                                $SubscriptionGroups = Get-WTAADSubscriptionGroup
+                                $TaggedSubscriptionGroups = Invoke-WTPropertyTagging -Tags $Tag -QueryResponse $SubscriptionGroups -PropertyToTag $PropertyToTag
+                                $SubscriptionGroups = $TaggedSubscriptionGroups | Where-Object {
+                                    $_.$Tag -eq $SubscriptionSkuPartNumber
+                                }
+
+                                # Unique groups
+                                $SubscriptionGroups = $SubscriptionGroups | Sort-Object -Unique
+
+                                # If there are ids, pass all groups, which will perform a check and remove only subscription groups
+                                if ($SubscriptionGroups) {
+                                    
+                                    # Remove group (licences should no longer be assigned to deleted subscriptions)
+                                    Remove-WTAADSubscriptionGroup @Parameters -IDs $SubscriptionGroups.id
+                                                                            
+                                    # Remove group config
+                                    foreach ($SubscriptionGroup in $SubscriptionGroups) {
+                                        Remove-Item -Path "$Path\Groups\$($SubscriptionGroup.displayName).json"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        $WarningMessage = "No subscriptions will be removed, as none exist that are different to the import"
+                        Write-Warning $WarningMessage
+                    }
+                }
+
+                # If there are new subscriptions create the groups
+                if ($DefinedSubscriptions.CreateSubscriptions) {
+                    $CreateSubscriptions = $DefinedSubscriptions.CreateSubscriptions
+
+                    # Find subscriptions with service plan dependencies
+                    if ($DependentServicePlans) {
+                        $DependentSubscriptions = Get-WTAzureADSubscriptionDependency @Parameters `
+                            -Subscriptions $CreateSubscriptions `
+                            -ServicePlans $DependentServicePlans `
+                            -DependencyType SkuId
+                    }
+
+                    # Calculate the display names to be used for the Subscription groups
+                    $SubscriptionGroupDisplayName = foreach ($Subscription in $CreateSubscriptions) {
+                        "$Tag" + "-" + $Subscription.skuPartNumber + ";"
+                    }
+
+                    # Create groups
+                    $SubscriptionGroups = New-WTAADSubscriptionGroup @Parameters -DisplayName $SubscriptionGroupDisplayName
+
+                    # Tag groups
+                    $TaggedSubscriptionGroups = Invoke-WTPropertyTagging -Tags $Tag -QueryResponse $SubscriptionGroups -PropertyToTag $PropertyToTag
+
+                    # For each subscription, perform subscription specific changes
+                    foreach ($Subscription in $CreateSubscriptions) {
+
+                        # Find the matching group
+                        $SubscriptionGroup = $null
+                        $SubscriptionGroup = $TaggedSubscriptionGroups | Where-Object {
+                            $_.$Tag -eq $Subscription.skuPartNumber
+                        }
+
+                        # If there is a group for this subscription (as subscriptions may not always have groups)
+                        if ($SubscriptionGroup) {
+                            
+                            # If this subscription is in the list of dependent subscriptions
+                            if ($Subscription.skuId -in $DependentSubscriptions.skuId) {
+                                
+                                # Filter to the specific subscription dependency
+                                $DependentSubscription = $null
+                                $DependentSubscription = $DependentSubscriptions | Where-Object {
+                                    $_.skuId -eq $Subscription.skuId
+                                }
+
+                                # Assign each required sku for the dependent subscription
+                                foreach ($SkuId in $DependentSubscription.RequiredSkuId) {
+                                    New-WTAzureADGroupRelationship @Parameters `
+                                        -Id $SubscriptionGroup.id `
+                                        -Relationship "assignLicense" `
+                                        -RelationshipIDs $SkuId `
+                                    | Out-Null
+                                }
+                            }
+
+                            # Assign licence to group
+                            New-WTAzureADGroupRelationship @Parameters `
+                                -Id $SubscriptionGroup.id `
+                                -Relationship "assignLicense" `
+                                -RelationshipIDs $Subscription.skuId `
+                            | Out-Null
+                            
+                            # Workaround lack of nested group support, by getting users that should be licenced
+                            if (${ENV:UserGroupID}) {
+                                $Members = Get-WTAzureADGroupRelationship @Parameters `
+                                    -Id ${ENV:UserGroupID} `
+                                    -Relationship "members"
+                                
+                                # Then adding the users that should be licenced directly to the group
+                                if ($Members) {
+                                    New-WTAzureADGroupRelationship @Parameters `
+                                        -Id $SubscriptionGroup.id `
+                                        -Relationship "members" `
+                                        -RelationshipIDs $Members.id
+                                }
+                            }
+                        }
+                    }
+
+                    # Export subscriptions
+                    Export-WTAzureADSubscription -DefinedSubscriptions $CreateSubscriptions `
+                        -Path $Path `
+                        -ExcludeExportCleanup
+
+                    # Path to group config
+                    $GroupsPath = $Path + "\..\Groups"
+
+                    # Export groups
+                    Export-WTAzureADGroup -AzureADGroups $SubscriptionGroups `
+                        -Path $GroupsPath `
+                        -ExcludeExportCleanup `
+                        -ExcludeTagEvaluation
+
+                    # If executing in a pipeline, stage, commit and push the changes back to the repo
+                    if ($Pipeline) {
+                        Write-Host "Commit configuration changes post pipeline deployment"
+                        Set-Location ${ENV:REPOHOME}
+                        git config user.email AzurePipeline@wesleytrust.com
+                        git config user.name AzurePipeline
+                        git add -A
+                        git commit -a -m "Commit configuration changes post deployment [skip ci]"
+                        git push https://${ENV:GITHUBPAT}@github.com/wesley-trust/${ENV:GITHUBCONFIGREPO}.git HEAD:${ENV:BRANCH}
+                    }
+                }
+                else {
+                    $WarningMessage = "No subscriptions will be created, as none exist that are different to the import"
+                    Write-Warning $WarningMessage
+                }
+            }
+            else {
+                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                Write-Error $ErrorMessage
+                throw $ErrorMessage
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
+
 [get-sub]: https://www.wesleytrust.com/blog/graph-api-group-licences/#getting-subscriptions-in-an-azure-ad-tenant
 [get-dep]: https://www.wesleytrust.com/blog/graph-api-group-licences/#evaluating-service-plan-dependencies-for-subscriptions
 [assign-licence]: https://www.wesleytrust.com/blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
@@ -577,3 +1371,6 @@ function Invoke-WTValidateSubscription {
 [trigger-link]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/Pipeline/AzureAD/Subscriptions/ENV-P/azure-pipelines.yml
 [shared-link]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/Pipeline/AzureAD/Subscriptions/Shared/azure-pipelines.yml
 [function-validate]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTValidateSubscription.ps1
+[function-plan]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTPlanSubscription.ps1
+[function-apply]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTApplySubscription.ps1
+[function-import]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTSubscriptionImport.ps1
