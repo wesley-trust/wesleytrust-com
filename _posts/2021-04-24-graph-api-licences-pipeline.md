@@ -33,9 +33,9 @@ This post covers the YAML and PowerShell executed in the pipeline, the PowerShel
 _The apply stage is skipped when there are no changes to deploy, and so may show as "cancelled"_
 
 ## Trigger Pipeline
-You can access this [trigger here, on my GitHub][trigger-link]. This trigger contains an extend, so that each stage of the rest of the pipeline is included.
+You can access the [trigger pipeline on my GitHub here][trigger-link]. This trigger contains an extend, so that each stage of the rest of the pipeline is included.
 
-### Pipeline YAML example below: <!-- omit in toc -->
+#### Pipeline YAML example below: <!-- omit in toc -->
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
@@ -78,20 +78,149 @@ extends:
 - An extend is included, leading to the shared template that contains all the stages of the pipeline
 
 ## Shared Pipeline
-You can access this [trigger here, on my GitHub][trigger-link]. This trigger contains an extend, so that each stage of the rest of the pipeline is included.
+You can access the [shared pipeline on my GitHub here][shared-link].
 
-### Pipeline YAML example below: <!-- omit in toc -->
+#### Pipeline YAML example below: <!-- omit in toc -->
 _Azure Pipelines automatically clones the config repo for the first stage, and any artifacts created in subsequent stages_
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```yaml
+variables:
+- group: 'GitHubAuth'
+- group: 'ServicePrincipal'
+- group: 'SubscriptionMemberGroups'
+stages:
+- stage: Validate
+  pool:
+    vmImage: 'windows-latest'
+  jobs:
+  - job: Import
+    pool:
+      vmImage: 'windows-latest'
+    continueOnError: false
+    steps:
+    - task: CmdLine@2
+      name: CloneGraphAPI
+      displayName: Clone Graph API repo
+      inputs:
+        script: 'git clone --branch $(Branch) --single-branch https://github.com/wesley-trust/GraphAPI.git'
+        workingDirectory: '$(System.ArtifactsDirectory)'
+    - task: PowerShell@2
+      name: InvokeWTValidateSubscription
+      displayName: Invoke-WTValidateSubscription
+      inputs:
+        targetType: 'inline'
+        script: |
+
+          # Dot source function
+          . $(System.ArtifactsDirectory)\GraphAPI\Public\AzureAD\Subscriptions\Pipeline\Invoke-WTValidateSubscription.ps1
+          
+          # Test if directory exist and execute function as appropriate
+          $TestPath = Test-Path $(Build.Repository.LocalPath)\AzureAD\Subscriptions\Definitions -PathType Container
+          if ($TestPath){
+            $ValidateDefinedSubscriptions = Invoke-WTValidateSubscription `
+              -Path $(Build.Repository.LocalPath)\AzureAD\Subscriptions\Definitions
+          }
+
+          # Create directory for artifact, if it does not exist
+          $TestPath = Test-Path $(Pipeline.Workspace)\Output -PathType Container
+          if (!$TestPath){
+            New-Item -Path $(Pipeline.Workspace)\Output -ItemType Directory | Out-Null
+          }
+
+          # If there are Subscriptions (as if there are no Subscriptions to import, existing Subscriptions are not removed)
+          if ($ValidateDefinedSubscriptions){
+            
+            # Convert to JSON and export
+            $ValidateDefinedSubscriptions | ConvertTo-Json -Depth 10 | Out-File -Force -FilePath $(Pipeline.Workspace)\Output\Validate.json
+          }
+        pwsh: true
+        workingDirectory: '$(System.ArtifactsDirectory)'
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)\Output'
+        artifact: 'Import'
+        publishLocation: 'pipeline'
+- stage: Plan
+  pool:
+    vmImage: 'windows-latest'
+  dependsOn: Validate
+  condition: succeeded()
+  jobs:
+  - job: Evaluate
+    continueOnError: false
+    steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'current'
+        targetPath: '$(Pipeline.Workspace)'
+    - task: CmdLine@2
+      name: CloneGraphAPI
+      displayName: Clone Graph API repo
+      inputs:
+        script: 'git clone --branch $(Branch) --single-branch https://github.com/wesley-trust/GraphAPI.git'
+        workingDirectory: '$(System.ArtifactsDirectory)'
+    - task: CmdLine@2
+      name: CloneToolKit
+      displayName: Clone Toolkit repo
+      inputs:
+        script: 'git clone --branch $(Branch) --single-branch https://github.com/wesley-trust/ToolKit.git'
+        workingDirectory: '$(System.ArtifactsDirectory)'
+    - task: PowerShell@2
+      name: InvokeWTPlanSubscription
+      displayName: Invoke-WTPlanSubscription
+      inputs:
+        targetType: 'inline'
+        script: |
+
+          # Import and convert Subscriptions from JSON, should they exist
+          $TestPath = Test-Path $(Pipeline.Workspace)\Import\Validate.json -PathType Leaf
+          if ($TestPath){
+              $ValidateDefinedSubscriptions = Get-Content -Raw -Path $(Pipeline.Workspace)\Import\Validate.json | ConvertFrom-Json -Depth 10
+          }
+
+          # Dot source and execute function
+          . $(System.ArtifactsDirectory)\GraphAPI\Public\AzureAD\Subscriptions\Pipeline\Invoke-WTPlanSubscription.ps1
+            $PlanDefinedSubscriptions = Invoke-WTPlanSubscription `
+              -TenantDomain $(TenantDomain) `
+              -ClientID ${env:CLIENTID} `
+              -ClientSecret ${env:CLIENTSECRET} `
+              -DefinedSubscriptions $ValidateDefinedSubscriptions `
+              -RemoveDefinedSubscriptions `
+              -Force
+
+          # Create directory for artifact, if it does not exist
+          $TestPath = Test-Path $(Pipeline.Workspace)\Output -PathType Container
+          if (!$TestPath){
+              New-Item -Path $(Pipeline.Workspace)\Output -ItemType Directory | Out-Null
+          }
+
+          # If there are Subscriptions
+          if ($PlanDefinedSubscriptions.RemoveSubscriptions -or $PlanDefinedSubscriptions.CreateSubscriptions){
+
+            # Set ShouldRun variable to true, for apply stage
+            echo "##vso[task.setvariable variable=ShouldRun;isOutput=true]true"
+
+            # Convert to JSON and export
+            $PlanDefinedSubscriptions | ConvertTo-Json -Depth 10 | Out-File -Force -FilePath $(Pipeline.Workspace)\Output\Plan.json
+          }
+        pwsh: true
+        workingDirectory: '$(System.ArtifactsDirectory)'
+      env:
+        CLIENTID: $(ClientID)
+        CLIENTSECRET: $(ClientSecret)
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)\Output'
+        artifact: 'Evaluate'
+        publishLocation: 'pipeline'
 - stage: Apply
   pool:
     vmImage: 'windows-latest'
   dependsOn: Plan
-  condition: and(succeeded(), eq(dependencies.Plan.outputs['Evaluate.InvokeWTPlanAzureADGroup.ShouldRun'], 'true'))
+  condition: and(succeeded(), eq(dependencies.Plan.outputs['Evaluate.InvokeWTPlanSubscription.ShouldRun'], 'true'))
   jobs:
   - deployment: Deploy
     continueOnError: false
@@ -114,27 +243,43 @@ _Azure Pipelines automatically clones the config repo for the first stage, and a
               script: 'git clone --branch $(Branch) --single-branch https://github.com/wesley-trust/ToolKit.git'
               workingDirectory: '$(System.ArtifactsDirectory)'
           - task: PowerShell@2
-            name: InvokeWTApplyAzureADGroup
-            displayName: Invoke-WTApplyAzureADGroup
+            name: InvokeWTApplySubscription
+            displayName: Invoke-WTApplySubscription
             inputs:
               targetType: 'inline'
               script: |
 
-                # Import and convert Groups from JSON, should they exist
+                # Import and convert Subscriptions from JSON, should they exist
                 $TestPath = Test-Path $(Pipeline.Workspace)\Evaluate\Plan.json -PathType Leaf
                 if ($TestPath){
-                    $PlanAzureADGroups = Get-Content -Raw -Path $(Pipeline.Workspace)\Evaluate\Plan.json | ConvertFrom-Json -Depth 10
+                    $PlanDefinedSubscriptions = Get-Content -Raw -Path $(Pipeline.Workspace)\Evaluate\Plan.json | ConvertFrom-Json -Depth 10
                 }
-                
+
+                # Import service plan dependencies if they exist and convert from JSON
+                $DependentServicePlansPath = "$(Build.Repository.LocalPath)\AzureAD\Subscriptions\Dependencies"
+                $PathExists = Test-Path -Path $DependentServicePlansPath
+                if ($PathExists) {
+                    $DependentServicePlansFilePath = (Get-ChildItem -Path $DependentServicePlansPath -Filter "*.json").FullName
+                }
+                if ($DependentServicePlansFilePath) {
+                    $DependentServicePlansImport = foreach ($DependentServicePlanFile in $DependentServicePlansFilePath) {
+                        Get-Content -Raw -Path $DependentServicePlanFile
+                    }
+                }
+                if ($DependentServicePlansImport) {
+                    $DependentServicePlans = $DependentServicePlansImport | ConvertFrom-Json -Depth 10
+                }
+
                 # Dot source and execute function
-                . $(System.ArtifactsDirectory)\GraphAPI\Public\AzureAD\Groups\Pipeline\Invoke-WTApplyAzureADGroup.ps1
-                      Invoke-WTApplyAzureADGroup `
+                . $(System.ArtifactsDirectory)\GraphAPI\Public\AzureAD\Subscriptions\Pipeline\Invoke-WTApplySubscription.ps1
+                      Invoke-WTApplySubscription `
                         -TenantDomain $(TenantDomain) `
                         -ClientID ${env:CLIENTID} `
                         -ClientSecret ${env:CLIENTSECRET} `
-                        -AzureADGroups $PlanAzureADGroups `
-                        -UpdateExistingGroups `
-                        -Path $(Build.SourcesDirectory)\AzureAD\Groups `
+                        -DefinedSubscriptions $PlanDefinedSubscriptions `
+                        -DependentServicePlans $DependentServicePlans `
+                        -RemoveDefinedSubscriptions `
+                        -Path $(Build.SourcesDirectory)\AzureAD\Subscriptions\Definitions `
                         -Pipeline
               pwsh: true
               workingDirectory: '$(System.ArtifactsDirectory)'
@@ -144,96 +289,63 @@ _Azure Pipelines automatically clones the config repo for the first stage, and a
               GITHUBPAT: $(GitHubPAT)
               REPOHOME: $(Build.Repository.LocalPath)
               BRANCH: $(Branch)
+              USERGROUPID: $(UserGroupID)
               GITHUBCONFIGREPO: $(GitHubConfigRepo)
 ```
 
 </details>
 
-### What does this do? <!-- omit in toc -->
+#### What does this do? <!-- omit in toc -->
+- Variable groups are defined and included within the pipeline, set as environmental variables for tasks as appropriate
+- The container image for the Azure DevOps agent is defined
+- Steps are defined for tasks to clone required repos
+- Each stage in the pipeline is defined
+  - With a PowerShell task to load the PowerShell pipeline function into memory and execute
+  - With artifacts and variables set for subsequent stages as appropriate
 
 ### Import & Validate
 This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
 
-This imports JSON definitions of groups, or imports group objects via a parameter, and validates these against a set of criteria.
+This imports JSON definitions of subscriptions, or imports subscription objects via a parameter, and validates these against a set of criteria.
 
 Outputting a JSON validate file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
 
-
-
-### PowerShell example below: <!-- omit in toc -->
+#### PowerShell example below: <!-- omit in toc -->
 
 <details>
   <summary><em><strong>Expand code block</strong></em></summary>
 
 ```powershell
-# Clone repo that contains the Graph API and ToolKit functions
+# Clone repo that contains the Graph API functions and config definitions
 git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPI.git
-git clone --branch main --single-branch https://github.com/wesley-trust/ToolKit.git
+git clone --branch main --single-branch https://github.com/wesley-trust/GraphAPIConfig.git
 
 # Dot source function into memory
-. .\GraphAPI\Public\AzureAD\Groups\Pipeline\Invoke-WTApplyAzureADGroup.ps1
+. .\GraphAPI\Public\AzureAD\Subscriptions\Pipeline\Invoke-WTValidateSubscription.ps1
 
 # Define Variables
-$ClientID = "sdg23497-sd82-983s-sdf23-dsf234kafs24"
-$ClientSecret = "khsdfhbdfg723498345_sdfkjbdf~-SDFFG1"
-$TenantDomain = "wesleytrustsandbox.onmicrosoft.com"
-$AccessToken = "HWYLAqz6PipzzdtPwRnSN0Socozs2lZ7nsFky90UlDGTmaZY1foVojTUqFgm1vw0iBslogoP"
+$Path = ".\GraphAPIConfig\AzureAD\Subscriptions\Definitions"
 
-# Example groups (mailNickName if missing, is auto-generated upon creation)
-$RemoveGroup = [PSCustomObject]@{
-    id              = "41fd3497-52hq-983s-sdf23-dsf234kafs24"
-    displayName     = "This group will be removed"
-    mailEnabled     = $false
-    securityEnabled = $true
+# Import and validate all JSON files from the path specified
+$TestPath = Test-Path $Path -PathType Container
+if ($TestPath){
+    Invoke-WTValidateSubscription -Path $Path
 }
-$UpdateGroup = [PSCustomObject]@{
-    id              = "52bf4497-f2g7-983s-sdf23-dsf234kafs24"
-    displayName     = "This group will be updated"
-    mailEnabled     = $false
-    securityEnabled = $true
-}
-$CreateGroup = [PSCustomObject]@{
-    displayName     = "This group will be created"
-    mailEnabled     = $false
-    securityEnabled = $true
-}
-
-# Build plan object
-$PlanAzureADGroup = [PSCustomObject]@{
-    RemoveGroups = $RemoveGroup
-    UpdateGroups = $UpdateGroup
-    CreateGroups = $CreateGroup
-}
-
-# Create hashtable
-$Parameters = @{
-  ClientID             = $ClientID
-  ClientSecret         = $ClientSecret
-  TenantDomain         = $TenantDomain
-  UpdateExistingGroups = $true
-  AzureADGroup         = $PlanAzureADGroup
-}
-
-# Apply a plan, splatting the hashtable of parameters
-Invoke-WTApplyAzureADGroup @Parameters
-
-# Or pipe specific object definitions to the apply function, with an access token previously obtained
-$PlanAzureADGroup | Invoke-WTApplyAzureADGroup -AccessToken $AccessToken
-
-# Or specify each parameter individually, with an access token previously obtained
-Invoke-WTApplyAzureADGroup -AzureADGroup $PlanAzureADGroup -AccessToken $AccessToken -UpdateExistingGroups
 ```
 
 </details>
 
-### What does this do? <!-- omit in toc -->
-- An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
-- If groups should be removed, and the objects exist, the group IDs are provided to the [remove group function][remove-function]
-- If groups should be updated, and the objects exist, the group objects are provided to the [edit group function][update-function]
-- If there are group objects to be created, the objects are provided to the [new group function][create-function]
-  - The new group config information is then exported using the [export group function][export-function]
-  - This ensures the new group Ids are available in the config to manage in the future 
-  - Within the pipeline, the files are added, committed and pushed to the [config repo][config-repo]
+#### What does this do? <!-- omit in toc -->
+- This sets specific variables, including the required properties that must be present in the input
+- To import, a file path to specific files or a directory path from which all files will be imported is required
+  - Alternatively, a subscription or collection of subscriptions can also be passed in a parameter to validate
+- This then checks for the properties each subscription has
+  - Each required property that is missing is added to a variable
+- A check is then performed as to whether the properties contain a value
+  - This is again added to a variable if null
+- A validate object is then built for each subscription with failed checks
+- Information is then returned about whether the subscription passed validation, and if not, why each subscription failed
+- If successful, the validated group objects are returned
 
 The complete function as at this date, is below:
 
@@ -241,95 +353,40 @@ The complete function as at this date, is below:
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
 
 ```powershell
-function Invoke-WTApplyAzureADGroup {
-    [cmdletbinding()]
+function Invoke-WTValidateSubscription {
+    [CmdletBinding()]
     param (
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Client ID for the Azure AD service principal with AzureAD Graph permissions"
+            HelpMessage = "The file path to the JSON file(s) that will be imported"
         )]
-        [string]$ClientID,
+        [string[]]$FilePath,
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Client secret for the Azure AD service principal with AzureAD Graph permissions"
-        )]
-        [string]$ClientSecret,
-        [parameter(
-            Mandatory = $false,
-            ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The initial domain (onmicrosoft.com) of the tenant"
-        )]
-        [string]$TenantDomain,
-        [parameter(
-            Mandatory = $false,
-            ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
-        )]
-        [string]$AccessToken,
-        [parameter(
-            Mandatory = $false,
-            ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The AzureAD group object"
-        )]
-        [Alias('AzureADGroup', 'GroupDefinition')]
-        [PSCustomObject]$AzureADGroups,
-        [Parameter(
-            Mandatory = $false,
-            ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Specify whether to update existing groups deployed in the tenant, where the IDs match"
-        )]
-        [switch]
-        $UpdateExistingGroups,
-        [Parameter(
-            Mandatory = $false,
-            ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Specify whether existing groups deployed in the tenant will be removed, if not present in the import"
-        )]
-        [switch]
-        $RemoveExistingGroups,
-        [parameter(
-            Mandatory = $false,
-            ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
-        )]
-        [switch]$ExcludePreviewFeatures,
-        [parameter(
-            Mandatory = $false,
-            ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The file path to the JSON file(s) that will be exported"
-        )]
-        [string]$FilePath,
-        [parameter(
-            Mandatory = $false,
-            ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The directory path(s) of which all JSON file(s) will be exported"
+            HelpMessage = "The directory path(s) of which all JSON file(s) will be imported"
         )]
         [string]$Path,
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Specify whether the function is operating within a pipeline"
+            ValueFromPipeLine = $true,
+            HelpMessage = "The Azure AD Subscriptions to be validated if not imported from a JSON file"
         )]
-        [switch]$Pipeline
+        [Alias('Subscription', 'SubscriptionDefinition')]
+        [PSCustomObject]$DefinedSubscriptions,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether files should be imported only, and not validated"
+        )]
+        [switch]$ImportOnly
     )
     Begin {
         try {
-            # Function definitions
-            $Functions = @(
-                "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
-                "GraphAPI\Public\AzureAD\Groups\Remove-WTAzureADGroup.ps1",
-                "GraphAPI\Public\AzureAD\Groups\New-WTAzureADGroup.ps1",
-                "GraphAPI\Public\AzureAD\Groups\Edit-WTAzureADGroup.ps1",
-                "GraphAPI\Public\AzureAD\Groups\Export-WTAzureADGroup.ps1"
-            )
-            
-            # Function dot source
-            foreach ($Function in $Functions) {
-                . $Function
-            }
-            
+            # Variables
+            $RequiredProperties = @("skuPartNumber")
         }
         catch {
             Write-Error -Message $_.Exception
@@ -338,87 +395,156 @@ function Invoke-WTApplyAzureADGroup {
     }
     Process {
         try {
-            
-            # If there is no access token, obtain one
-            if (!$AccessToken) {
-                $AccessToken = Get-WTGraphAccessToken `
-                    -ClientID $ClientID `
-                    -ClientSecret $ClientSecret `
-                    -TenantDomain $TenantDomain
-            }
 
-            if ($AccessToken) {
-                
-                # Output current action
-                Write-Host "Deploying Azure AD Groups"
-                                
-                # Build Parameters
-                $Parameters = @{
-                    AccessToken = $AccessToken
-                }
-                if ($ExcludePreviewFeatures) {
-                    $Parameters.Add("ExcludePreviewFeatures", $true)
-                }
-                
-                if ($RemoveExistingGroups) {
-
-                    # If groups require removing, pass the ids to the remove function
-                    if ($AzureADGroups.RemoveGroups) {
-                        $GroupIDs = $AzureADGroups.RemoveGroups.id
-                        Remove-WTAzureADGroup @Parameters -GroupIDs $GroupIDs
-                    }
-                    else {
-                        $WarningMessage = "No groups will be removed, as none exist that are different to the import"
-                        Write-Warning $WarningMessage
-                    }
-                }
-                if ($UpdateExistingGroups) {
-   
-                    # If groups require updating, pass the ids
-                    if ($AzureADGroups.UpdateGroups) {
-                        Edit-WTAzureADGroup @Parameters -AzureADGroups $AzureADGroups.UpdateGroups
-                    }
-                    else {
-                        $WarningMessage = "No groups will be updated, as none exist that are different to the import"
-                        Write-Warning $WarningMessage
-                    }
-                }
-
-                # If there are new groups to be created, create them, passing through the group state
-                if ($AzureADGroups.CreateGroups) {
-
-                    # Create groups
-                    $CreatedGroups = New-WTAzureADGroup @Parameters `
-                        -AzureADGroups $AzureADGroups.CreateGroups
-                        
-                    # Update configuration files
-                    
-                    # Export groups
-                    Export-WTAzureADGroup -AzureADGroups $CreatedGroups `
-                        -Path $Path `
-                        -ExcludeExportCleanup
-                    
-                    # If executing in a pipeline, stage, commit and push the changes back to the repo
-                    if ($Pipeline) {
-                        Write-Host "Commit configuration changes post pipeline deployment"
-                        Set-Location ${ENV:REPOHOME}
-                        git config user.email AzurePipeline@wesleytrust.com
-                        git config user.name AzurePipeline
-                        git add -A
-                        git commit -a -m "Commit configuration changes post deployment [skip ci]"
-                        git push https://${ENV:GITHUBPAT}@github.com/wesley-trust/${ENV:GITHUBCONFIGREPO}.git HEAD:${ENV:BRANCH}
-                    }
+            # For each directory, get the file path of all JSON files within the directory, if the directory exists
+            if ($Path) {
+                $PathExists = Test-Path -Path $Path
+                if ($PathExists) {
+                    $FilePath = (Get-ChildItem -Path $Path -Filter "*.json").FullName
                 }
                 else {
-                    $WarningMessage = "No groups will be created, as none exist that are different to the import"
-                    Write-Warning $WarningMessage
+                    $ErrorMessage = "The provided path does not exist $Path, please check the path is correct"
+                    throw $ErrorMessage
                 }
             }
+
+            # Import Subscriptions from JSON file, if the files exist
+            if ($FilePath) {
+                $SubscriptionImport = foreach ($File in $FilePath) {
+                    $FilePathExists = Test-Path -Path $File
+                    if ($FilePathExists) {
+                        Get-Content -Raw -Path $File
+                    }
+                    else {
+                        $ErrorMessage = "The provided filepath $File does not exist, please check the path is correct"
+                        throw $ErrorMessage
+                    }
+                }
+                
+                # If import was successful, convert from JSON
+                if ($SubscriptionImport) {
+                    $DefinedSubscriptions = $SubscriptionImport | ConvertFrom-Json
+                }
+                else {
+                    $ErrorMessage = "No JSON files could be imported, please check the filepath is correct"
+                    throw $ErrorMessage
+                }
+            }
+
+            # If there are subscriptions imported, run validation checks
+            if ($DefinedSubscriptions) {
+                
+                # Output current action
+                Write-Host "Importing Defined Subscriptions"
+                Write-Host "Subscriptions: $($DefinedSubscriptions.count)"
+                
+                foreach ($Subscription in $DefinedSubscriptions) {
+                    if ($Subscription.skuPartNumber) {
+                        Write-Host "Import: Subscription Name: $($Subscription.skuPartNumber)"
+                    }
+                    elseif ($Subscription.id) {
+                        Write-Host "Import: Subscription Id: $($Subscription.id)"
+                    }
+                    else {
+                        Write-Host "Import: Subscription Invalid"
+                    }
+                }
+
+                # If import only is set, return subscriptions without validating
+                if ($ImportOnly) {
+                    $DefinedSubscriptions
+                }
+                else {
+                        
+                    # Output current action
+                    Write-Host "Validating Defined Subscriptions"
+    
+                    # For each policy, run validation checks
+                    $InvalidSubscriptions = foreach ($Subscription in $DefinedSubscriptions) {
+                        $SubscriptionValidate = $null
+    
+                        # Check for missing properties
+                        $SubscriptionProperties = $null
+                        $SubscriptionProperties = ($Subscription | Get-Member -MemberType NoteProperty).name
+                        $PropertyCheck = $null
+
+                        # Check whether each required property, exists in the list of properties for the object
+                        $PropertyCheck = foreach ($Property in $RequiredProperties) {
+                            if ($Property -notin $SubscriptionProperties) {
+                                $Property
+                            }
+                        }
+
+                        # Check whether each required property has a value, if not, return property
+                        $PropertyValueCheck = $null
+                        $PropertyValueCheck = foreach ($Property in $RequiredProperties) {
+                            if ($null -eq $Subscription.$Property) {
+                                $Property
+                            }
+                        }
+    
+                        # Build and return object
+                        if ($PropertyCheck -or $PropertyValueCheck) {
+                            $SubscriptionValidate = [ordered]@{}
+                            if ($Subscription.skuPartNumber) {
+                                $SubscriptionValidate.Add("skuPartNumber", $Subscription.skuPartNumber)
+                            }
+                            elseif ($Subscription.id) {
+                                $SubscriptionValidate.Add("Id", $Subscription.id)
+                            }
+                        }
+                        if ($PropertyCheck) {
+                            $SubscriptionValidate.Add("MissingProperties", $PropertyCheck)
+                        }
+                        if ($PropertyValueCheck) {
+                            $SubscriptionValidate.Add("MissingPropertyValues", $PropertyValueCheck)
+                        }
+                        if ($SubscriptionValidate) {
+                            [PSCustomObject]$SubscriptionValidate
+                        }
+                    }
+
+                    # Return validation result for each policy
+                    if ($InvalidSubscriptions) {
+                        Write-Host "Invalid subscriptions: $($InvalidSubscriptions.count) out of $($DefinedSubscriptions.count) imported"
+                        foreach ($Subscription in $InvalidSubscriptions) {
+                            if ($Subscription.skuPartNumber) {
+                                Write-Host "INVALID: Subscription Name: $($Subscription.skuPartNumber)" -ForegroundColor Yellow
+                            }
+                            elseif ($Subscription.id) {
+                                Write-Host "INVALID: Subscription Id: $($Subscription.id)" -ForegroundColor Yellow
+                            }
+                            else {
+                                Write-Host "INVALID: No skuPartNumber or Id for policy" -ForegroundColor Yellow
+                            }
+                            if ($Subscription.MissingProperties) {
+                                Write-Warning "Required properties not present ($($Subscription.MissingProperties.count)): $($Subscription.MissingProperties)"
+                            }
+                            if ($Subscription.MissingPropertyValues) {
+                                Write-Warning "Required property values not present ($($Subscription.MissingPropertyValues.count)): $($Subscription.MissingPropertyValues)"
+                            }
+                        }
+    
+                        # Abort import
+                        $ErrorMessage = "Validation of subscriptions was not successful, review configuration files and any warnings generated"
+                        Write-Error $ErrorMessage
+                        throw $ErrorMessage
+                    }
+                    else {
+
+                        # Return validated subscriptions
+                        Write-Host "All subscriptions have passed validation for required properties and values"
+                        $ValidSubscriptions = $DefinedSubscriptions
+                        $ValidSubscriptions
+                    }
+                }
+                
+            }
             else {
-                $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
-                Write-Error $ErrorMessage
+                $ErrorMessage = "No Subscriptions to be imported, import may have failed or none may exist"
                 throw $ErrorMessage
             }
+            
         }
         catch {
             Write-Error -Message $_.Exception
@@ -449,3 +575,5 @@ function Invoke-WTApplyAzureADGroup {
 [config-repo]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/Groups
 [access-token]: https://www.wesleytrust.com/blog/obtain-access-token/
 [trigger-link]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/Pipeline/AzureAD/Subscriptions/ENV-P/azure-pipelines.yml
+[shared-link]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/Pipeline/AzureAD/Subscriptions/Shared/azure-pipelines.yml
+[function-validate]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTValidateSubscription.ps1
