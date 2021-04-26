@@ -21,18 +21,18 @@ _Both Azure Pipelines and GitHub Actions have free tiers for public projects, an
 
 This post covers the YAML and PowerShell executed in the pipeline, the PowerShell can also be called directly or executed in a Windows Server docker container, making this quite portable and versatile.
 
+|  Current Import & Validate Status  |   Current Plan & Evaluate Status   |   Current Apply & Deploy Status   |   Overall CI/CD Pipeline Status   |
+|:----------------------------------:|:----------------------------------:|:---------------------------------:|:---------------------------------:|
+| [![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Subscriptions/SVC-CS%3BENV-P%3B%20Subscriptions?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=23&branchName=main) | [![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Subscriptions/SVC-CS%3BENV-P%3B%20Subscriptions?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=23&branchName=main) | [![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Subscriptions/SVC-CS%3BENV-P%3B%20Subscriptions?branchName=main&stageName=Apply&jobName=Deploy)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=23&branchName=main) | [![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Subscriptions/SVC-CS%3BENV-P%3B%20Subscriptions?branchName=main)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=23&branchName=main) |
+
+_The apply stage is skipped when there are no changes to deploy, and so may show as "cancelled"_
+
 ### Pipeline Stages
 - [Trigger Pipeline](#trigger-pipeline)
 - [Shared Pipeline](#shared-pipeline)
   - [Import & Validate](#import--validate)
   - [Plan & Evaluate](#plan--evaluate)
   - [Apply & Deploy](#apply--deploy)
-
-|  Current Import & Validate Status  |   Current Plan & Evaluate Status   |   Current Apply & Deploy Status   |   Overall CI/CD Pipeline Status   |
-|:----------------------------------:|:----------------------------------:|:---------------------------------:|:---------------------------------:|
-| [![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Subscriptions/SVC-CS%3BENV-P%3B%20Subscriptions?branchName=main&stageName=Validate&jobName=Import)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=23&branchName=main) | [![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Subscriptions/SVC-CS%3BENV-P%3B%20Subscriptions?branchName=main&stageName=Plan&jobName=Evaluate)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=23&branchName=main) | [![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Subscriptions/SVC-CS%3BENV-P%3B%20Subscriptions?branchName=main&stageName=Apply&jobName=Deploy)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=23&branchName=main) | [![Build Status](https://dev.azure.com/wesleytrust/GraphAPI/_apis/build/status/Azure%20AD/Subscriptions/SVC-CS%3BENV-P%3B%20Subscriptions?branchName=main)](https://dev.azure.com/wesleytrust/GraphAPI/_build/latest?definitionId=23&branchName=main) |
-
-_The apply stage is skipped when there are no changes to deploy, and so may show as "cancelled"_
 
 ## Trigger Pipeline
 You can access the [trigger pipeline on my GitHub here][trigger-link]. This trigger contains an extend, so that each stage of the rest of the pipeline is included.
@@ -306,7 +306,9 @@ stages:
   - With artifacts and variables set for subsequent stages as appropriate
 
 #### PowerShell example below: <!-- omit in toc -->
-This function is [Invoke-WTSubscriptionImport][function-import], which you can access from my GitHub. This mimics the pipeline stages, I created this to make it easier to test locally as well as run in a Windows Server docker container containing PowerShell 7.
+This function is [Invoke-WTSubscriptionImport][function-import], which you can access from my GitHub. This mimics the pipeline stages.
+
+I created this to make it easier to test locally as well as run in a Windows Server docker container using PowerShell 7.
 
 <details>
   <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
@@ -561,7 +563,7 @@ function Invoke-WTAzureADSubscriptionImport {
 </details>
 
 ### Import & Validate
-This function is [Invoke-WTValidateAzureADGroup][function-validate], which you can access from my GitHub.
+This function is [Invoke-WTValidateSubscription][function-validate], which you can access from my GitHub.
 
 This imports JSON definitions of subscriptions, or imports subscription objects via a parameter, and validates these against a set of criteria.
 
@@ -577,7 +579,7 @@ Outputting a JSON validate file (as appropriate) as a pipeline artifact for the 
   - This is again added to a variable if null
 - A validate object is then built for each subscription with failed checks
 - Information is then returned about whether the subscription passed validation, and if not, why each subscription failed
-- If successful, the validated group objects are returned
+- If successful, the validated subscription objects are returned
 
 The complete function as at this date, is below:
 
@@ -618,7 +620,7 @@ function Invoke-WTValidateSubscription {
     Begin {
         try {
             # Variables
-            $RequiredProperties = @("skuPartNumber")
+            $RequiredProperties = @("skuPartNumber","skuId","servicePlans","capabilityStatus","appliesTo")
         }
         catch {
             Write-Error -Message $_.Exception
@@ -806,18 +808,15 @@ Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next
 
 #### What does this do? <!-- omit in toc -->
 - An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
-- Checks are performed about whether to evaluate groups for updating or removal
-- Existing groups in Azure AD are obtained (as appropriate) from the [Get function][get-function], in order to compare against the validated import
-- An object comparison is performed on the group IDs, determining:
-  - What groups could be removed (as they exist, but don't have an ID in the import)
-  - What groups could be created (as an ID might not exist, or might not match an existing ID in Azure AD)
-- A safety check is performed, if no groups are provided, the removal of all existing groups requires a "Force" switch
-- If groups should not be removed, the variable for removing groups is cleared
-- If groups should be updated, and there are existing groups in Azure AD, only groups with valid IDs are included
-- An object comparison is then performed on specific object properties, to check for specific differences (only)
-  - If there are differences, they're added to a variable
-- If no groups exist, any imported groups must all be created, so the variable is updated
-- An object is then built containing the groups to be removed, updated or created (as appropriate)
+- Checks are performed about whether to evaluate subscriptions for removal
+- Existing subscriptions in Azure AD are obtained from the [Get function][get-sub], in order to compare against the validated import
+- An object comparison is performed on the skuPartNumber, determining:
+  - What subscriptions could be removed (as they don't exist in Azure AD, but were defined in the import)
+  - What subscriptions could be created (as they exist in Azure AD, but were not defined in the import)
+- A safety check is performed, if no subscriptions exist but were defined in the import, the removal of all existing subscriptions requires a "Force" switch
+- If subscriptions should not be removed, the variable for removing subscriptions is cleared
+- If no subscriptions exist in the import, any existing subscriptions must all be created, so the variable is updated
+- An object is then built containing the subscriptions to be removed or created (as appropriate)
 - This object is then returned as a plan of action, which is output as a pipeline artifact for the next stage
 
 The complete function as at this date, is below:
@@ -1036,9 +1035,8 @@ Within the pipeline, this imports the plan JSON artifact of subscriptions, which
 
 #### What does this do? <!-- omit in toc -->
 - An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
-- If groups should be removed, and the objects exist, the group IDs are provided to the [remove group function][remove-function]
-- If groups should be updated, and the objects exist, the group objects are provided to the [edit group function][update-function]
-- If there are group objects to be created, the objects are provided to the [new group function][create-function]
+- If subscriptions should be removed, and the objects exist, the group IDs are provided to the [remove subscription function][remove-function]
+- If there are subscription objects to be created, the objects are provided to the [new group function][create-function]
   - The new group config information is then exported using the [export group function][export-function]
   - This ensures the new group Ids are available in the config to manage in the future 
   - Within the pipeline, the files are added, committed and pushed to the [config repo][config-repo]
@@ -1211,10 +1209,13 @@ function Invoke-WTApplySubscription {
                                     
                                     # Remove group (licences should no longer be assigned to deleted subscriptions)
                                     Remove-WTAADSubscriptionGroup @Parameters -IDs $SubscriptionGroups.id
-                                                                            
+
+                                    # Path to group config
+                                    $GroupsPath = $Path + "\..\Groups"
+                    
                                     # Remove group config
                                     foreach ($SubscriptionGroup in $SubscriptionGroups) {
-                                        Remove-Item -Path "$Path\Groups\$($SubscriptionGroup.displayName).json"
+                                        Remove-Item -Path "$GroupsPath\$($SubscriptionGroup.displayName).json"
                                     }
                                 }
                             }
