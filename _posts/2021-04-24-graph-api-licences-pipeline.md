@@ -15,7 +15,7 @@ excerpt: "This post covers the CI/CD pipeline which will be used to automate cre
 ---
 Now that we have the PowerShell to [get subscriptions][get-sub], [calculate dependencies][get-dep] and [assign licences to groups][assign-licence], as well as [create groups][create-function], we can bring this all together to automate in a CI/CD pipeline. This is in part based upon the [Azure AD groups pipeline][validate-post].
 
-I'm using [Azure DevOps][devops-link] to execute my Pipeline, but the YAML should also be compatible with GitHub Actions, making it relatively easy to use on either platform.
+I'm using [Azure DevOps][devops-link] to execute my Pipeline, but with some tweaks the YAML could run in GitHub Actions, making it relatively easy to use on either platform.
 
 _Both Azure Pipelines and GitHub Actions have free tiers for public projects, and free execution minutes for private projects._
 
@@ -99,8 +99,6 @@ stages:
     vmImage: 'windows-latest'
   jobs:
   - job: Import
-    pool:
-      vmImage: 'windows-latest'
     continueOnError: false
     steps:
     - task: CmdLine@2
@@ -298,12 +296,21 @@ stages:
 </details>
 
 #### What does this do? <!-- omit in toc -->
-- Variable groups are defined and included within the pipeline, set as environmental variables for tasks as appropriate
+- Variable groups are defined and included within the pipeline
+  - Including the service principal to authenticate with the Graph API and the GitHub PAT for pushing changes
+    - These are set as environmental variables for tasks as appropriate
+      - This is because they contain secrets that would be exposed in the pipeline if not
+  - Subscription group members are defined, for adding members to the groups that are created
+    - This automatically licences those members
 - The container image for the Azure DevOps agent is defined
 - Steps are defined for tasks to clone required repos
 - Each stage in the pipeline is defined
   - With a PowerShell task to load the PowerShell pipeline function into memory and execute
   - With artifacts and variables set for subsequent stages as appropriate
+    - With conditions set for stages so they only trigger when there is something to do
+- In addition, pipeline variables are set to define the branch and environment the pipeline is executing
+  - This allows for approvals to be put on the environment, so changes only apply when approved
+  - As well as pushing changes to the correct branch in GitHub
 
 #### PowerShell example below: <!-- omit in toc -->
 This function is [Invoke-WTSubscriptionImport][function-import], which you can access from my GitHub. This mimics the pipeline stages.
@@ -320,13 +327,13 @@ function Invoke-WTAzureADSubscriptionImport {
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Client ID for the Azure AD service principal with Conditional Access Graph permissions"
+            HelpMessage = "Client ID for the Azure AD service principal with the correct Graph permissions"
         )]
         [string]$ClientID,
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Client secret for the Azure AD service principal with Conditional Access Graph permissions"
+            HelpMessage = "Client secret for the Azure AD service principal with the correct Graph permissions"
         )]
         [string]$ClientSecret,
         [parameter(
@@ -369,7 +376,7 @@ function Invoke-WTAzureADSubscriptionImport {
         [Parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "Specify whether to the groups used for CA subscriptions, should not be removed, if the policy is removed"
+            HelpMessage = "Specify whether the groups used for subscriptions, should not be removed, if the subscription is removed"
         )]
         [switch]
         $ExcludeGroupRemoval,
@@ -382,7 +389,7 @@ function Invoke-WTAzureADSubscriptionImport {
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "If there are no subscriptions to import, whether to forcibly remove any defined subscriptions"
+            HelpMessage = "If there are no subscriptions, whether to forcibly remove any defined subscriptions"
         )]
         [switch]$Force,
         [parameter(
@@ -807,13 +814,16 @@ Within the pipeline, this imports the validated JSON artifact of subscriptions (
 Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next stage in the pipeline.
 
 #### What does this do? <!-- omit in toc -->
+- Specific variables are set and any dependent functions are imported into memory
 - An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
 - Checks are performed about whether to evaluate subscriptions for removal
 - Existing subscriptions in Azure AD are obtained from the [Get function][get-sub], in order to compare against the validated import
 - An object comparison is performed on the skuPartNumber, determining:
-  - What subscriptions could be removed (as they don't exist in Azure AD, but were defined in the import)
-  - What subscriptions could be created (as they exist in Azure AD, but were not defined in the import)
-- A safety check is performed, if no subscriptions exist but were defined in the import, the removal of all existing subscriptions requires a "Force" switch
+  - What defined subscriptions could be removed (as they don't exist in Azure AD, but were defined in the import)
+    - So should have their groups removed and the definitions removed in the config repo
+  - What existing subscriptions need their definitions creating (as they exist in Azure AD, but were not defined in the import)
+    - So should have groups created, subscriptions assigned and definitions created in the config repo
+- A safety check is performed if no subscriptions exist but were defined in the import, so removing all defined subscriptions requires a "Force" switch
 - If subscriptions should not be removed, the variable for removing subscriptions is cleared
 - If no subscriptions exist in the import, any existing subscriptions must all be created, so the variable is updated
 - An object is then built containing the subscriptions to be removed or created (as appropriate)
@@ -1031,14 +1041,28 @@ function Invoke-WTPlanSubscription {
 ### Apply & Deploy
 This function is [Invoke-WTApplySubscription][function-apply], which you can access from my GitHub.
 
-Within the pipeline, this imports the plan JSON artifact of subscriptions, which is passed to the function via a parameter. This contains the subscription groups that should be created, updated or removed (as appropriate).
+Within the pipeline, this imports the plan JSON artifact of subscriptions, which is passed to the function via a parameter. This contains the subscriptions that should have groups created or removed (as appropriate), as well as licences assigned and definitions created or removed (as appropriate).
 
 #### What does this do? <!-- omit in toc -->
+- Specific variables are set and any dependent functions are imported into memory
 - An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
-- If subscriptions should be removed, and the objects exist, the group IDs are provided to the [remove subscription function][remove-function]
-- If there are subscription objects to be created, the objects are provided to the [new group function][create-function]
-  - The new group config information is then exported using the [export group function][export-function]
-  - This ensures the new group Ids are available in the config to manage in the future 
+- If subscriptions should be removed,
+  - Subscription groups are obtained with the [get subscription group function][get-group] and are tagged with the [property tagging function][tag-post]
+  - Then each of the skuPartNumbers have their config removed
+  - The group for the subscription is identified, and this is provided to the [remove subscription group function][remove-function]
+  - The group config is then removed
+- If there are subscription definitions to be created,
+  - If there are service plan dependencies, these are evaluated with the [get subscription dependency function][get-dep]
+  - Display names for the subscription groups are then created and provided to the [new subscription group function][create-function]
+  - The groups are then tagged with the [property tagging function][tag-post]
+  - For each subscription, the subscription group is identified
+  - If the subscription has a dependency, each dependency is assigned, then the subscription itself, using the [new group relationship function][new-relationship]
+  - Then, to get around the lack of nested group support for licence assignment,
+    - I get the members of a group defined in the pipeline with the [get group relationship function][get-relationship]
+    - And add these with the [new group relationship function][new-relationship] (using different parameter values compared to assigning licences)
+  - The new subscription definitions are then exported using the [export subscription function][export-sub-function]
+    - This acts as a system state, storing subscriptions that have been processed (IE groups created and licences assigned)
+  - The new group config is also exported using the [export group function][export-group-function]
   - Within the pipeline, the files are added, committed and pushed to the [config repo][config-repo]
 
 The complete function as at this date, is below:
@@ -1084,7 +1108,7 @@ function Invoke-WTApplySubscription {
         [parameter(
             Mandatory = $false,
             ValueFromPipeLineByPropertyName = $true,
-            HelpMessage = "The Subscription object"
+            HelpMessage = "The dependent service plan objects"
         )]
         [Alias("ServicePlan", "ServicePlans", "DependentServicePlan")]
         [PSCustomObject]$DependentServicePlans,
@@ -1139,7 +1163,7 @@ function Invoke-WTApplySubscription {
                 "GraphAPI\Public\AzureAD\Subscriptions\Get-WTAzureADSubscriptionDependency.ps1",
                 "GraphAPI\Public\AzureAD\Subscriptions\Export-WTAzureADSubscription.ps1",
                 "GraphAPI\Public\AzureAD\Groups\Export-WTAzureADGroup.ps1",
-                "GraphAPI\Public\AzureAD\Groups\Relationship\Get-WTAzureADGroupRelationship.ps1"
+                "GraphAPI\Public\AzureAD\Groups\Relationship\Get-WTAzureADGroupRelationship.ps1",
                 "GraphAPI\Public\AzureAD\Groups\Relationship\New-WTAzureADGroupRelationship.ps1"
             )
 
@@ -1186,6 +1210,13 @@ function Invoke-WTApplySubscription {
                     # If subscriptions require removing, pass the ids to the remove function
                     if ($DefinedSubscriptions.RemoveSubscriptions) {
                         
+                        # Get and tag group for the subscriptions
+                        $SubscriptionGroups = Get-WTAADSubscriptionGroup
+                        $TaggedSubscriptionGroups = Invoke-WTPropertyTagging -Tags $Tag -QueryResponse $SubscriptionGroups -PropertyToTag $PropertyToTag
+
+                        # Path to group config
+                        $GroupsPath = $Path + "\..\Groups"
+
                         # Remove subscription definition and groups
                         $SubscriptionSkuPartNumbers = $DefinedSubscriptions.RemoveSubscriptions.skuPartNumber
                         foreach ($SubscriptionSkuPartNumber in $SubscriptionSkuPartNumbers) {
@@ -1194,29 +1225,20 @@ function Invoke-WTApplySubscription {
                             # If the switch to not remove groups is not set, remove the groups for each Subscription also
                             if (!$ExcludeGroupRemoval) {
 
-                                # Get, tag and identify the group for the subscription
-                                $SubscriptionGroups = Get-WTAADSubscriptionGroup
-                                $TaggedSubscriptionGroups = Invoke-WTPropertyTagging -Tags $Tag -QueryResponse $SubscriptionGroups -PropertyToTag $PropertyToTag
-                                $SubscriptionGroups = $TaggedSubscriptionGroups | Where-Object {
+                                # Identify the group for the subscription
+                                $SubscriptionGroup = $null
+                                $SubscriptionGroup = $TaggedSubscriptionGroups | Where-Object {
                                     $_.$Tag -eq $SubscriptionSkuPartNumber
                                 }
 
-                                # Unique groups
-                                $SubscriptionGroups = $SubscriptionGroups | Sort-Object -Unique
-
-                                # If there are ids, pass all groups, which will perform a check and remove only subscription groups
-                                if ($SubscriptionGroups) {
+                                # If there is a group, pass the id which will perform a check and remove only subscription groups
+                                if ($SubscriptionGroup) {
                                     
                                     # Remove group (licences should no longer be assigned to deleted subscriptions)
-                                    Remove-WTAADSubscriptionGroup @Parameters -IDs $SubscriptionGroups.id
+                                    Remove-WTAADSubscriptionGroup @Parameters -IDs $SubscriptionGroup.id
 
-                                    # Path to group config
-                                    $GroupsPath = $Path + "\..\Groups"
-                    
                                     # Remove group config
-                                    foreach ($SubscriptionGroup in $SubscriptionGroups) {
-                                        Remove-Item -Path "$GroupsPath\$($SubscriptionGroup.displayName).json"
-                                    }
+                                    Remove-Item -Path "$GroupsPath\$($SubscriptionGroup.displayName).json"
                                 }
                             }
                         }
@@ -1365,9 +1387,8 @@ function Invoke-WTApplySubscription {
 [assign-licence]: https://www.wesleytrust.com/blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
 [devops-link]: https://dev.azure.com/wesleytrust/GraphAPI
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig
-[create-function]: /blog/graph-api-groups/#create-an-azure-ad-group
 [validate-post]: /blog/graph-api-groups-pipeline-validate/
-[config-repo]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/Groups
+[config-repo]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/Subscriptions
 [access-token]: https://www.wesleytrust.com/blog/obtain-access-token/
 [trigger-link]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/Pipeline/AzureAD/Subscriptions/ENV-P/azure-pipelines.yml
 [shared-link]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/Pipeline/AzureAD/Subscriptions/Shared/azure-pipelines.yml
@@ -1375,3 +1396,11 @@ function Invoke-WTApplySubscription {
 [function-plan]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTPlanSubscription.ps1
 [function-apply]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTApplySubscription.ps1
 [function-import]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTSubscriptionImport.ps1
+[remove-function]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Groups/Remove-WTAADSubscriptionGroup.ps1
+[create-function]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Groups/New-WTAADSubscriptionGroup.ps1
+[get-group]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Groups/Get-WTAADSubscriptionGroup.ps1
+[tag-post]: https://www.wesleytrust.com/blog/tagging-object-properties/#invoke-property-tagging
+[get-relationship]: https://www.wesleytrust.com/blog/graph-api-groups-relationship/#get-azure-ad-group-relationships
+[new-relationship]: https://www.wesleytrust.com/blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
+[export-sub-function]: https://www.wesleytrust.com/blog/graph-api-groups/#exporting-subscriptions
+[export-group-function]: https://www.wesleytrust.com/blog/graph-api-groups/#export-an-azure-ad-group
