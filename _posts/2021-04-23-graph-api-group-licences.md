@@ -32,6 +32,7 @@ This is where the addon complexity came into play, as "E5 Security" is an addon 
 
 ### Managing Subscriptions
 - [Getting subscriptions in an Azure AD tenant](#getting-subscriptions-in-an-azure-ad-tenant)
+- [Exporting subscriptions](#exporting-subscriptions)
 - [Evaluating service plan dependencies for subscriptions](#evaluating-service-plan-dependencies-for-subscriptions)
 - [Assigning subscriptions to Azure AD groups](#assigning-subscriptions-to-azure-ad-groups)
 
@@ -39,6 +40,10 @@ This is where the addon complexity came into play, as "E5 Security" is an addon 
 The first function is [Get-WTAzureADSubscription][function-getsub], which you can access from my GitHub.
 
 This gets the commercial (IE Microsoft 365) subscriptions deployed in an Azure AD tenant. I'll be using this in the CI/CD pipeline to create a group per subscription and then assign the subscription to the group. Allowing members to then be added to the groups to be assigned those licences.
+
+This requires the following Graph API permissions: Organization.Read.All, Directory.Read.All, Organization.ReadWrite.All, Directory.ReadWrite.All.
+
+[More information can be found in the Graph APi documentation here][graph-link]
 
 ### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity and the Graph Uri
@@ -156,6 +161,231 @@ function Get-WTAzureADSubscription {
                 $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
                 Write-Error $ErrorMessage
                 throw $ErrorMessage
+            }
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    End {
+        try {
+            
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+}
+```
+
+</details>
+
+## Exporting subscriptions
+The next function is [Export-WTAzureADSubscription][function-export], which you can access from my GitHub.
+
+This exports the subscription config information from Azure AD to a JSON file. Within the pipeline this allows new subscriptions to have the config committed back to the repo for version control. This also acts as the "state" of knowing what subscriptions will have had groups created and licences assigned.
+
+### What does this do? <!-- omit in toc -->
+- This sets specific variables, including optional properties to cleanup from the config prior to export
+  - As well as the RegEx for unsupported characters for Windows, which are replaced with underscores
+- If no subscriptions are specified, all subscriptions are obtained unless there are specific ids provided
+  - An access token is obtained, if one is not provided, this allows the same token to be shared within the pipeline
+- A JSON file is then created per subscription as required
+
+The complete function as at this date, is below:
+
+<details>
+  <summary><em><strong>Expand code block</strong> (always grab the latest version from GitHub)</em></summary>
+
+```powershell
+function Export-WTAzureADSubscription {
+    [CmdletBinding()]
+    param (
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client ID for the Azure AD service principal with the correct Graph permissions"
+        )]
+        [string]$ClientID,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Client secret for the Azure AD service principal with the correct Graph permissions"
+        )]
+        [string]$ClientSecret,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The initial domain (onmicrosoft.com) of the tenant"
+        )]
+        [string]$TenantDomain,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The access token, obtained from executing Get-WTGraphAccessToken"
+        )]
+        [string]$AccessToken,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The path where the JSON file(s) will be created"
+        )]
+        [string]$Path,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The file path where the JSON file will be created"
+        )]
+        [string]$FilePath,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude features in preview, a production API version will be used instead"
+        )]
+        [switch]$ExcludePreviewFeatures,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "Specify whether to exclude the cleanup operations of the policies to be exported"
+        )]
+        [switch]$ExcludeExportCleanup,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The Subscriptions to get, this must contain valid id(s), when not specified, all policies are returned"
+        )]
+        [Alias("DefinedSubscription","Subscription","Subscriptions")]
+        [PSCustomObject]$DefinedSubscriptions,
+        [parameter(
+            Mandatory = $false,
+            ValueFromPipeLineByPropertyName = $true,
+            HelpMessage = "The Subscriptions to get, this must contain valid id(s), when not specified, all policies are returned"
+        )]
+        [Alias("id", "SubscriptionID")]
+        [string[]]$SubscriptionIDs
+    )
+    Begin {
+        try {
+            # Function definitions
+            $Functions = @(
+                "GraphAPI\Public\Authentication\Get-WTGraphAccessToken.ps1",
+                "GraphAPI\Public\AzureAD\Subscriptions\Get-WTAzureADSubscription.ps1"
+            )
+
+            # Function dot source
+            foreach ($Function in $Functions) {
+                . $Function
+            }
+            
+            # Variables
+            $CleanUpProperties = (
+                "id",
+                "createdDateTime",
+                "modifiedDateTime"
+            )
+            $UnsupportedCharactersRegEx = '[\\\/:*?"<>|]'
+            $Counter = 1
+        }
+        catch {
+            Write-Error -Message $_.Exception
+            throw $_.exception
+        }
+    }
+    Process {
+        try {
+            
+            # If there are no policies to export, get policies based on specified parameters
+            if (!$DefinedSubscriptions) {
+                
+                # If there is no access token, obtain one
+                if (!$AccessToken) {
+                    $AccessToken = Get-WTGraphAccessToken `
+                        -ClientID $ClientID `
+                        -ClientSecret $ClientSecret `
+                        -TenantDomain $TenantDomain
+                }
+
+                if ($AccessToken) {
+
+                    # Build Parameters
+                    $Parameters = @{
+                        AccessToken = $AccessToken
+                    }
+                    if ($ExcludePreviewFeatures) {
+                        $Parameters.Add("ExcludePreviewFeatures", $true)
+                    }
+                    if ($SubscriptionIDs) {
+                        $Parameters.Add("SubscriptionIDs", $IDs)
+                    }
+
+                    # Get all Subscriptions
+                    $DefinedSubscriptions = Get-WTAzureADSubscription @Parameters
+
+                    if (!$DefinedSubscriptions) {
+                        $ErrorMessage = "Microsoft Graph did not return a valid response"
+                        Write-Error $ErrorMessage
+                        throw $ErrorMessage
+                    }
+                }
+                else {
+                    $ErrorMessage = "No access token specified, obtain an access token object from Get-WTGraphAccessToken"
+                    Write-Error $ErrorMessage
+                    throw $ErrorMessage
+                }
+            }
+
+            # If there are policies
+            if ($DefinedSubscriptions) {
+                    
+                # Sort and filter (if applicable) policies
+                $DefinedSubscriptions = $DefinedSubscriptions | Sort-Object skuPartNumber
+                if (!$ExcludeExportCleanup) {
+                    $DefinedSubscriptions | Foreach-object {
+                            
+                        # Cleanup properties for export
+                        foreach ($Property in $CleanUpProperties) {
+                            $_.PSObject.Properties.Remove("$Property")
+                        }
+                    }
+                }
+
+                # Export to JSON
+                Write-Host "Exporting Subscriptions (Count: $($DefinedSubscriptions.count))"
+                    
+                # If a file path is specified, output all policies in one JSON formatted file
+                if ($FilePath) {
+                    $DefinedSubscriptions | ConvertTo-Json -Depth 10 `
+                    | Out-File -Force -FilePath $FilePath
+                }
+                else {
+                    foreach ($Subscription in $DefinedSubscriptions) {
+
+                        # Remove characters not supported in Windows file names
+                        $SubscriptionDisplayName = $Subscription.skuPartNumber -replace $UnsupportedCharactersRegEx, "_"
+
+                        # If directory path does not exist for export, create it
+                        $TestPath = Test-Path $Path -PathType Container
+                        if (!$TestPath) {
+                            New-Item -Path $Path -ItemType Directory | Out-Null
+                        }
+
+                        # Output current status
+                        Write-Host "Processing Subscription $Counter with file name: $SubscriptionDisplayName.json"
+                        
+                        # Output individual policy JSON file
+                        $Subscription | ConvertTo-Json -Depth 10 `
+                        | Out-File -Force:$true -FilePath "$Path\$SubscriptionDisplayName.json"
+
+                        # Increment counter
+                        $Counter++
+                    }
+                }
+            }
+            else {
+                $WarningMessage = "There are no Subscriptions to export"
+                Write-Warning $WarningMessage
             }
         }
         catch {
@@ -414,6 +644,8 @@ This uses the [New-WTAzureADGroupRelationship][function-new] function, which you
 
 [function-getsub]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Get-WTAzureADSubscription.ps1
 [function-getsubdep]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Get-WTAzureADSubscriptionDependency.ps1
+[function-export]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Export-WTAzureADSubscription.ps1
 [dep]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/Subscriptions/Dependencies
 [assign]: /blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
 [function-new]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Groups/Relationship/New-WTAzureADGroupRelationship.ps1
+[graph-link]: https://docs.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http
