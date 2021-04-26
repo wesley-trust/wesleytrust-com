@@ -1,5 +1,5 @@
 ---
-title: "Azure AD subscription licences, with Azure AD group assignment"
+title: "Manage subscription licences in Azure AD with group assignment"
 categories:
   - blog
 tags:

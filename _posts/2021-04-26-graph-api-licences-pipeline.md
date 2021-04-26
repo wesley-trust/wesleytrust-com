@@ -819,7 +819,7 @@ Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next
 - Checks are performed about whether to evaluate subscriptions for removal
 - Existing subscriptions in Azure AD are obtained from the [get subscriptions function][get-sub], in order to compare against the validated import
 - An object comparison is performed on the skuPartNumber, determining:
-  - What defined subscriptions could be removed (as they don't exist in Azure AD, but were defined in the import)
+  - What defined subscriptions could be removed (as they don't exist in Azure AD, but were in the import)
     - So should have their groups removed and the definitions removed in the config repo
   - What existing subscriptions need their definitions creating (as they exist in Azure AD, but were not defined in the import)
     - So should have groups created, subscriptions assigned and definitions created in the config repo
