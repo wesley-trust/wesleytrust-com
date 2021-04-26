@@ -817,7 +817,7 @@ Outputting a JSON plan file (as appropriate) as a pipeline artifact for the next
 - Specific variables are set and any dependent functions are imported into memory
 - An [access token is obtained][access-token], if one is not provided, this allows the same token to be shared within the pipeline
 - Checks are performed about whether to evaluate subscriptions for removal
-- Existing subscriptions in Azure AD are obtained from the [Get function][get-sub], in order to compare against the validated import
+- Existing subscriptions in Azure AD are obtained from the [get subscriptions function][get-sub], in order to compare against the validated import
 - An object comparison is performed on the skuPartNumber, determining:
   - What defined subscriptions could be removed (as they don't exist in Azure AD, but were defined in the import)
     - So should have their groups removed and the definitions removed in the config repo
@@ -1059,9 +1059,9 @@ Within the pipeline, this imports the plan JSON artifact of subscriptions, which
   - If the subscription has a dependency, each dependency is assigned, then the subscription itself, using the [new group relationship function][new-relationship]
   - Then, to get around the lack of nested group support for licence assignment,
     - I get the members of a group defined in the pipeline with the [get group relationship function][get-relationship]
-    - And add these with the [new group relationship function][new-relationship] (using different parameter values compared to assigning licences)
+    - And add these with the [new group relationship function][new-relationship] (using different parameter values)
   - The new subscription definitions are then exported using the [export subscription function][export-sub-function]
-    - This acts as a system state, storing subscriptions that have been processed (IE groups created and licences assigned)
+    - This acts as a system state, storing subscriptions that have been processed
   - The new group config is also exported using the [export group function][export-group-function]
   - Within the pipeline, the files are added, committed and pushed to the [config repo][config-repo]
 
@@ -1382,14 +1382,14 @@ function Invoke-WTApplySubscription {
 
 </details>
 
-[get-sub]: https://www.wesleytrust.com/blog/graph-api-group-licences/#getting-subscriptions-in-an-azure-ad-tenant
-[get-dep]: https://www.wesleytrust.com/blog/graph-api-group-licences/#evaluating-service-plan-dependencies-for-subscriptions
-[assign-licence]: https://www.wesleytrust.com/blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
+[get-sub]: /blog/graph-api-group-licences/#getting-subscriptions-in-an-azure-ad-tenant
+[get-dep]: /blog/graph-api-group-licences/#evaluating-service-plan-dependencies-for-subscriptions
+[assign-licence]: /blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
 [devops-link]: https://dev.azure.com/wesleytrust/GraphAPI
 [github-repo]: https://github.com/wesley-trust/GraphAPIConfig
 [validate-post]: /blog/graph-api-groups-pipeline-validate/
 [config-repo]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/Subscriptions
-[access-token]: https://www.wesleytrust.com/blog/obtain-access-token/
+[access-token]: /blog/obtain-access-token/
 [trigger-link]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/Pipeline/AzureAD/Subscriptions/ENV-P/azure-pipelines.yml
 [shared-link]: https://github.com/wesley-trust/GraphAPIConfig/blob/main/Pipeline/AzureAD/Subscriptions/Shared/azure-pipelines.yml
 [function-validate]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Pipeline/Invoke-WTValidateSubscription.ps1
@@ -1399,8 +1399,8 @@ function Invoke-WTApplySubscription {
 [remove-function]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Groups/Remove-WTAADSubscriptionGroup.ps1
 [create-function]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Groups/New-WTAADSubscriptionGroup.ps1
 [get-group]: https://github.com/wesley-trust/GraphAPI/blob/main/Public/AzureAD/Subscriptions/Groups/Get-WTAADSubscriptionGroup.ps1
-[tag-post]: https://www.wesleytrust.com/blog/tagging-object-properties/#invoke-property-tagging
-[get-relationship]: https://www.wesleytrust.com/blog/graph-api-groups-relationship/#get-azure-ad-group-relationships
-[new-relationship]: https://www.wesleytrust.com/blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
-[export-sub-function]: https://www.wesleytrust.com/blog/graph-api-groups/#exporting-subscriptions
-[export-group-function]: https://www.wesleytrust.com/blog/graph-api-groups/#export-an-azure-ad-group
+[tag-post]: /blog/tagging-object-properties/#invoke-property-tagging
+[get-relationship]: /blog/graph-api-groups-relationship/#get-azure-ad-group-relationships
+[new-relationship]: /blog/graph-api-groups-relationship/#create-azure-ad-group-relationships
+[export-sub-function]: /blog/graph-api-group-licences/#exporting-subscriptions
+[export-group-function]: /blog/graph-api-groups/#export-an-azure-ad-group

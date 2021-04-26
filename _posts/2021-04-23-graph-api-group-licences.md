@@ -41,7 +41,9 @@ The first function is [Get-WTAzureADSubscription][function-getsub], which you ca
 
 This gets the commercial (IE Microsoft 365) subscriptions deployed in an Azure AD tenant. I'll be using this in the CI/CD pipeline to create a group per subscription and then assign the subscription to the group. Allowing members to then be added to the groups to be assigned those licences.
 
-This requires the following Graph API permissions: Organization.Read.All, Directory.Read.All, Organization.ReadWrite.All, Directory.ReadWrite.All, [more information can be found in the Graph APi documentation here][graph-link]
+This requires the following Graph API permissions: Organization.Read.All, Directory.Read.All, Organization.ReadWrite.All, Directory.ReadWrite.All.
+
+[More information can be found in the Graph APi documentation here][graph-link]
 
 ### What does this do? <!-- omit in toc -->
 - This sets specific variables, including the activity and the Graph Uri
@@ -183,9 +185,7 @@ function Get-WTAzureADSubscription {
 ## Exporting subscriptions
 The next function is [Export-WTAzureADSubscription][function-export], which you can access from my GitHub.
 
-This exports the subscription config information from Azure AD to a JSON file. Within the pipeline this allows newly created subscriptions to have the updated config committed back to the repo for version control and acts as the "state" of knowing what subscriptions will have had groups created and licences assigned.
-
-Examples below:
+This exports the subscription config information from Azure AD to a JSON file. Within the pipeline this allows new subscriptions to have the config committed back to the repo for version control. This also acts as the "state" of knowing what subscriptions will have had groups created and licences assigned.
 
 ### What does this do? <!-- omit in toc -->
 - This sets specific variables, including optional properties to cleanup from the config prior to export
