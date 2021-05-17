@@ -26,7 +26,7 @@ email: info@wesleytrust.com
 locale : "en-GB"
 logo: "/assets/images/88x88.png"
 description: >- # this means to ignore newlines until "baseurl:"
-  A tech blog by Wesley Trust, Senior Cloud Architect, Focused on Infrastructure as Code, DevOps, Scripting and Automation.
+  A tech blog by Wesley Trust, Cloud Platform Architect, Focused on Infrastructure as Code, DevOps, Scripting and Automation.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://www.wesleytrust.com" # the base hostname & protocol for your site, e.g. http://example.com
 #twitter_username: jekyllrb
@@ -91,7 +91,7 @@ plugins:
 author:
   name   : "Wesley Trust"
   avatar : "/assets/images/bio-photo.jfif"
-  bio    : "Senior Cloud Architect, Focused on Infrastructure as Code, DevOps, Scripting and Automation."
+  bio    : "Cloud Platform Architect, Focused on Infrastructure as Code, DevOps, Scripting and Automation."
   location: London, United Kingdom
   links:
     - label: "GitHub"
