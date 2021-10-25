@@ -18,9 +18,9 @@ Microsoft has been working on a ['backup authentication service'][msblog] for Az
 Time to update the [recommended Azure AD Conditional Access policies][blog-policies].
 
 ## What is the 'backup authentication service', and why is it important? ##
-The cause of many of Microsoft's biggest global outages in the past few years have been down to Azure AD. Whilst Azure AD has multiple redundant servers globally distributed, it has become a single point of failure for many of Microsoft's and third party's services.
+The cause of many of Microsoft's biggest global outages in the past few years have been down to Azure AD. Whilst Azure AD has multiple redundant servers globally distributed, it has become a single point of failure for many Microsoft and third party services.
 
-There was no "backup Azure AD service" that could be switched to, so Microsoft began work on one.
+There was no "backup Azure AD" that could be switched to, so Microsoft created one.
 
 As the scale and distribution of Azure AD is massive, creating such as a service wouldn't be easy, and design decisions, likely needed to make such a project feasible (at least in the short term), have meant a series of security compromises to consider. Leading to the introduction of 'resilience defaults' within Conditional Access.
 
@@ -36,7 +36,7 @@ To address the security concern, Microsoft is allowing the ability to override t
 
 ## What are the changes to the recommended policies? ##
 
-When evaluating policies to exclude from the ‘backup authentication service’ two access situations, high-privileged access, and low-privileged access must be considered, as well as the potential loss of risk analysis.
+When evaluating policies to exclude from the ‘backup authentication service’, two access situations, high-privileged access, and low-privileged access must be considered, as well as the potential loss of risk analysis.
 
 The recommended policies are designed to require conditions such as MFA by default, unless another condition, such as a trusted location, or hybrid-joined device is specified. So it's expected that low-privileged users would maintain a security baseline in a BCDR situation, from policies not dependent on real, or near real-time risk analysis.
 
