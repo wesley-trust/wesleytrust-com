@@ -15,6 +15,8 @@ excerpt: "Microsoft has been working on a 'backup authentication' mechanism for 
 ---
 Microsoft has been working on a 'backup authentication' mechanism for Azure AD for some time now, and with resilience defaults, we're seeing the first tangible sign of this.
 
+Time to update the [recommended Azure AD Conditional Access policies][blog-policies].
+
 ## What is the 'backup authentication service', and why is it important? ##
 The cause of many of Microsoft's biggest global outages in the past few years have been down to Azure AD. Whilst Azure AD has multiple redundant servers globally distributed, it has become a single point of failure for many of Microsoft's and third party's services.
 
@@ -44,6 +46,13 @@ Where the tables turn however, is high-privileged situations, such as users acce
 
 For normal, day-to-day user accounts, which should not have administrative rights (as a secondary admin account, or Privileged Identity Management should be in use), minimal productivity loss is expected, but users with administrative rights would be blocked access temporarily.
 
-In the event that user accounts are compromised, the Azure Management portal would continue to be protected by blocking all access, *Emergency Break-Glass Accounts, that are excluded from all policies, would not be affected, so any critical access would be maintained.*
+In the event that user accounts are compromised, the Azure Management portal would continue to be protected by blocking all access.
+
+*Emergency Break-Glass Accounts, that are excluded from all policies, would not be affected, so any critical access would be maintained.*
 
 Two other policies may not be enforced in an outage, REF-13, REF-14. This may result in access being granted without user and sign-in risk being evaluated (however, the alternative would be high productivity loss with blocking all user access).
+
+These changes are in preview, and are being tested. [Updated policies definitions][template] (which will be automated in a pipeline), will be available shortly.
+
+[template]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/ConditionalAccess/Policies/ENV-P
+[blog-policies]: /blog/graph-api-ca-config/
