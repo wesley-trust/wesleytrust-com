@@ -11,9 +11,9 @@ tags:
   - config
   - baseline
   - recommendations
-excerpt: "Microsoft has been working on a 'backup authentication' mechanism for Azure AD for some time now, and with resilience defaults..."
+excerpt: "Microsoft have been working on a 'backup authentication' mechanism for Azure AD for some time now, and with resilience defaults..."
 ---
-Microsoft has been working on a ['backup authentication service'][msblog] for Azure AD for some time now, and with resilience defaults, we're seeing the first tangible sign of this.
+Microsoft have been working on a ['backup authentication service'][msblog] for Azure AD for some time now, and with resilience defaults, we're seeing the first tangible sign of this.
 
 Time to update the [recommended Azure AD Conditional Access policies][blog-policies].
 
@@ -50,7 +50,9 @@ In the event that user accounts are compromised, the Azure Management portal wou
 
 *Emergency Break-Glass Accounts, that are excluded from all policies, would not be affected, so any critical access would be maintained.*
 
-Two other policies may not be enforced in an outage, REF-13, REF-14. This may result in access being granted without user and sign-in risk being evaluated (however, the alternative would be high productivity loss with blocking all user access).
+Two other policies may not be enforced in an outage, REF-13, REF-14. This may result in access being granted without user and sign-in risk being evaluated (however, the alternative would be high productivity loss by blocking all users).
+
+*The specific needs for including or excluding apps or users, when policies cannot be evaluated, is an important decision to evaluate.*
 
 These changes are in preview, and are being tested. [Updated policies definitions][template] (which will be automated in a pipeline), will be available shortly.
 
