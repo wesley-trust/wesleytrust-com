@@ -13,7 +13,7 @@ tags:
   - recommendations
 excerpt: "Microsoft has been working on a 'backup authentication' mechanism for Azure AD for some time now, and with resilience defaults..."
 ---
-Microsoft has been working on a 'backup authentication' mechanism for Azure AD for some time now, and with resilience defaults, we're seeing the first tangible sign of this.
+Microsoft has been working on a ['backup authentication service'][msblog] for Azure AD for some time now, and with resilience defaults, we're seeing the first tangible sign of this.
 
 Time to update the [recommended Azure AD Conditional Access policies][blog-policies].
 
@@ -56,3 +56,4 @@ These changes are in preview, and are being tested. [Updated policies definition
 
 [template]: https://github.com/wesley-trust/GraphAPIConfig/tree/main/AzureAD/ConditionalAccess/Policies/ENV-P
 [blog-policies]: /blog/graph-api-ca-config/
+[msblog]: https://techcommunity.microsoft.com/t5/azure-active-directory-identity/99-99-uptime-for-azure-active-directory/ba-p/1999628
