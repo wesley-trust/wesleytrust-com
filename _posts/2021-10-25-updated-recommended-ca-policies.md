@@ -15,7 +15,12 @@ excerpt: "Microsoft have been working on a 'backup authentication' mechanism for
 ---
 Microsoft have been working on a ['backup authentication service'][msblog] for Azure AD for some time now, and with resilience defaults, we're seeing the first tangible sign of this.
 
-Time to update the [recommended Azure AD Conditional Access policies][blog-policies].
+Time to update the [recommended Azure AD Conditional Access policies][blog-policies]:
+
+- [What is the 'backup authentication service', and why is it important?](#what-is-the-backup-authentication-service-and-why-is-it-important)
+- [Why do we need to consider 'Resilience Defaults'?](#why-do-we-need-to-consider-resilience-defaults)
+- [What are the changes to the recommended policies?](#what-are-the-changes-to-the-recommended-policies)
+- [What are the potential repercussions?](#what-are-the-potential-repercussions)
 
 ## What is the 'backup authentication service', and why is it important? ##
 The cause of many of Microsoft's biggest global outages in the past few years have been down to Azure AD. Whilst Azure AD has multiple redundant servers globally distributed, it has become a single point of failure for many Microsoft and third party services.
