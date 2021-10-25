@@ -20,7 +20,7 @@ The cause of many of Microsoft's biggest global outages in the past few years ha
 
 A bug or code regression, that failed to be detected, could often be replicated globally in a short space of time, and has in the past led to significant load on services, causing cascade failures, making recovery difficult. Due to the significant nature of Azure AD, this often meant access to all dependent services were completely unavailable with an Azure AD outage. There was no "backup Azure AD service" that could be switched to.
 
-As a result of this, Microsoft began work on a "backup authentication service"...
+As a result of this, Microsoft began work on a backup Azure AD...
 
 As the scale and distribution of Azure AD is massive, creating such as a service wouldn't be easy, and design decisions, likely needed to make such a project feasible (at least in the short term), have meant a series of security compromises to consider. Leading to the introduction of 'resilience defaults' within Conditional Access.
 
@@ -28,25 +28,29 @@ As the scale and distribution of Azure AD is massive, creating such as a service
 
 Conditional Access is an important security feature of Azure AD, protecting the services that depend on Azure AD for authentication. For the zero-trust model to work, Azure AD must be able to effectively evaluate and enact the Conditional Access policies configured.
 
-However, Microsoft has announced that when using the 'backup authentication service' (as a last resort in a BCDR situation), Conditional Access may not be able to effectively evaluate policies in real, or near real-time, or to guarantee all, or recent changes to the policies are enforced.
+However, Microsoft has announced that when using the 'backup authentication service' (as a last resort in a BCDR situation), Conditional Access may not be able to effectively evaluate policies dependent on real, or near real-time data, or to guarantee all, or recent changes to policies are enforced.
 
 In addition, Microsoft have said that by default, the failure to evaluate these conditions, would not result in Conditional Access blocking access, effectively meaning that certain conditions of Conditional Access policies might not be enforced (in a disaster situation).
 
-This might sound scary, and a potential security risk, but this is a balancing act between security and productivity. Blocking access across the board, would result in significant disruption. To address the security concern however, Microsoft is allowing the ability to override this default, for specific, considered policies, such as ones that might be considered as having the highest risk of malicious inadvertent access.
+This sound scary, and a potential security risk, but this is a balancing act between security and productivity.
+
+Blocking access across the board, would result in significant disruption.
+
+To address the security concern, Microsoft is allowing the ability to override this default, for specific, considered policies, such as ones that might be considered as having the highest risk of malicious inadvertent access.
 
 ## What are the changes to the recommended policies? ##
 
-When evaluating policies to exclude from the 'backup authentication service' two access situations, high-privileged access, and low-privileged access must be considered, as well as the impact of the loss of user and sign-in risk analysis. 
+When evaluating policies to exclude from the ‘backup authentication service’ two access situations, high-privileged access, and low-privileged access must be considered, as well as the potential loss of risk analysis.
 
-The recommended Conditional Access policies are designed to require conditions such as MFA by default, unless another condition, such as a trusted location, or hybrid-joined device is specified. So typically, low-privileged users would maintain a security baseline in a BCDR situation, from Conditional Access policies that do not contain risk analysis.
+The recommended Conditional Access policies are designed to require conditions such as MFA by default, unless another condition, such as a trusted location, or hybrid-joined device is specified. So typically, low-privileged users would maintain a security baseline in a BCDR situation, from policies not dependent on real, or near real-time risk analysis.
 
 Where the tables turn however, is high-privileged situations, such as users accessing the Azure Management portal, or users having Administrative rights. 
 
-Due to the potential high security risk, but low productivity loss, two policies: REF-11 and REF-12 will be amended, so that access is blocked when the 'backup authentication service' is in use (and so, the polices cannot be guaranteed to be evaluated).
+Due to the potential high security risk, but low productivity loss, two policies: REF-11 and REF-12 will be amended, so that access is blocked when the 'backup authentication service' is in use (as the polices cannot be guaranteed to be evaluated).
 
-## What are the compromises? ##
+## What are the potential repercussions? ##
 
-Normal, day-to-day user accounts should not have administrative rights (as a secondary admin account, or Privileged Identity Management should be in use), so minimal productivity loss is expected.
+For normal, day-to-day user accounts, which should not have administrative rights (as a secondary admin account, or Privileged Identity Management should be in use), minimal productivity loss is expected, but users with administrative rights would be blocked access temporarily.
 
 In the event that user accounts are compromised, the Azure Management portal would continue to be protected by blocking all access, *Emergency Break-Glass Accounts, that are excluded from all policies, would not be affected, so any critical access would be maintained.*
 
