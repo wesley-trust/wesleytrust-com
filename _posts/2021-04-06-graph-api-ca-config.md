@@ -13,6 +13,9 @@ tags:
   - recommendations
 excerpt: "I've designed a set of recommended baseline policies for Azure AD Conditional Access based on my experience and research..."
 ---
+
+**UPDATE 2021-10-26: [Recommended policies will shortly be updated to take into account resilience defaults, more info here.][updates]**
+
 Within GitHub, I've created the [GraphAPIConfig][GraphAPIConfig] repo, which contains a set of baseline recommended configurations for the Graph API. _This is set up as a template, so you can duplicate this and modify as appropriate. Please always grab the latest versions from GitHub._
 
 This repo covers recommended definitions for default Azure AD groups, Conditional Access and Endpoint Manager (Intune) policies.
@@ -1718,3 +1721,4 @@ Example below:
 [legacy-link]: https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/howto-conditional-access-policy-block-legacy
 [defaults-link]: https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/concept-fundamentals-security-defaults
 [approved-apps]: https://docs.microsoft.com/en-us/azure/active-directory/conditional-access/concept-conditional-access-grant#require-approved-client-app
+[updates]: https://www.wesleytrust.com/blog/updated-recommended-ca-policies/
