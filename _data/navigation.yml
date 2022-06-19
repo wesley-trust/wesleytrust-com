@@ -30,7 +30,3 @@ side-links:
         url: https://github.com/wesley-trust?tab=repositories&q=tfmodule
       - title: "Terraform Submodules"
         url: https://github.com/wesley-trust?tab=repositories&q=tfsubmodule
-      - title: "ToolKit"
-        url: https://github.com/wesley-trust/ToolKit
-      - title: "Scripts"
-        url: https://github.com/wesley-trust/Scripts
