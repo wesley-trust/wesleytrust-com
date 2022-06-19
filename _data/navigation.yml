@@ -10,19 +10,27 @@ main:
 side-links:
   - title: LinkedIn
     children:
-      - title: "View my profile or contact me"
+      - title: "View my profile or contact me here"
         url: https://www.linkedin.com/in/wesleytrust/
-  - title: GitHub Repos
-    children:
-      - title: "GraphAPI"
-        url: https://github.com/wesley-trust/GraphAPI
-      - title: "GraphAPIConfig"
-        url: https://github.com/wesley-trust/GraphAPIConfig
-      - title: "ToolKit"
-        url: https://github.com/wesley-trust/ToolKit
-      - title: "Scripts"
-        url: https://github.com/wesley-trust/Scripts
   - title: Azure DevOps
     children:
       - title: "GraphAPI CI/CD Pipeline"
         url: https://dev.azure.com/wesleytrust/GraphAPI
+      - title: "Terraform CI/CD Pipeline"
+        url: https://dev.azure.com/wesleytrust/Terraform
+  - title: GitHub Repos
+    children:
+      - title: "GraphAPI PowerShell Functions"
+        url: https://github.com/wesley-trust/GraphAPI
+      - title: "GraphAPI Configurations for Azure AD/Intune"
+        url: https://github.com/wesley-trust/GraphAPIConfig
+      - title: "Terraform Root Configurations"
+        url: https://github.com/wesley-trust?tab=repositories&q=tfroot
+      - title: "Terraform Modules"
+        url: https://github.com/wesley-trust?tab=repositories&q=tfmodule
+      - title: "Terraform Submodules"
+        url: https://github.com/wesley-trust?tab=repositories&q=tfsubmodule
+      - title: "ToolKit"
+        url: https://github.com/wesley-trust/ToolKit
+      - title: "Scripts"
+        url: https://github.com/wesley-trust/Scripts
