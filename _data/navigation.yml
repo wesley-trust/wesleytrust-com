@@ -14,9 +14,9 @@ side-links:
         url: https://www.linkedin.com/in/wesleytrust/
   - title: Azure DevOps
     children:
-      - title: "GraphAPI CI/CD Pipeline"
+      - title: "GraphAPI CI/CD Pipelines"
         url: https://dev.azure.com/wesleytrust/GraphAPI
-      - title: "Terraform CI/CD Pipeline"
+      - title: "Terraform CI/CD Pipelines"
         url: https://dev.azure.com/wesleytrust/Terraform
   - title: GitHub Repos
     children:
