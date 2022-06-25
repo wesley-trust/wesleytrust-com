@@ -10,13 +10,13 @@ main:
 side-links:
   - title: LinkedIn
     children:
-      - title: "View my profile or contact me here"
+      - title: "View my profile or contact me on LinkedIn"
         url: https://www.linkedin.com/in/wesleytrust/
   - title: Azure DevOps
     children:
-      - title: "GraphAPI CI/CD Pipelines"
+      - title: "GraphAPI CI/CD Pipelines for Azure AD/Intune"
         url: https://dev.azure.com/wesleytrust/GraphAPI
-      - title: "Terraform CI/CD Pipelines"
+      - title: "Terraform CI/CD Pipelines for Services/Modules"
         url: https://dev.azure.com/wesleytrust/Terraform
   - title: GitHub Repos
     children:
@@ -24,7 +24,7 @@ side-links:
         url: https://github.com/wesley-trust/GraphAPI
       - title: "GraphAPI Configurations for Azure AD/Intune"
         url: https://github.com/wesley-trust/GraphAPIConfig
-      - title: "Terraform Root Configurations"
+      - title: "Terraform Services Root Configurations"
         url: https://github.com/wesley-trust?tab=repositories&q=tfroot
       - title: "Terraform Modules"
         url: https://github.com/wesley-trust?tab=repositories&q=tfmodule
